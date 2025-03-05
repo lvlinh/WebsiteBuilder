@@ -1,0 +1,58 @@
+DỰ ÁN WEBSITE MỚI CỦA SJJS
+
+Trang web mới của SJJS cần phải đảm bảo sứ mạng truyền đạt một cách hiệu quả sứ mạng, chương trình giảng dạy, thông tin về ban giảng huấn, nguồn lực, sự kiện của trường tới các bên liên quan, bao gồm các sinh viên tương lai, sinh viện hiện tại, cựu sinh viên và cộng đồng lớn hơn quan tâm đến giáo dục thần học. Để đảm bảo các yêu cầu đó, dưới đây là một số tính năng cần xem xét:
+I. YÊU CẦU CHỨC NĂNG 
+Trang web phải có các menu được tổ chức tốt nhằm giúp người truy cập dễ dàng tìm kiếm thông tin. Các danh mục chính sẽ bao gồm phần “Giới thiệu về chúng tôi”, “Tuyển Sinh”, “Đào Tạo”, “Ban Giảng Huấn và Nghiên cứu”, “Thư viện”, “Bài viết”, “Gia đình sjjs” và “các tiện ích”.
+-	GIỚI THIỆU: Phần này cung cấp cái nhìn tổng quan về lịch sử, sứ mạng, giá trị và các đặc nét của Giáo dục Dòng tên, thông tin về cơ cấu tổ chức và Ban Giám hiệu. 
+o	Chúng tôi là ai? Phần này giới thiệu 
+o	Sứ mạng, lịch sử: 
+o	Giá trị cốt lõi: 
+o	Giáo dục Dòng Tên: 
+o	Ban giám hiệu: 
+o	Dean’s messages: 
+-	TUYỂN SINH: Bao gồm thông tin dành cho sinh viên tương lai về thủ tục đăng ký, yêu cầu nhập học, thời hạn, học phí và lệ phí, cơ hội hỗ trợ tài chính và bất kỳ chi tiết liên quan nào khác liên quan đến tuyển sinh.
+o	Tổng quan: 
+o	Tiêu chuẩn tuyển sinh: 
+o	Quy trình tuyển sinh: 
+o	Tuyển sinh năm xxxx: 
+o	Học phí: 
+-	ĐÀO TẠO: Chi tiết các chương trình và bằng cấp được cung cấp, bao gồm các chương trình đại học và sau đại học. Cung cấp thông tin về chương trình giảng dạy, khóa học, kiến thức chuyên môn của giảng viên.
+o	Chương trình triết học
+o	Cử nhân thần học
+o	SOH
+o	Mục vụ
+o	Ngôn ngữ và văn hoá
+-	BAN GIẢNG HUẤN VÀ NGHIÊN CỨU: Làm nổi bật kiến thức chuyên môn và trình độ của các giảng viên, bao gồm trình độ học vấn, sở thích nghiên cứu, ấn phẩm và bất kỳ giải thưởng hoặc sự công nhận nào mà họ đã nhận được. Giới thiệu các sáng kiến, trung tâm, ấn phẩm và tài nguyên học thuật của trường. Điều này có thể bao gồm thông tin về các dự án nghiên cứu của giảng viên, các tạp chí học thuật và tài nguyên thư viện. Giới thiệu các dự án nghiên cứu của sinh viên. Các chương trình hội thảo, bao gồm giáo sư và sinh viên.
+o	Tổng quan
+o	Ban giảng huấn
+o	Các dự án nghiên cứu của Giáo sư
+o	Các dự án nghiên cứu sinh viên
+o	Hội thảo
+o	Xuất bản
+-	BÀI VIẾT: Mục này khá đặc biệt trong bối cảnh Việt nam. Thông thường, website của trường đại học không có mục này nhưng vì nhu cầu có thực ở Giáo hội Việt nam nên thiết nghĩ việc đưa mục này vào là hợp lý. Các bài viết sẽ được phân chia thành 4 chuyên ngành lớn tương ứng với 4 nhóm ngành ở phần Đào Tạo.
+o	Triết học
+o	Thần học
+o	Linh đạo 
+o	Mục vụ
+o	Văn hoá, xã hội
+-	GIA ĐÌNH SJJS: Đây cũng là một đặc nét của sjjs và do đó cần phải được làm nổi bật ở website của trường. Mục đích chính là giúp giảng viên, sinh viên, cựu sinh viên cảm nhận được bầu khí gia đình tại sjjs bao gồm các chiều kích khác nhau như phụng vụ, huấn luyện, các chiều kích nhân sinh như việc ăn uống, nghỉ ngơi. Đặc biệt, mục cựu sinh viên giúp nối kết và xây dựng truyền thống của sjjs, là nơi để kết nối với các cựu sinh viên với trường.
+o	Phụng vụ: Các sinh hoạt phụng vụ trong trường như các thánh lễ khai giảng, bế mạc, bổn mạng các khối …
+o	Cơ sở học tập: Giới thiệu cơ sở học tập như phòng học, phòng đọc sách, các trang thiết bị phục vụ việc học và giảng dạy.
+o	Câu lạc bộ sinh viên: Sinh hoạt của nhóm sinh viên như câu lạc bộ đọc sách, câu lạc bộ.
+o	Cựu sinh viên: Sinh hoạt của cựu sinh viên
+o	Góc ảnh: Hình ảnh hoạt động trường
+-	TIỆN ÍCH: Cuối cùng là mục tiện ích bao gồm thông tin các sự kiện, chia sẻ các tin tức liên quan đến trường, giảng viên, sinh viên, cựu sinh viên của trường. Phần này cũng trình bày các nguồn lực và dịch vụ hỗ trợ sinh viên như các chương trình tư vấn học tập, các biểu mẫu, các videos liên quan đến trường.
+o	Tutorship
+o	Bản tin
+o	Sự kiện
+o	Biểu mẫu
+o	Video(s) – hình ảnh
+o	Các liên kết
+Lưu ý: tương ứng với mỗi menu là một giao diện được thiết kế sao cho hợp với nội dung muốn được diễn tả trong menu đó. 2 files đính kèm là hai mẫu tương ứng với menu giới thiệu (trang chủ) và “gia đình sjjs.”
+
+II. YÊU CẦU PHI CHỨC NĂNG
+
+Ngoài việc chú trọng đến nội dung rõ ràng, đầy đủ, và hợp lý nên trên, website mới của trường cần đáp ứng một số yêu cầu sau.
+1.	Hấp dẫn và trực quan: Sử dụng hình ảnh, video và đồ hoạ chất lượng cao, hợp lý, sinh động để nâng cao sức hấp dẫn của trang web và thu hút người truy cập.
+2.	Tạo ra một hệ sinh thái tốt trong mối tương quan với các phương tiện truyền truyền thông khác của sjjs như facebook của trường, website của Hợp tuyển thần học, website thư viện, facebook thư viện, và…
+3.	Đảm bảo rằng trang web thân thiện với thiết bị di động và có thể truy cập được trên nhiều thiết bị khác nhau, bao gồm cả điện thoại thông minh và máy tính bảng.

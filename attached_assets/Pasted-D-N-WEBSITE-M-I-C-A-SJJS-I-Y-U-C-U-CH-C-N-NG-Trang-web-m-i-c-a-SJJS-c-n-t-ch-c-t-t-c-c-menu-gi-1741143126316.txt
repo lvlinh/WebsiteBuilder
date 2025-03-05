@@ -1,0 +1,123 @@
+DỰ ÁN WEBSITE MỚI CỦA SJJS
+
+I. YÊU CẦU CHỨC NĂNG
+
+Trang web mới của SJJS cần tổ chức tốt các menu giúp người truy cập dễ dàng tìm kiếm thông tin. Các danh mục chính bao gồm:
+
+1. GIỚI THIỆU
+
+Cung cấp tổng quan về lịch sử, sứ mạng, giá trị và đặc nét của Giáo dục Dòng Tên, thông tin về cơ cấu tổ chức và Ban Giám hiệu.
+
+Chúng tôi là ai?
+
+Sứ mạng, lịch sử
+
+Giá trị cốt lõi
+
+Giáo dục Dòng Tên
+
+Ban Giám Hiệu
+
+Dean’s messages
+
+2. TUYỂN SINH
+
+Cung cấp thông tin về thủ tục đăng ký, yêu cầu nhập học, học phí và hỗ trợ tài chính.
+
+Tổng quan
+
+Tiêu chuẩn tuyển sinh
+
+Quy trình tuyển sinh
+
+Tuyển sinh năm XXXX
+
+Học phí
+
+3. ĐÀO TẠO
+
+Chi tiết các chương trình và bằng cấp được cung cấp.
+
+Chương trình Triết học
+
+Cử nhân Thần học
+
+SOH
+
+Mục vụ
+
+Ngôn ngữ và Văn hóa
+
+4. BAN GIẢNG HUẤN VÀ NGHIÊN CỨU
+
+Làm nổi bật chuyên môn của giảng viên và thông tin nghiên cứu.
+
+Tổng quan
+
+Ban giảng huấn
+
+Các dự án nghiên cứu của Giáo sư
+
+Các dự án nghiên cứu sinh viên
+
+Hội thảo
+
+Xuất bản
+
+5. BÀI VIẾT
+
+Cung cấp các bài viết theo chuyên ngành.
+
+Triết học
+
+Thần học
+
+Linh đạo
+
+Mục vụ
+
+Văn hóa, xã hội
+
+6. GIA ĐÌNH SJJS
+
+Tạo không gian kết nối giữa giảng viên, sinh viên và cựu sinh viên.
+
+Phụng vụ
+
+Cơ sở học tập
+
+Câu lạc bộ sinh viên
+
+Cựu sinh viên
+
+Góc ảnh
+
+7. TIỆN ÍCH
+
+Tổng hợp thông tin sự kiện và tài nguyên hỗ trợ.
+
+Tutorship
+
+Bản tin
+
+Sự kiện
+
+Biểu mẫu
+
+Video(s) – hình ảnh
+
+Các liên kết
+
+Mỗi menu sẽ có giao diện thiết kế phù hợp với nội dung muốn truyền tải.
+
+II. YÊU CẦU PHI CHỨC NĂNG
+
+Ngoài nội dung rõ ràng, website cần đáp ứng các tiêu chí sau:
+
+Hấp dẫn và trực quan: Sử dụng hình ảnh, video, đồ họa chất lượng cao để tăng tính thẩm mỹ và thu hút người truy cập.
+
+Kết nối với các phương tiện truyền thông: Tích hợp với Facebook của trường, website thư viện, Hợp tuyển thần học và các kênh truyền thông khác.
+
+Thân thiện với thiết bị di động: Đảm bảo trang web hoạt động tốt trên điện thoại thông minh và máy tính bảng.
+
+Website SJJS cần đảm bảo hiệu quả trong việc truyền đạt thông tin và hỗ trợ tốt các đối tượng liên quan đến giáo dục thần học.

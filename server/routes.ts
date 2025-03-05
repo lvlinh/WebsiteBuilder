@@ -644,6 +644,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ message: "Logged out successfully" });
   });
 
+  // Add this route near the other admin routes
+  app.get("/api/admin/me", async (req: any, res) => {
+    const adminId = req.session.adminId;
+    if (!adminId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const admin = await storage.getAdmin(adminId);
+    if (!admin) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Remove sensitive data before sending
+    const { password, ...safeAdmin } = admin;
+    res.json(safeAdmin);
+  });
+
   // Admin middleware
   const isAdmin = async (req: any, res: any, next: any) => {
     const adminId = req.session.adminId;

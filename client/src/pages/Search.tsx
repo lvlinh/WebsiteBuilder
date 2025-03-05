@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useI18n } from "@/lib/i18n"
 import { AdvancedSearch, type SearchFilters } from "@/components/ui/advanced-search"

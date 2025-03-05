@@ -1,0 +1,21 @@
+import Hero from "@/components/Home/Hero"
+import NewsFeed from "@/components/Home/NewsFeed"
+
+export default function Home() {
+  return (
+    <main>
+      <Hero />
+      <section className="container py-16">
+        <div className="grid gap-8 md:grid-cols-2">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Latest News</h2>
+            <NewsFeed />
+          </div>
+          <div>
+            {/* Calendar/Events section to be added */}
+          </div>
+        </div>
+      </section>
+    </main>
+  )
+}

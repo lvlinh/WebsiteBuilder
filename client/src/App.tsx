@@ -14,6 +14,7 @@ import Articles from "@/pages/Articles"
 import Family from "@/pages/Family"
 import Resources from "@/pages/Resources"
 import StudentLogin from "@/pages/StudentPortal/Login"
+import StudentRegister from "@/pages/StudentPortal/Register" // Added import
 import StudentDashboard from "@/pages/StudentPortal/Dashboard"
 import NotFound from "@/pages/not-found"
 
@@ -31,6 +32,7 @@ function Router() {
         <Route path="/family" component={Family} />
         <Route path="/resources" component={Resources} />
         <Route path="/student/login" component={StudentLogin} />
+        <Route path="/student/register" component={StudentRegister} /> {/* Added route */}
         <Route path="/student/dashboard" component={StudentDashboard} />
         <Route component={NotFound} />
       </Switch>

@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().email("Email không hợp lệ"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -103,6 +103,16 @@ export default function Login() {
             </form>
           </Form>
         </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-muted-foreground">
+            {language === 'vi' ? 'Chưa có tài khoản?' : "Don't have an account?"}{' '}
+            <Link href="/student/register">
+              <a className="text-primary hover:underline">
+                {language === 'vi' ? 'Đăng ký ngay' : 'Register now'}
+              </a>
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );

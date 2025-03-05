@@ -10,15 +10,22 @@ import bcrypt from "bcryptjs";
 
 const SessionStore = MemoryStore(session);
 
+const sessionSecret = process.env.SESSION_SECRET || 'your-secret-key-min-32-chars-long-here';
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Session setup
+  // Session setup with better security
   app.use(session({
-    secret: 'your-secret-key',
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: new SessionStore({
       checkPeriod: 86400000 // prune expired entries every 24h
-    })
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
   }));
 
   // Passport setup
@@ -53,6 +60,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   passport.deserializeUser(async (id: number, done) => {
     try {
       const student = await storage.getStudent(id);
+      if (!student) {
+        return done(null, false);
+      }
       done(null, student);
     } catch (error) {
       done(error);
@@ -153,9 +163,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).end();
   });
 
-  // Student Portal Routes
-  app.post("/api/auth/login", passport.authenticate('local'), (req, res) => {
-    res.json(req.user);
+  // Student Portal Routes with improved error handling
+  app.post("/api/auth/login", (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res.status(401).json({ message: info?.message || 'Invalid credentials' });
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          return next(err);
+        }
+        const { password, ...safeUser } = user;
+        return res.json(safeUser);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/auth/logout", (req: any, res) => {
@@ -165,20 +189,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/students/register", async (req, res) => {
-    const parseResult = insertStudentSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return res.status(400).json({ message: "Invalid student data" });
+    try {
+      const parseResult = insertStudentSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid student data",
+          errors: parseResult.error.errors 
+        });
+      }
+
+      // Check if email already exists
+      const existingStudent = await storage.getStudentByEmail(parseResult.data.email);
+      if (existingStudent) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      const hashedPassword = await bcrypt.hash(parseResult.data.password, 10);
+      const student = await storage.createStudent({
+        ...parseResult.data,
+        password: hashedPassword
+      });
+
+      // Remove password from response
+      const { password, ...safeStudent } = student;
+      res.status(201).json(safeStudent);
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ message: "Registration failed" });
     }
-
-    const hashedPassword = await bcrypt.hash(parseResult.data.password, 10);
-    const student = await storage.createStudent({
-      ...parseResult.data,
-      password: hashedPassword
-    });
-
-    // Remove password from response
-    const { password, ...safeStudent } = student;
-    res.status(201).json(safeStudent);
   });
 
   app.get("/api/students/me", isAuthenticated, async (req: any, res) => {

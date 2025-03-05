@@ -22,7 +22,7 @@ export default function Header() {
         <Link href="/">
           <span className="flex items-center space-x-2 cursor-pointer">
             <img 
-              src="/attached_assets/sjjs-logo.jpg" 
+              src="/assets/sjjs-logo.jpg" 
               alt="SJJS Logo" 
               className="h-12 w-auto"
             />

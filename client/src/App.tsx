@@ -16,8 +16,9 @@ import Resources from "@/pages/Resources"
 import StudentLogin from "@/pages/StudentPortal/Login"
 import StudentRegister from "@/pages/StudentPortal/Register"
 import StudentDashboard from "@/pages/StudentPortal/Dashboard"
+import Events from "@/pages/Events"
+import Search from "@/pages/Search"
 import NotFound from "@/pages/not-found"
-import Events from "@/pages/Events" // Added import
 
 function Router() {
   return (
@@ -35,7 +36,8 @@ function Router() {
         <Route path="/student/login" component={StudentLogin} />
         <Route path="/student/register" component={StudentRegister} />
         <Route path="/student/dashboard" component={StudentDashboard} />
-        <Route path="/events" component={Events} /> {/* Added route */}
+        <Route path="/events" component={Events} />
+        <Route path="/search" component={Search} />
         <Route component={NotFound} />
       </Switch>
       <Footer />

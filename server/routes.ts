@@ -80,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  await initializeSampleEvents(); //Added this line
+  await initializeSampleEvents();
 
   passport.use(new LocalStrategy(
     { usernameField: 'email' },
@@ -444,6 +444,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     res.json(registration);
+  });
+
+  // Search routes
+  app.get("/api/search", async (req, res) => {
+    const { query, type, category } = req.query;
+    let results = [];
+
+    try {
+      if (!type || type === 'article') {
+        const articles = await storage.getArticles();
+        const filteredArticles = articles.filter(article => {
+          const matchesQuery = !query || 
+            article.title_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
+            article.title_en.toLowerCase().includes(query.toString().toLowerCase()) ||
+            article.content_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
+            article.content_en.toLowerCase().includes(query.toString().toLowerCase());
+
+          const matchesCategory = !category || article.category === category;
+
+          return matchesQuery && matchesCategory;
+        }).map(article => ({
+          type: 'article',
+          id: article.id,
+          title: article.title_en,
+          description: article.content_en,
+          category: article.category,
+          date: article.publishedAt
+        }));
+        results.push(...filteredArticles);
+      }
+
+      if (!type || type === 'event') {
+        const events = await storage.getEvents();
+        const filteredEvents = events.filter(event => {
+          const matchesQuery = !query ||
+            event.title_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
+            event.title_en.toLowerCase().includes(query.toString().toLowerCase()) ||
+            event.description_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
+            event.description_en.toLowerCase().includes(query.toString().toLowerCase());
+
+          const matchesCategory = !category || event.category === category;
+
+          return matchesQuery && matchesCategory;
+        }).map(event => ({
+          type: 'event',
+          id: event.id,
+          title: event.title_en,
+          description: event.description_en,
+          category: event.category,
+          date: event.startDate
+        }));
+        results.push(...filteredEvents);
+      }
+
+      if (!type || type === 'course') {
+        const courses = await storage.getCourses();
+        const filteredCourses = courses.filter(course => {
+          const matchesQuery = !query ||
+            course.name_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
+            course.name_en.toLowerCase().includes(query.toString().toLowerCase()) ||
+            course.description_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
+            course.description_en.toLowerCase().includes(query.toString().toLowerCase());
+
+          const matchesCategory = !category || course.semester === category;
+
+          return matchesQuery && matchesCategory;
+        }).map(course => ({
+          type: 'course',
+          id: course.id,
+          title: course.name_en,
+          description: course.description_en,
+          category: course.semester
+        }));
+        results.push(...filteredCourses);
+      }
+
+      res.json(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      res.status(500).json({ message: "Search failed" });
+    }
   });
 
   const httpServer = createServer(app);

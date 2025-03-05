@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { Button } from "@/components/ui/button"
 import LocaleToggle from "./LocaleToggle"
+import { Search } from 'lucide-react';
 
 export default function Header() {
   const { language } = useI18n()
@@ -99,6 +100,14 @@ export default function Header() {
             </Button>
           </Link>
           <LocaleToggle />
+          <Link href="/search">
+            <Button variant="ghost" size="sm" className="px-2">
+              <Search className="h-4 w-4" />
+              <span className="sr-only">
+                {language === 'vi' ? 'Tìm kiếm' : 'Search'}
+              </span>
+            </Button>
+          </Link>
         </div>
       </div>
     </header>

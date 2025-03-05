@@ -3,7 +3,7 @@ import { useI18n } from "@/lib/i18n"
 import { apiRequest } from "@/lib/queryClient"
 import { useToast } from "@/hooks/use-toast"
 import EventCard from "@/components/Events/EventCard"
-import type { Event } from "@shared/schema"
+import type { Event, EventRegistration } from "@shared/schema"
 
 export default function Events() {
   const { language } = useI18n()
@@ -14,8 +14,9 @@ export default function Events() {
     queryKey: ['/api/events']
   })
 
-  const { data: registrationStatuses, isLoading: statusesLoading } = useQuery({
-    queryKey: ['/api/students/me/event-registrations']
+  const { data: registrationStatuses = [], isLoading: statusesLoading } = useQuery<EventRegistration[]>({
+    queryKey: ['/api/students/me/event-registrations'],
+    retry: false // Don't retry on 401 (unauthorized)
   })
 
   const registerMutation = useMutation({
@@ -42,7 +43,7 @@ export default function Events() {
   })
 
   const isRegistered = (eventId: number) => {
-    return registrationStatuses?.some(reg => reg.eventId === eventId)
+    return registrationStatuses.some(reg => reg.eventId === eventId)
   }
 
   const handleRegister = (eventId: number) => {

@@ -258,8 +258,10 @@ export class MemStorage implements IStorage {
     const id = this.eventId++;
     const newEvent = {
       ...event,
-      id
-    };
+      id,
+      status: event.status || "upcoming",
+      capacity: event.capacity || 0
+    } as Event;
     this.events.set(id, newEvent);
     return newEvent;
   }
@@ -298,8 +300,9 @@ export class MemStorage implements IStorage {
       ...registration,
       id,
       registeredAt: new Date(),
-      status: registration.status || "registered"
-    };
+      status: registration.status || "registered",
+      notes: registration.notes || null
+    } as EventRegistration;
     this.eventRegistrations.set(id, newRegistration);
     return newRegistration;
   }

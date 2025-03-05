@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useI18n } from "@/lib/i18n"
 import { apiRequest } from "@/lib/queryClient"
 import { useToast } from "@/hooks/use-toast"
+import { useLocation } from "wouter"
 import EventCard from "@/components/Events/EventCard"
 import type { Event, EventRegistration } from "@shared/schema"
 
@@ -9,6 +10,7 @@ export default function Events() {
   const { language } = useI18n()
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const [_, setLocation] = useLocation()
 
   const { data: events, isLoading: eventsLoading } = useQuery<Event[]>({
     queryKey: ['/api/events']
@@ -32,6 +34,18 @@ export default function Events() {
       })
     },
     onError: (error: any) => {
+      if (error.message === 'Unauthorized') {
+        toast({
+          variant: "destructive",
+          title: language === 'vi' ? 'Chưa đăng nhập' : 'Not logged in',
+          description: language === 'vi'
+            ? 'Vui lòng đăng nhập để đăng ký sự kiện'
+            : 'Please log in to register for events',
+        })
+        setLocation('/student/login')
+        return
+      }
+
       toast({
         variant: "destructive",
         title: language === 'vi' ? 'Đăng ký thất bại' : 'Registration failed',

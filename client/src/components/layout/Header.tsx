@@ -17,19 +17,23 @@ export default function Header() {
   const t = translations.nav
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b bg-[#8B4749]/95 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/">
           <span className="flex items-center space-x-2 cursor-pointer">
-            <span className="text-xl font-bold">SJJS</span>
+            <img 
+              src="/attached_assets/sjjs-logo.jpg" 
+              alt="SJJS Logo" 
+              className="h-12 w-auto"
+            />
           </span>
         </Link>
 
         <NavigationMenu>
-          <NavigationMenuList>
+          <NavigationMenuList className="space-x-2">
             <NavigationMenuItem>
               <Link href="/about">
-                <NavigationMenuLink className="cursor-pointer">
+                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
                   {t.about[language]}
                 </NavigationMenuLink>
               </Link>
@@ -37,7 +41,7 @@ export default function Header() {
 
             <NavigationMenuItem>
               <Link href="/admissions">
-                <NavigationMenuLink className="cursor-pointer">
+                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
                   {t.admissions[language]}
                 </NavigationMenuLink>
               </Link>
@@ -45,7 +49,7 @@ export default function Header() {
 
             <NavigationMenuItem>
               <Link href="/education">
-                <NavigationMenuLink className="cursor-pointer">
+                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
                   {t.education[language]}
                 </NavigationMenuLink>
               </Link>
@@ -53,7 +57,7 @@ export default function Header() {
 
             <NavigationMenuItem>
               <Link href="/faculty">
-                <NavigationMenuLink className="cursor-pointer">
+                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
                   {t.faculty[language]}
                 </NavigationMenuLink>
               </Link>
@@ -61,7 +65,7 @@ export default function Header() {
 
             <NavigationMenuItem>
               <Link href="/articles">
-                <NavigationMenuLink className="cursor-pointer">
+                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
                   {t.articles[language]}
                 </NavigationMenuLink>
               </Link>
@@ -69,7 +73,7 @@ export default function Header() {
 
             <NavigationMenuItem>
               <Link href="/events">
-                <NavigationMenuLink className="cursor-pointer">
+                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
                   {t.events[language]}
                 </NavigationMenuLink>
               </Link>
@@ -77,7 +81,7 @@ export default function Header() {
 
             <NavigationMenuItem>
               <Link href="/family">
-                <NavigationMenuLink className="cursor-pointer">
+                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
                   {t.family[language]}
                 </NavigationMenuLink>
               </Link>
@@ -85,7 +89,7 @@ export default function Header() {
 
             <NavigationMenuItem>
               <Link href="/resources">
-                <NavigationMenuLink className="cursor-pointer">
+                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
                   {t.resources[language]}
                 </NavigationMenuLink>
               </Link>
@@ -95,13 +99,13 @@ export default function Header() {
 
         <div className="flex items-center gap-4">
           <Link href="/student/login">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="text-white bg-transparent border-white hover:bg-white hover:text-[#8B4749]">
               {t.studentPortal[language]}
             </Button>
           </Link>
           <LocaleToggle />
           <Link href="/search">
-            <Button variant="ghost" size="sm" className="px-2">
+            <Button variant="ghost" size="sm" className="px-2 text-white hover:text-white/80">
               <Search className="h-4 w-4" />
               <span className="sr-only">
                 {language === 'vi' ? 'Tìm kiếm' : 'Search'}

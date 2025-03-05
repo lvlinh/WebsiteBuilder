@@ -74,6 +74,74 @@ async function initializeAdminUser() {
   }
 }
 
+// Add this function after initializeAdminUser
+async function initializeDefaultPages() {
+  const pages = await storage.getPages();
+  if (pages.length === 0) {
+    // Create some default pages
+    const defaultPages = [
+      {
+        slug: "about",
+        title_vi: "Về Chúng Tôi",
+        title_en: "About Us",
+        content_vi: "Chào mừng đến với Học Viện Công Giáo Sài Gòn - SJJS",
+        content_en: "Welcome to Saigon Jesuit Scholasticate - SJJS",
+        menu_order: 1,
+        published: true
+      },
+      {
+        slug: "admissions",
+        title_vi: "Tuyển Sinh",
+        title_en: "Admissions",
+        content_vi: "Thông tin tuyển sinh của Học Viện",
+        content_en: "Admission information for the Institute",
+        menu_order: 2,
+        published: true
+      },
+      {
+        slug: "education",
+        title_vi: "Đào Tạo",
+        title_en: "Education",
+        content_vi: "Chương trình đào tạo của Học Viện",
+        content_en: "Educational programs at the Institute",
+        menu_order: 3,
+        published: true
+      },
+      {
+        slug: "faculty",
+        title_vi: "Giảng Viên",
+        title_en: "Faculty",
+        content_vi: "Đội ngũ giảng viên của Học Viện",
+        content_en: "Our faculty members",
+        menu_order: 4,
+        published: true
+      },
+      {
+        slug: "family",
+        title_vi: "Gia Đình SJJS",
+        title_en: "SJJS Family",
+        content_vi: "Cộng đồng SJJS",
+        content_en: "The SJJS Community",
+        menu_order: 5,
+        published: true
+      },
+      {
+        slug: "resources",
+        title_vi: "Tài Nguyên",
+        title_en: "Resources",
+        content_vi: "Tài nguyên học tập",
+        content_en: "Learning resources",
+        menu_order: 6,
+        published: true
+      }
+    ];
+
+    for (const page of defaultPages) {
+      await storage.createPage(page);
+    }
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session setup with better security
   app.use(session({
@@ -96,6 +164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   await initializeSampleEvents();
   await initializeAdminUser();
+  await initializeDefaultPages(); // Add this line
 
   passport.use(new LocalStrategy(
     { usernameField: 'email' },

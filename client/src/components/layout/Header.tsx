@@ -18,9 +18,9 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/">
-          <a className="flex items-center space-x-2">
+          <span className="flex items-center space-x-2 cursor-pointer">
             <span className="text-xl font-bold">SJJS</span>
-          </a>
+          </span>
         </Link>
 
         <NavigationMenu>
@@ -32,7 +32,7 @@ export default function Header() {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
-            
+
             <NavigationMenuItem>
               <Link href="/admissions">
                 <NavigationMenuLink className="cursor-pointer">

@@ -12,6 +12,54 @@ const SessionStore = MemoryStore(session);
 
 const sessionSecret = process.env.SESSION_SECRET || 'your-secret-key-min-32-chars-long-here';
 
+// Initialize some sample events if none exist
+async function initializeSampleEvents() {
+  const events = await storage.getEvents();
+  if (events.length === 0) {
+    await storage.createEvent({
+      title_vi: "Lễ Khai Giảng Năm Học 2025-2026",
+      title_en: "Opening Ceremony Academic Year 2025-2026",
+      description_vi: "Buổi lễ khai giảng năm học mới với sự tham gia của toàn thể giảng viên và sinh viên.",
+      description_en: "Opening ceremony for the new academic year with participation from all faculty and students.",
+      startDate: new Date("2025-09-15T08:00:00"),
+      endDate: new Date("2025-09-15T11:00:00"),
+      location: "Hội trường chính / Main Hall",
+      capacity: 200,
+      registrationDeadline: new Date("2025-09-10T23:59:59"),
+      category: "academic",
+      status: "upcoming"
+    });
+
+    await storage.createEvent({
+      title_vi: "Tĩnh Tâm Mùa Vọng",
+      title_en: "Advent Retreat",
+      description_vi: "Chương trình tĩnh tâm chuẩn bị tâm hồn cho mùa Giáng Sinh.",
+      description_en: "Spiritual retreat program to prepare for the Christmas season.",
+      startDate: new Date("2025-12-01T09:00:00"),
+      endDate: new Date("2025-12-03T17:00:00"),
+      location: "Trung tâm Mục vụ / Pastoral Center",
+      capacity: 100,
+      registrationDeadline: new Date("2025-11-25T23:59:59"),
+      category: "spiritual",
+      status: "upcoming"
+    });
+
+    await storage.createEvent({
+      title_vi: "Hội Thảo: Thần Học Đương Đại",
+      title_en: "Symposium: Contemporary Theology",
+      description_vi: "Hội thảo chuyên đề về các xu hướng thần học hiện đại.",
+      description_en: "Symposium on modern theological trends and perspectives.",
+      startDate: new Date("2025-10-20T08:30:00"),
+      endDate: new Date("2025-10-21T16:30:00"),
+      location: "Phòng Hội thảo / Conference Room",
+      capacity: 150,
+      registrationDeadline: new Date("2025-10-15T23:59:59"),
+      category: "academic",
+      status: "upcoming"
+    });
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session setup with better security
   app.use(session({
@@ -31,6 +79,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Passport setup
   app.use(passport.initialize());
   app.use(passport.session());
+
+  await initializeSampleEvents(); //Added this line
 
   passport.use(new LocalStrategy(
     { usernameField: 'email' },

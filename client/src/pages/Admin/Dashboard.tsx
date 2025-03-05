@@ -13,8 +13,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import type { Page } from "@shared/schema"
 
 export default function AdminDashboard() {
@@ -103,104 +103,205 @@ export default function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="pages" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {language === 'vi' ? 'Tạo trang mới' : 'Create New Page'}
-              </CardTitle>
-              <CardDescription>
-                {language === 'vi' 
-                  ? 'Tạo trang mới với nội dung song ngữ'
-                  : 'Create a new bilingual page'
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCreatePage} className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="slug">Slug</Label>
-                    <Input id="slug" name="slug" required />
+          {selectedPage ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {language === 'vi' ? 'Chỉnh sửa trang' : 'Edit Page'}
+                </CardTitle>
+                <CardDescription>
+                  {selectedPage.slug}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleUpdatePage} className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="title_vi">
+                        {language === 'vi' ? 'Tiêu đề tiếng Việt' : 'Vietnamese Title'}
+                      </Label>
+                      <Input 
+                        id="title_vi" 
+                        name="title_vi" 
+                        defaultValue={selectedPage.title_vi}
+                        required 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="title_en">
+                        {language === 'vi' ? 'Tiêu đề tiếng Anh' : 'English Title'}
+                      </Label>
+                      <Input 
+                        id="title_en" 
+                        name="title_en" 
+                        defaultValue={selectedPage.title_en}
+                        required 
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="menu_order">
-                      {language === 'vi' ? 'Thứ tự menu' : 'Menu Order'}
-                    </Label>
-                    <Input 
-                      id="menu_order" 
-                      name="menu_order" 
-                      type="number" 
-                      required 
-                    />
-                  </div>
-                </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="title_vi">
-                      {language === 'vi' ? 'Tiêu đề tiếng Việt' : 'Vietnamese Title'}
-                    </Label>
-                    <Input id="title_vi" name="title_vi" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="title_en">
-                      {language === 'vi' ? 'Tiêu đề tiếng Anh' : 'English Title'}
-                    </Label>
-                    <Input id="title_en" name="title_en" required />
-                  </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="content_vi">
                       {language === 'vi' ? 'Nội dung tiếng Việt' : 'Vietnamese Content'}
                     </Label>
-                    <Textarea 
-                      id="content_vi" 
+                    <input 
+                      type="hidden" 
                       name="content_vi" 
-                      required
-                      className="min-h-[200px]"
+                      id="content_vi" 
+                      value={selectedPage.content_vi} 
+                    />
+                    <RichTextEditor
+                      content={selectedPage.content_vi}
+                      onChange={(html) => {
+                        const input = document.getElementById('content_vi') as HTMLInputElement
+                        if (input) input.value = html
+                      }}
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="content_en">
                       {language === 'vi' ? 'Nội dung tiếng Anh' : 'English Content'}
                     </Label>
-                    <Textarea 
-                      id="content_en" 
+                    <input 
+                      type="hidden" 
                       name="content_en" 
-                      required
-                      className="min-h-[200px]"
+                      id="content_en" 
+                      value={selectedPage.content_en} 
+                    />
+                    <RichTextEditor
+                      content={selectedPage.content_en}
+                      onChange={(html) => {
+                        const input = document.getElementById('content_en') as HTMLInputElement
+                        if (input) input.value = html
+                      }}
                     />
                   </div>
-                </div>
 
-                <Button type="submit" disabled={createPageMutation.isPending}>
-                  {language === 'vi' ? 'Tạo trang' : 'Create Page'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                  <div className="flex justify-between">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => setSelectedPage(null)}
+                    >
+                      {language === 'vi' ? 'Quay lại' : 'Back'}
+                    </Button>
+                    <Button type="submit" disabled={updatePageMutation.isPending}>
+                      {language === 'vi' ? 'Cập nhật trang' : 'Update Page'}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {language === 'vi' ? 'Tạo trang mới' : 'Create New Page'}
+                  </CardTitle>
+                  <CardDescription>
+                    {language === 'vi' 
+                      ? 'Tạo trang mới với nội dung song ngữ'
+                      : 'Create a new bilingual page'
+                    }
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleCreatePage} className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="slug">Slug</Label>
+                        <Input id="slug" name="slug" required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="menu_order">
+                          {language === 'vi' ? 'Thứ tự menu' : 'Menu Order'}
+                        </Label>
+                        <Input 
+                          id="menu_order" 
+                          name="menu_order" 
+                          type="number" 
+                          required 
+                        />
+                      </div>
+                    </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {language === 'vi' ? 'Danh sách trang' : 'Page List'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {pages?.map(page => (
-                  <Card key={page.id} className="cursor-pointer hover:bg-accent">
-                    <CardHeader>
-                      <CardTitle>{page.title_en}</CardTitle>
-                      <CardDescription>Slug: {page.slug}</CardDescription>
-                    </CardHeader>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="title_vi">
+                          {language === 'vi' ? 'Tiêu đề tiếng Việt' : 'Vietnamese Title'}
+                        </Label>
+                        <Input id="title_vi" name="title_vi" required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="title_en">
+                          {language === 'vi' ? 'Tiêu đề tiếng Anh' : 'English Title'}
+                        </Label>
+                        <Input id="title_en" name="title_en" required />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="content_vi">
+                        {language === 'vi' ? 'Nội dung tiếng Việt' : 'Vietnamese Content'}
+                      </Label>
+                      <input type="hidden" name="content_vi" id="content_vi" />
+                      <RichTextEditor
+                        content=""
+                        onChange={(html) => {
+                          const input = document.getElementById('content_vi') as HTMLInputElement
+                          if (input) input.value = html
+                        }}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="content_en">
+                        {language === 'vi' ? 'Nội dung tiếng Anh' : 'English Content'}
+                      </Label>
+                      <input type="hidden" name="content_en" id="content_en" />
+                      <RichTextEditor
+                        content=""
+                        onChange={(html) => {
+                          const input = document.getElementById('content_en') as HTMLInputElement
+                          if (input) input.value = html
+                        }}
+                      />
+                    </div>
+
+                    <Button type="submit" disabled={createPageMutation.isPending}>
+                      {language === 'vi' ? 'Tạo trang' : 'Create Page'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {language === 'vi' ? 'Danh sách trang' : 'Page List'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {pages?.map(page => (
+                      <Card 
+                        key={page.id} 
+                        className="cursor-pointer hover:bg-accent"
+                        onClick={() => setSelectedPage(page)}
+                      >
+                        <CardHeader>
+                          <CardTitle>{page.title_en}</CardTitle>
+                          <CardDescription>Slug: {page.slug}</CardDescription>
+                        </CardHeader>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </TabsContent>
       </Tabs>
     </div>

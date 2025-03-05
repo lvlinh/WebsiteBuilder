@@ -13,6 +13,8 @@ import Faculty from "@/pages/Faculty"
 import Articles from "@/pages/Articles"
 import Family from "@/pages/Family"
 import Resources from "@/pages/Resources"
+import StudentLogin from "@/pages/StudentPortal/Login"
+import StudentDashboard from "@/pages/StudentPortal/Dashboard"
 import NotFound from "@/pages/not-found"
 
 function Router() {
@@ -28,6 +30,8 @@ function Router() {
         <Route path="/articles" component={Articles} />
         <Route path="/family" component={Family} />
         <Route path="/resources" component={Resources} />
+        <Route path="/student/login" component={StudentLogin} />
+        <Route path="/student/dashboard" component={StudentDashboard} />
         <Route component={NotFound} />
       </Switch>
       <Footer />

@@ -71,7 +71,7 @@ export default function Articles() {
                   {content.categories[article.category as keyof typeof content.categories][language]}
                 </span>
                 <span>•</span>
-                <span>{format(new Date(article.publishedAt), 'PPP')}</span>
+                <span>{format(new Date(article.publishedAt!), 'PPP')}</span>
               </div>
             </CardHeader>
             <CardContent>

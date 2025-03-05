@@ -1,9 +1,72 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertArticleSchema, insertNewsSchema } from "@shared/schema";
+import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema } from "@shared/schema";
+import session from "express-session";
+import MemoryStore from "memorystore";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import bcrypt from "bcryptjs";
+
+const SessionStore = MemoryStore(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Session setup
+  app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    store: new SessionStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    })
+  }));
+
+  // Passport setup
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  passport.use(new LocalStrategy(
+    { usernameField: 'email' },
+    async (email, password, done) => {
+      try {
+        const student = await storage.getStudentByEmail(email);
+        if (!student) {
+          return done(null, false, { message: 'Invalid credentials' });
+        }
+
+        const isValid = await bcrypt.compare(password, student.password);
+        if (!isValid) {
+          return done(null, false, { message: 'Invalid credentials' });
+        }
+
+        return done(null, student);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  ));
+
+  passport.serializeUser((user: any, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(async (id: number, done) => {
+    try {
+      const student = await storage.getStudent(id);
+      done(null, student);
+    } catch (error) {
+      done(error);
+    }
+  });
+
+  // Authentication middleware
+  const isAuthenticated = (req: any, res: any, next: any) => {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.status(401).json({ message: 'Unauthorized' });
+  };
+
   // Articles routes
   app.get("/api/articles", async (_req, res) => {
     const articles = await storage.getArticles();
@@ -88,6 +151,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "News item not found" });
     }
     res.status(204).end();
+  });
+
+  // Student Portal Routes
+  app.post("/api/auth/login", passport.authenticate('local'), (req, res) => {
+    res.json(req.user);
+  });
+
+  app.post("/api/auth/logout", (req: any, res) => {
+    req.logout(() => {
+      res.status(200).json({ message: 'Logged out successfully' });
+    });
+  });
+
+  app.post("/api/students/register", async (req, res) => {
+    const parseResult = insertStudentSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ message: "Invalid student data" });
+    }
+
+    const hashedPassword = await bcrypt.hash(parseResult.data.password, 10);
+    const student = await storage.createStudent({
+      ...parseResult.data,
+      password: hashedPassword
+    });
+
+    // Remove password from response
+    const { password, ...safeStudent } = student;
+    res.status(201).json(safeStudent);
+  });
+
+  app.get("/api/students/me", isAuthenticated, async (req: any, res) => {
+    const student = await storage.getStudent(req.user.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    const { password, ...safeStudent } = student;
+    res.json(safeStudent);
+  });
+
+  app.get("/api/students/me/courses", isAuthenticated, async (req: any, res) => {
+    const enrollments = await storage.getEnrollments(req.user.id);
+    const courses = await Promise.all(
+      enrollments.map(async (enrollment) => {
+        const course = await storage.getCourse(enrollment.courseId);
+        return {
+          ...course,
+          enrollment: {
+            enrolledAt: enrollment.enrolledAt,
+            status: enrollment.status,
+            grade: enrollment.grade
+          }
+        };
+      })
+    );
+    res.json(courses);
+  });
+
+  app.post("/api/courses", async (req, res) => {
+    const parseResult = insertCourseSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ message: "Invalid course data" });
+    }
+    const course = await storage.createCourse(parseResult.data);
+    res.status(201).json(course);
+  });
+
+  app.post("/api/enrollments", isAuthenticated, async (req: any, res) => {
+    const parseResult = insertEnrollmentSchema.safeParse({
+      ...req.body,
+      studentId: req.user.id
+    });
+    if (!parseResult.success) {
+      return res.status(400).json({ message: "Invalid enrollment data" });
+    }
+    const enrollment = await storage.createEnrollment(parseResult.data);
+    res.status(201).json(enrollment);
   });
 
   const httpServer = createServer(app);

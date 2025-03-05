@@ -41,6 +41,10 @@ export const translations = {
     resources: {
       vi: 'Tiện ích',
       en: 'Resources'
+    },
+    studentPortal: {
+      vi: 'Cổng thông tin sinh viên',
+      en: 'Student Portal'
     }
   },
   home: {

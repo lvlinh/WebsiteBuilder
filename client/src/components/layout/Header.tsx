@@ -8,6 +8,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
+import { Button } from "@/components/ui/button"
 import LocaleToggle from "./LocaleToggle"
 
 export default function Header() {
@@ -83,7 +84,14 @@ export default function Header() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <LocaleToggle />
+        <div className="flex items-center gap-4">
+          <Link href="/student/login">
+            <Button variant="outline" size="sm">
+              {t.studentPortal[language]}
+            </Button>
+          </Link>
+          <LocaleToggle />
+        </div>
       </div>
     </header>
   )

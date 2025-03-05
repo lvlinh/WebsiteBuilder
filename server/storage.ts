@@ -1,4 +1,6 @@
-import { articles, news, students, courses, enrollments, events, eventRegistrations,
+import { admins, pages, articles, news, students, courses, enrollments, events, eventRegistrations,
+  type Admin, type InsertAdmin,
+  type Page, type InsertPage,
   type Article, type InsertArticle, 
   type News, type InsertNews,
   type Student, type InsertStudent,
@@ -9,6 +11,21 @@ import { articles, news, students, courses, enrollments, events, eventRegistrati
 } from "@shared/schema";
 
 export interface IStorage {
+  // Admin methods
+  getAdmins(): Promise<Admin[]>;
+  getAdmin(id: number): Promise<Admin | undefined>;
+  getAdminByEmail(email: string): Promise<Admin | undefined>;
+  createAdmin(admin: InsertAdmin): Promise<Admin>;
+  updateAdmin(id: number, admin: Partial<InsertAdmin>): Promise<Admin | undefined>;
+
+  // Page methods
+  getPages(): Promise<Page[]>;
+  getPage(id: number): Promise<Page | undefined>;
+  getPageBySlug(slug: string): Promise<Page | undefined>;
+  createPage(page: InsertPage): Promise<Page>;
+  updatePage(id: number, page: Partial<InsertPage>): Promise<Page | undefined>;
+  deletePage(id: number): Promise<boolean>;
+
   // Articles
   getArticles(): Promise<Article[]>;
   getArticle(id: number): Promise<Article | undefined>;
@@ -57,6 +74,8 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private admins: Map<number, Admin>;
+  private pages: Map<number, Page>;
   private articles: Map<number, Article>;
   private news: Map<number, News>;
   private students: Map<number, Student>;
@@ -64,6 +83,8 @@ export class MemStorage implements IStorage {
   private enrollments: Map<number, Enrollment>;
   private events: Map<number, Event>;
   private eventRegistrations: Map<number, EventRegistration>;
+  private adminId: number;
+  private pageId: number;
   private articleId: number;
   private newsId: number;
   private studentId: number;
@@ -73,6 +94,8 @@ export class MemStorage implements IStorage {
   private eventRegistrationId: number;
 
   constructor() {
+    this.admins = new Map();
+    this.pages = new Map();
     this.articles = new Map();
     this.news = new Map();
     this.students = new Map();
@@ -80,6 +103,8 @@ export class MemStorage implements IStorage {
     this.enrollments = new Map();
     this.events = new Map();
     this.eventRegistrations = new Map();
+    this.adminId = 1;
+    this.pageId = 1;
     this.articleId = 1;
     this.newsId = 1;
     this.studentId = 1;
@@ -89,6 +114,80 @@ export class MemStorage implements IStorage {
     this.eventRegistrationId = 1;
   }
 
+  // Admin methods
+  async getAdmins(): Promise<Admin[]> {
+    return Array.from(this.admins.values());
+  }
+
+  async getAdmin(id: number): Promise<Admin | undefined> {
+    return this.admins.get(id);
+  }
+
+  async getAdminByEmail(email: string): Promise<Admin | undefined> {
+    return Array.from(this.admins.values()).find(admin => admin.email === email);
+  }
+
+  async createAdmin(admin: InsertAdmin): Promise<Admin> {
+    const id = this.adminId++;
+    const newAdmin = {
+      ...admin,
+      id,
+      createdAt: new Date()
+    };
+    this.admins.set(id, newAdmin);
+    return newAdmin;
+  }
+
+  async updateAdmin(id: number, admin: Partial<InsertAdmin>): Promise<Admin | undefined> {
+    const existing = this.admins.get(id);
+    if (!existing) return undefined;
+
+    const updated = { ...existing, ...admin };
+    this.admins.set(id, updated);
+    return updated;
+  }
+
+  // Page methods
+  async getPages(): Promise<Page[]> {
+    return Array.from(this.pages.values());
+  }
+
+  async getPage(id: number): Promise<Page | undefined> {
+    return this.pages.get(id);
+  }
+
+  async getPageBySlug(slug: string): Promise<Page | undefined> {
+    return Array.from(this.pages.values()).find(page => page.slug === slug);
+  }
+
+  async createPage(page: InsertPage): Promise<Page> {
+    const id = this.pageId++;
+    const newPage = {
+      ...page,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.pages.set(id, newPage);
+    return newPage;
+  }
+
+  async updatePage(id: number, page: Partial<InsertPage>): Promise<Page | undefined> {
+    const existing = this.pages.get(id);
+    if (!existing) return undefined;
+
+    const updated = { 
+      ...existing, 
+      ...page,
+      updatedAt: new Date()
+    };
+    this.pages.set(id, updated);
+    return updated;
+  }
+
+  async deletePage(id: number): Promise<boolean> {
+    return this.pages.delete(id);
+  }
   // Articles methods
   async getArticles(): Promise<Article[]> {
     return Array.from(this.articles.values());

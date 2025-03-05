@@ -2,6 +2,30 @@ import { pgTable, text, serial, json, timestamp, boolean } from "drizzle-orm/pg-
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Admin users table
+export const admins = pgTable("admins", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  name: text("name").notNull(),
+  role: text("role").notNull().default("admin"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Dynamic pages table
+export const pages = pgTable("pages", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(), 
+  title_vi: text("title_vi").notNull(),
+  title_en: text("title_en").notNull(),
+  content_vi: text("content_vi").notNull(),
+  content_en: text("content_en").notNull(),
+  menu_order: serial("menu_order").notNull(),
+  published: boolean("published").default(true),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Existing tables remain unchanged
 export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
@@ -23,7 +47,6 @@ export const news = pgTable("news", {
   publishedAt: timestamp("published_at").defaultNow(),
 });
 
-// Student portal tables remain unchanged
 export const students = pgTable("students", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
@@ -54,7 +77,6 @@ export const enrollments = pgTable("enrollments", {
   grade: text("grade"),
 });
 
-// New tables for event registration system
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
   title_vi: text("title_vi").notNull(),
@@ -66,8 +88,8 @@ export const events = pgTable("events", {
   location: text("location").notNull(),
   capacity: serial("capacity").notNull(),
   registrationDeadline: timestamp("registration_deadline").notNull(),
-  category: text("category").notNull(), // e.g., 'academic', 'spiritual', 'social'
-  status: text("status").notNull().default("upcoming"), // upcoming, ongoing, completed, cancelled
+  category: text("category").notNull(), 
+  status: text("status").notNull().default("upcoming"), 
 });
 
 export const eventRegistrations = pgTable("event_registrations", {
@@ -75,11 +97,10 @@ export const eventRegistrations = pgTable("event_registrations", {
   eventId: serial("event_id").references(() => events.id),
   studentId: serial("student_id").references(() => students.id),
   registeredAt: timestamp("registered_at").defaultNow(),
-  status: text("status").notNull().default("registered"), // registered, attended, cancelled
+  status: text("status").notNull().default("registered"), 
   notes: text("notes"),
 });
 
-// Existing schemas remain unchanged
 export const insertArticleSchema = createInsertSchema(articles).omit({ 
   id: true,
   publishedAt: true 
@@ -104,7 +125,6 @@ export const insertEnrollmentSchema = createInsertSchema(enrollments).omit({
   enrolledAt: true
 });
 
-// New schemas for event system
 export const insertEventSchema = createInsertSchema(events).omit({
   id: true
 });
@@ -114,7 +134,17 @@ export const insertEventRegistrationSchema = createInsertSchema(eventRegistratio
   registeredAt: true
 });
 
-// Existing types remain unchanged
+export const insertAdminSchema = createInsertSchema(admins).omit({ 
+  id: true,
+  createdAt: true
+});
+
+export const insertPageSchema = createInsertSchema(pages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 export type Article = typeof articles.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 
@@ -130,9 +160,14 @@ export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Enrollment = typeof enrollments.$inferSelect;
 export type InsertEnrollment = z.infer<typeof insertEnrollmentSchema>;
 
-// New types for event system
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 
 export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
+
+export type Admin = typeof admins.$inferSelect;
+export type InsertAdmin = z.infer<typeof insertAdminSchema>;
+
+export type Page = typeof pages.$inferSelect;
+export type InsertPage = z.infer<typeof insertPageSchema>;

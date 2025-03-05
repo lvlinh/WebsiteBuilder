@@ -18,6 +18,8 @@ import StudentRegister from "@/pages/StudentPortal/Register"
 import StudentDashboard from "@/pages/StudentPortal/Dashboard"
 import Events from "@/pages/Events"
 import Search from "@/pages/Search"
+import AdminLogin from "@/pages/Admin/Login"
+import AdminDashboard from "@/pages/Admin/Dashboard" //New import
 import NotFound from "@/pages/not-found"
 
 function Router() {
@@ -38,6 +40,8 @@ function Router() {
         <Route path="/student/dashboard" component={StudentDashboard} />
         <Route path="/events" component={Events} />
         <Route path="/search" component={Search} />
+        <Route path="/admin/login" component={AdminLogin} />
+        <Route path="/admin/dashboard" component={AdminDashboard} /> //New Route
         <Route component={NotFound} />
       </Switch>
       <Footer />

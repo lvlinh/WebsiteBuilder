@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema } from "@shared/schema";
+import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema, insertPageSchema } from "@shared/schema";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import passport from "passport";
@@ -60,6 +60,20 @@ async function initializeSampleEvents() {
   }
 }
 
+async function initializeAdminUser() {
+  const admins = await storage.getAdmins();
+  if (admins.length === 0) {
+    // Create default admin user
+    const hashedPassword = await bcrypt.hash("admin123", 10);
+    await storage.createAdmin({
+      email: "admin@sjjs.edu.vn",
+      password: hashedPassword,
+      name: "Admin",
+      role: "admin"
+    });
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session setup with better security
   app.use(session({
@@ -81,6 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(passport.session());
 
   await initializeSampleEvents();
+  await initializeAdminUser();
 
   passport.use(new LocalStrategy(
     { usernameField: 'email' },
@@ -455,7 +470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!type || type === 'article') {
         const articles = await storage.getArticles();
         const filteredArticles = articles.filter(article => {
-          const matchesQuery = !query || 
+          const matchesQuery = !query ||
             article.title_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
             article.title_en.toLowerCase().includes(query.toString().toLowerCase()) ||
             article.content_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
@@ -525,6 +540,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Search error:', error);
       res.status(500).json({ message: "Search failed" });
     }
+  });
+
+
+  // Add these routes after the existing routes
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const admin = await storage.getAdminByEmail(email);
+
+      if (!admin) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const isValid = await bcrypt.compare(password, admin.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Set admin session
+      req.session.adminId = admin.id;
+
+      // Remove password from response
+      const { password: _, ...safeAdmin } = admin;
+      res.json(safeAdmin);
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.post("/api/admin/logout", (req, res) => {
+    req.session.adminId = undefined;
+    res.status(200).json({ message: "Logged out successfully" });
+  });
+
+  // Admin middleware
+  const isAdmin = async (req: any, res: any, next: any) => {
+    const adminId = req.session.adminId;
+    if (!adminId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const admin = await storage.getAdmin(adminId);
+    if (!admin) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    req.admin = admin;
+    next();
+  };
+
+  // Pages API
+  app.get("/api/pages", async (_req, res) => {
+    const pages = await storage.getPages();
+    res.json(pages);
+  });
+
+  app.get("/api/pages/:slug", async (req, res) => {
+    const page = await storage.getPageBySlug(req.params.slug);
+    if (!page) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+    res.json(page);
+  });
+
+  // Admin protected routes
+  app.post("/api/admin/pages", isAdmin, async (req, res) => {
+    const parseResult = insertPageSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        message: "Invalid page data",
+        errors: parseResult.error.errors
+      });
+    }
+    const page = await storage.createPage(parseResult.data);
+    res.status(201).json(page);
+  });
+
+  app.patch("/api/admin/pages/:id", isAdmin, async (req, res) => {
+    const parseResult = insertPageSchema.partial().safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ message: "Invalid page data" });
+    }
+    const page = await storage.updatePage(Number(req.params.id), parseResult.data);
+    if (!page) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+    res.json(page);
+  });
+
+  app.delete("/api/admin/pages/:id", isAdmin, async (req, res) => {
+    const success = await storage.deletePage(Number(req.params.id));
+    if (!success) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+    res.status(204).end();
   });
 
   const httpServer = createServer(app);

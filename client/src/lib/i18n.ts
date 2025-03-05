@@ -45,6 +45,10 @@ export const translations = {
     studentPortal: {
       vi: 'Cổng thông tin sinh viên',
       en: 'Student Portal'
+    },
+    events: {
+      vi: 'Sự kiện',
+      en: 'Events'
     }
   },
   home: {

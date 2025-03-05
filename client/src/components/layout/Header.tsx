@@ -67,6 +67,14 @@ export default function Header() {
             </NavigationMenuItem>
 
             <NavigationMenuItem>
+              <Link href="/events">
+                <NavigationMenuLink className="cursor-pointer">
+                  {t.events[language]}
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
               <Link href="/family">
                 <NavigationMenuLink className="cursor-pointer">
                   {t.family[language]}

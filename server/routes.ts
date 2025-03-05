@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema } from "@shared/schema";
+import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema } from "@shared/schema";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import passport from "passport";
@@ -192,9 +192,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parseResult = insertStudentSchema.safeParse(req.body);
       if (!parseResult.success) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Invalid student data",
-          errors: parseResult.error.errors 
+          errors: parseResult.error.errors
         });
       }
 
@@ -265,6 +265,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     const enrollment = await storage.createEnrollment(parseResult.data);
     res.status(201).json(enrollment);
+  });
+
+  // Event routes
+  app.get("/api/events", async (_req, res) => {
+    const events = await storage.getEvents();
+    res.json(events);
+  });
+
+  app.get("/api/events/upcoming", async (_req, res) => {
+    const events = await storage.getUpcomingEvents();
+    res.json(events);
+  });
+
+  app.get("/api/events/:id", async (req, res) => {
+    const event = await storage.getEvent(Number(req.params.id));
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    res.json(event);
+  });
+
+  app.post("/api/events", async (req, res) => {
+    const parseResult = insertEventSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        message: "Invalid event data",
+        errors: parseResult.error.errors
+      });
+    }
+    const event = await storage.createEvent(parseResult.data);
+    res.status(201).json(event);
+  });
+
+  app.patch("/api/events/:id", async (req, res) => {
+    const parseResult = insertEventSchema.partial().safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ message: "Invalid event data" });
+    }
+    const event = await storage.updateEvent(Number(req.params.id), parseResult.data);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    res.json(event);
+  });
+
+  // Event Registration routes
+  app.get("/api/events/:id/registrations", async (req, res) => {
+    const registrations = await storage.getEventRegistrations(Number(req.params.id));
+    res.json(registrations);
+  });
+
+  app.get("/api/events/:id/registration-status", isAuthenticated, async (req: any, res) => {
+    const registration = await storage.getEventRegistrationStatus(
+      Number(req.params.id),
+      req.user.id
+    );
+    res.json({ registered: !!registration, registration });
+  });
+
+  app.get("/api/students/me/event-registrations", isAuthenticated, async (req: any, res) => {
+    const registrations = await storage.getStudentEventRegistrations(req.user.id);
+    const eventsWithDetails = await Promise.all(
+      registrations.map(async (registration) => {
+        const event = await storage.getEvent(registration.eventId);
+        return {
+          ...registration,
+          event
+        };
+      })
+    );
+    res.json(eventsWithDetails);
+  });
+
+  app.post("/api/events/:id/register", isAuthenticated, async (req: any, res) => {
+    const eventId = Number(req.params.id);
+
+    // Check if event exists and registration is still open
+    const event = await storage.getEvent(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (new Date(event.registrationDeadline) < new Date()) {
+      return res.status(400).json({ message: "Registration deadline has passed" });
+    }
+
+    // Check if user is already registered
+    const existingRegistration = await storage.getEventRegistrationStatus(eventId, req.user.id);
+    if (existingRegistration) {
+      return res.status(400).json({ message: "Already registered for this event" });
+    }
+
+    // Check if event is at capacity
+    const registrations = await storage.getEventRegistrations(eventId);
+    if (registrations.length >= event.capacity) {
+      return res.status(400).json({ message: "Event is at full capacity" });
+    }
+
+    const parseResult = insertEventRegistrationSchema.safeParse({
+      eventId,
+      studentId: req.user.id,
+      status: "registered",
+      notes: req.body.notes
+    });
+
+    if (!parseResult.success) {
+      return res.status(400).json({ message: "Invalid registration data" });
+    }
+
+    const registration = await storage.createEventRegistration(parseResult.data);
+    res.status(201).json(registration);
+  });
+
+  app.patch("/api/events/:eventId/registrations/:id", async (req, res) => {
+    const parseResult = insertEventRegistrationSchema.partial().safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ message: "Invalid registration data" });
+    }
+
+    const registration = await storage.updateEventRegistration(
+      Number(req.params.id),
+      parseResult.data
+    );
+
+    if (!registration) {
+      return res.status(404).json({ message: "Registration not found" });
+    }
+
+    res.json(registration);
   });
 
   const httpServer = createServer(app);

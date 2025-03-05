@@ -2,7 +2,7 @@ import { pgTable, text, serial, json, timestamp, boolean } from "drizzle-orm/pg-
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Existing tables
+// Existing tables remain unchanged
 export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
   title_vi: text("title_vi").notNull(),
@@ -23,7 +23,7 @@ export const news = pgTable("news", {
   publishedAt: timestamp("published_at").defaultNow(),
 });
 
-// New tables for student portal
+// Student portal tables remain unchanged
 export const students = pgTable("students", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
@@ -54,7 +54,32 @@ export const enrollments = pgTable("enrollments", {
   grade: text("grade"),
 });
 
-// Existing schemas
+// New tables for event registration system
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  title_vi: text("title_vi").notNull(),
+  title_en: text("title_en").notNull(),
+  description_vi: text("description_vi").notNull(),
+  description_en: text("description_en").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  location: text("location").notNull(),
+  capacity: serial("capacity").notNull(),
+  registrationDeadline: timestamp("registration_deadline").notNull(),
+  category: text("category").notNull(), // e.g., 'academic', 'spiritual', 'social'
+  status: text("status").notNull().default("upcoming"), // upcoming, ongoing, completed, cancelled
+});
+
+export const eventRegistrations = pgTable("event_registrations", {
+  id: serial("id").primaryKey(),
+  eventId: serial("event_id").references(() => events.id),
+  studentId: serial("student_id").references(() => students.id),
+  registeredAt: timestamp("registered_at").defaultNow(),
+  status: text("status").notNull().default("registered"), // registered, attended, cancelled
+  notes: text("notes"),
+});
+
+// Existing schemas remain unchanged
 export const insertArticleSchema = createInsertSchema(articles).omit({ 
   id: true,
   publishedAt: true 
@@ -65,7 +90,6 @@ export const insertNewsSchema = createInsertSchema(news).omit({
   publishedAt: true
 });
 
-// New schemas for student portal
 export const insertStudentSchema = createInsertSchema(students).omit({
   id: true,
   enrollmentDate: true
@@ -80,7 +104,17 @@ export const insertEnrollmentSchema = createInsertSchema(enrollments).omit({
   enrolledAt: true
 });
 
-// Types
+// New schemas for event system
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true
+});
+
+export const insertEventRegistrationSchema = createInsertSchema(eventRegistrations).omit({
+  id: true,
+  registeredAt: true
+});
+
+// Existing types remain unchanged
 export type Article = typeof articles.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 
@@ -95,3 +129,10 @@ export type InsertCourse = z.infer<typeof insertCourseSchema>;
 
 export type Enrollment = typeof enrollments.$inferSelect;
 export type InsertEnrollment = z.infer<typeof insertEnrollmentSchema>;
+
+// New types for event system
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+
+export type EventRegistration = typeof eventRegistrations.$inferSelect;
+export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;

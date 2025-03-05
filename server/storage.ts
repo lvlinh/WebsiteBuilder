@@ -1,9 +1,11 @@
-import { articles, news, students, courses, enrollments, 
+import { articles, news, students, courses, enrollments, events, eventRegistrations,
   type Article, type InsertArticle, 
   type News, type InsertNews,
   type Student, type InsertStudent,
   type Course, type InsertCourse,
-  type Enrollment, type InsertEnrollment
+  type Enrollment, type InsertEnrollment,
+  type Event, type InsertEvent,
+  type EventRegistration, type InsertEventRegistration
 } from "@shared/schema";
 
 export interface IStorage {
@@ -38,6 +40,20 @@ export interface IStorage {
   getEnrollments(studentId: number): Promise<Enrollment[]>;
   createEnrollment(enrollment: InsertEnrollment): Promise<Enrollment>;
   updateEnrollment(id: number, enrollment: Partial<InsertEnrollment>): Promise<Enrollment | undefined>;
+
+  // Events
+  getEvents(): Promise<Event[]>;
+  getEvent(id: number): Promise<Event | undefined>;
+  createEvent(event: InsertEvent): Promise<Event>;
+  updateEvent(id: number, event: Partial<InsertEvent>): Promise<Event | undefined>;
+  getUpcomingEvents(): Promise<Event[]>;
+
+  // Event Registrations
+  getEventRegistrations(eventId: number): Promise<EventRegistration[]>;
+  getStudentEventRegistrations(studentId: number): Promise<EventRegistration[]>;
+  createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration>;
+  updateEventRegistration(id: number, registration: Partial<InsertEventRegistration>): Promise<EventRegistration | undefined>;
+  getEventRegistrationStatus(eventId: number, studentId: number): Promise<EventRegistration | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -46,11 +62,15 @@ export class MemStorage implements IStorage {
   private students: Map<number, Student>;
   private courses: Map<number, Course>;
   private enrollments: Map<number, Enrollment>;
+  private events: Map<number, Event>;
+  private eventRegistrations: Map<number, EventRegistration>;
   private articleId: number;
   private newsId: number;
   private studentId: number;
   private courseId: number;
   private enrollmentId: number;
+  private eventId: number;
+  private eventRegistrationId: number;
 
   constructor() {
     this.articles = new Map();
@@ -58,11 +78,15 @@ export class MemStorage implements IStorage {
     this.students = new Map();
     this.courses = new Map();
     this.enrollments = new Map();
+    this.events = new Map();
+    this.eventRegistrations = new Map();
     this.articleId = 1;
     this.newsId = 1;
     this.studentId = 1;
     this.courseId = 1;
     this.enrollmentId = 1;
+    this.eventId = 1;
+    this.eventRegistrationId = 1;
   }
 
   // Articles methods
@@ -219,6 +243,82 @@ export class MemStorage implements IStorage {
     const updated = { ...existing, ...enrollment };
     this.enrollments.set(id, updated);
     return updated;
+  }
+
+  // Events
+  async getEvents(): Promise<Event[]> {
+    return Array.from(this.events.values());
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    return this.events.get(id);
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const id = this.eventId++;
+    const newEvent = {
+      ...event,
+      id
+    };
+    this.events.set(id, newEvent);
+    return newEvent;
+  }
+
+  async updateEvent(id: number, event: Partial<InsertEvent>): Promise<Event | undefined> {
+    const existing = this.events.get(id);
+    if (!existing) return undefined;
+
+    const updated = { ...existing, ...event };
+    this.events.set(id, updated);
+    return updated;
+  }
+
+  async getUpcomingEvents(): Promise<Event[]> {
+    const now = new Date();
+    return Array.from(this.events.values()).filter(event => 
+      new Date(event.startDate) > now && 
+      event.status === "upcoming"
+    );
+  }
+
+  // Event Registrations
+  async getEventRegistrations(eventId: number): Promise<EventRegistration[]> {
+    return Array.from(this.eventRegistrations.values())
+      .filter(registration => registration.eventId === eventId);
+  }
+
+  async getStudentEventRegistrations(studentId: number): Promise<EventRegistration[]> {
+    return Array.from(this.eventRegistrations.values())
+      .filter(registration => registration.studentId === studentId);
+  }
+
+  async createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration> {
+    const id = this.eventRegistrationId++;
+    const newRegistration = {
+      ...registration,
+      id,
+      registeredAt: new Date(),
+      status: registration.status || "registered"
+    };
+    this.eventRegistrations.set(id, newRegistration);
+    return newRegistration;
+  }
+
+  async updateEventRegistration(id: number, registration: Partial<InsertEventRegistration>): Promise<EventRegistration | undefined> {
+    const existing = this.eventRegistrations.get(id);
+    if (!existing) return undefined;
+
+    const updated = { ...existing, ...registration };
+    this.eventRegistrations.set(id, updated);
+    return updated;
+  }
+
+  async getEventRegistrationStatus(eventId: number, studentId: number): Promise<EventRegistration | undefined> {
+    return Array.from(this.eventRegistrations.values())
+      .find(registration => 
+        registration.eventId === eventId && 
+        registration.studentId === studentId
+      );
   }
 }
 

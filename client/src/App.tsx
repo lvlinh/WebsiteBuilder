@@ -14,9 +14,10 @@ import Articles from "@/pages/Articles"
 import Family from "@/pages/Family"
 import Resources from "@/pages/Resources"
 import StudentLogin from "@/pages/StudentPortal/Login"
-import StudentRegister from "@/pages/StudentPortal/Register" // Added import
+import StudentRegister from "@/pages/StudentPortal/Register"
 import StudentDashboard from "@/pages/StudentPortal/Dashboard"
 import NotFound from "@/pages/not-found"
+import Events from "@/pages/Events" // Added import
 
 function Router() {
   return (
@@ -32,8 +33,9 @@ function Router() {
         <Route path="/family" component={Family} />
         <Route path="/resources" component={Resources} />
         <Route path="/student/login" component={StudentLogin} />
-        <Route path="/student/register" component={StudentRegister} /> {/* Added route */}
+        <Route path="/student/register" component={StudentRegister} />
         <Route path="/student/dashboard" component={StudentDashboard} />
+        <Route path="/events" component={Events} /> {/* Added route */}
         <Route component={NotFound} />
       </Switch>
       <Footer />

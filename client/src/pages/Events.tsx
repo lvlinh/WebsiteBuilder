@@ -22,8 +22,16 @@ export default function Events() {
   })
 
   const registerMutation = useMutation({
-    mutationFn: (eventId: number) =>
-      apiRequest("POST", `/api/events/${eventId}/register`),
+    mutationFn: async (eventId: number) => {
+      try {
+        await apiRequest("POST", `/api/events/${eventId}/register`)
+      } catch (error: any) {
+        if (error.status === 401) {
+          throw new Error('Unauthorized')
+        }
+        throw error
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/students/me/event-registrations'] })
       toast({

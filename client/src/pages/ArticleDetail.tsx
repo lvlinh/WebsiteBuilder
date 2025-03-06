@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useParams } from "wouter"
 import { useI18n } from "@/lib/i18n"
 import { format, parseISO, isValid } from "date-fns"
-import type { Article } from "@shared/schema"
+import type { Article, ArticleCategory } from "@shared/schema"
 
 export default function ArticleDetail() {
   const { language } = useI18n()
@@ -11,6 +11,11 @@ export default function ArticleDetail() {
   const { data: article, isLoading } = useQuery<Article>({
     queryKey: ['/api/articles', slug],
     enabled: !!slug
+  })
+
+  // Fetch article categories
+  const { data: categories } = useQuery<ArticleCategory[]>({
+    queryKey: ['/api/article-categories']
   })
 
   if (isLoading) {
@@ -44,6 +49,9 @@ export default function ArticleDetail() {
   const publishDate = article.publishedAt ? parseISO(article.publishedAt.toString()) : null
   const formattedDate = publishDate && isValid(publishDate) ? format(publishDate, 'PPP') : ''
 
+  // Find the category details
+  const category = categories?.find(cat => cat.slug === article.category)
+
   return (
     <main className="container py-12">
       <article className="prose prose-lg dark:prose-invert mx-auto">
@@ -64,9 +72,11 @@ export default function ArticleDetail() {
               <span>•</span>
             </>
           )}
-          <span className="capitalize">
-            {article.category.replace('_', ' ')}
-          </span>
+          {category && (
+            <span className="capitalize">
+              {language === 'vi' ? category.title_vi : category.title_en}
+            </span>
+          )}
         </div>
 
         {article.thumbnail && (

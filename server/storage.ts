@@ -41,6 +41,7 @@ export interface IStorage {
   createArticle(article: InsertArticle): Promise<Article>;
   updateArticle(id: number, article: Partial<InsertArticle>): Promise<Article | undefined>;
   deleteArticle(id: number): Promise<boolean>;
+  getArticleBySlug(slug: string): Promise<Article | undefined>;
 
   // News
   getNews(): Promise<News[]>;
@@ -286,6 +287,10 @@ export class MemStorage implements IStorage {
 
   async deleteArticle(id: number): Promise<boolean> {
     return this.articles.delete(id);
+  }
+
+  async getArticleBySlug(slug: string): Promise<Article | undefined> {
+    return Array.from(this.articles.values()).find(article => article.slug === slug);
   }
 
   // News methods

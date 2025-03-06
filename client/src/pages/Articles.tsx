@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Link } from "wouter"
-import type { Article } from "@shared/schema"
+import type { Article, ArticleCategory } from "@shared/schema"
 import { format } from "date-fns"
 
 const ARTICLES_PER_PAGE = 6
@@ -13,38 +13,18 @@ const ARTICLES_PER_PAGE = 6
 export default function Articles() {
   const { language } = useI18n()
   const [page, setPage] = useState(1)
-  const { data: articles, isLoading } = useQuery<Article[]>({
+
+  // Fetch articles
+  const { data: articles, isLoading: articlesLoading } = useQuery<Article[]>({
     queryKey: ['/api/articles']
   })
 
-  const categories = {
-    news: {
-      vi: 'Tin tức',
-      en: 'News'
-    },
-    announcement: {
-      vi: 'Thông báo',
-      en: 'Announcements'
-    },
-    internal: {
-      vi: 'Tin nội bộ',
-      en: 'Internal News'
-    },
-    catholic: {
-      vi: 'Tin công giáo',
-      en: 'Catholic News'
-    },
-    admission: {
-      vi: 'Tin tuyển sinh',
-      en: 'Admission News'
-    },
-    academic: {
-      vi: 'Tin học viện',
-      en: 'Academic News'
-    }
-  }
+  // Fetch dynamic categories
+  const { data: categories, isLoading: categoriesLoading } = useQuery<ArticleCategory[]>({
+    queryKey: ['/api/article-categories']
+  })
 
-  if (isLoading) {
+  if (articlesLoading || categoriesLoading) {
     return (
       <div className="space-y-8">
         <h1 className="text-4xl font-bold">
@@ -71,13 +51,13 @@ export default function Articles() {
     )
   }
 
-  const articlesByCategory = articles?.reduce((acc, article) => {
-    if (!acc[article.category]) {
-      acc[article.category] = [];
-    }
-    acc[article.category].push(article);
-    return acc;
-  }, {} as Record<string, Article[]>) || {};
+  // Group articles by category slug
+  const articlesByCategory = (categories || []).reduce((acc, cat) => {
+    acc[cat.slug] = (articles || []).filter(
+      article => article.category === cat.slug
+    )
+    return acc
+  }, {} as Record<string, Article[]>)
 
   // Sort articles by date within each category
   Object.values(articlesByCategory).forEach(categoryArticles => {
@@ -104,27 +84,27 @@ export default function Articles() {
         {language === 'vi' ? 'Bài viết' : 'Articles'}
       </h1>
 
-      <Tabs defaultValue="news" className="space-y-8">
+      <Tabs defaultValue={categories?.[0]?.slug} className="space-y-8">
         <TabsList className="bg-background border w-full flex-wrap h-auto p-1">
-          {Object.entries(categories).map(([key, labels]) => (
+          {categories?.map(category => (
             <TabsTrigger 
-              key={key} 
-              value={key}
+              key={category.slug} 
+              value={category.slug}
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               onClick={() => setPage(1)} // Reset page when changing category
             >
-              {labels[language]}
+              {language === 'vi' ? category.title_vi : category.title_en}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {Object.entries(categories).map(([category, labels]) => {
-          const categoryArticles = articlesByCategory[category] || [];
+        {categories?.map(category => {
+          const categoryArticles = articlesByCategory[category.slug] || [];
           const totalPages = getTotalPages(categoryArticles);
           const displayedArticles = getPaginatedArticles(categoryArticles);
 
           return (
-            <TabsContent key={category} value={category}>
+            <TabsContent key={category.slug} value={category.slug}>
               <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {displayedArticles.map((article) => (
                   <Link key={article.id} href={`/articles/${article.slug}`}>

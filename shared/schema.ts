@@ -68,14 +68,25 @@ export const articles = pgTable("articles", {
   excerpt_en: text("excerpt_en").notNull(),
   content_vi: text("content_vi").notNull(),
   content_en: text("content_en").notNull(),
-  thumbnail: text("thumbnail"),
-  category: text("category").notNull(), // Changed from enum to text
+  thumbnail: text("thumbnail").default(null),
+  category: text("category").notNull(),
   featured: boolean("featured").default(false),
   published: boolean("published").default(true),
   publishedAt: timestamp("published_at").defaultNow(),
-  author: text("author"),
+  author: text("author").default(null),
   viewCount: integer("view_count").default(0),
 });
+
+// Simplify schema creation to avoid runtime errors
+export const insertArticleSchema = createInsertSchema(articles).omit({ 
+  id: true,
+  publishedAt: true,
+  viewCount: true,
+});
+
+// Create update schema as a partial of the insert schema
+export const updateArticleSchema = insertArticleSchema.partial();
+
 
 export const news = pgTable("news", {
   id: serial("id").primaryKey(),
@@ -148,14 +159,6 @@ export const insertArticleCategorySchema = createInsertSchema(articleCategories)
 
 export const updateArticleCategorySchema = insertArticleCategorySchema.partial();
 
-// Update article schemas
-export const insertArticleSchema = createInsertSchema(articles).omit({ 
-  id: true,
-  publishedAt: true,
-  viewCount: true,
-});
-
-export const updateArticleSchema = insertArticleSchema.partial();
 
 export const insertNewsSchema = createInsertSchema(news).omit({
   id: true,

@@ -1029,6 +1029,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/banner-slides", async (_req, res) => {
     try {
       const slides = await storage.getBannerSlides();
+      console.log('Fetched banner slides:', slides); // Debug log
       res.json(slides);
     } catch (error) {
       console.error('Error fetching banner slides:', error);

@@ -50,15 +50,19 @@ export default function Articles() {
         <h1 className="text-4xl font-bold mb-8">
           {language === 'vi' ? 'Bài viết' : 'Articles'}
         </h1>
-        <div className="grid gap-6 md:grid-cols-2">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <div className="aspect-video bg-muted rounded-t-lg" />
               <CardHeader>
                 <div className="h-6 w-2/3 bg-muted rounded" />
+                <div className="h-4 w-1/3 bg-muted rounded mt-2" />
               </CardHeader>
               <CardContent>
-                <div className="h-4 bg-muted rounded" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted rounded" />
+                  <div className="h-4 bg-muted rounded w-5/6" />
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -74,6 +78,13 @@ export default function Articles() {
     acc[article.category].push(article);
     return acc;
   }, {} as Record<string, Article[]>) || {};
+
+  // Sort articles by date within each category
+  Object.values(articlesByCategory).forEach(categoryArticles => {
+    categoryArticles.sort((a, b) => 
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    );
+  });
 
   // Get total pages for current category
   const getTotalPages = (articles: Article[]) => {
@@ -114,10 +125,10 @@ export default function Articles() {
 
           return (
             <TabsContent key={category} value={category}>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {displayedArticles.map((article) => (
                   <Link key={article.id} href={`/articles/${article.slug}`}>
-                    <Card className="cursor-pointer hover:bg-accent transition-colors">
+                    <Card className="cursor-pointer hover:bg-accent transition-colors h-full flex flex-col">
                       {article.thumbnail && (
                         <div className="aspect-video">
                           <img
@@ -131,9 +142,9 @@ export default function Articles() {
                         <CardTitle className="line-clamp-2">
                           {language === 'vi' ? article.title_vi : article.title_en}
                         </CardTitle>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <time dateTime={article.publishedAt?.toString()}>
-                            {article.publishedAt ? format(new Date(article.publishedAt), 'PPP') : ''}
+                            {format(new Date(article.publishedAt), 'PPP')}
                           </time>
                           {article.author && (
                             <>
@@ -143,7 +154,7 @@ export default function Articles() {
                           )}
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="flex-grow">
                         <p className="text-muted-foreground line-clamp-3">
                           {language === 'vi' ? article.excerpt_vi : article.excerpt_en}
                         </p>

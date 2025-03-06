@@ -85,7 +85,7 @@ export default function Header() {
             <Link href="/">
               <span className="flex items-center space-x-2 cursor-pointer">
                 <img
-                  src="/assets/logo-1x.png"
+                  src="/assets/sjjs-logo.jpg"
                   alt="SJJS Logo"
                   className="h-12 w-auto"
                 />

@@ -1,5 +1,5 @@
-import { Link } from "wouter"
-import { useI18n, translations } from "@/lib/i18n"
+import { Link, useLocation } from "wouter"
+import { useI18n } from "@/lib/i18n"
 import { Button } from "@/components/ui/button"
 import LocaleToggle from "./LocaleToggle"
 import { Search, UserCircle2, LogOut } from 'lucide-react';
@@ -16,7 +16,7 @@ import {
 
 export default function Header() {
   const { language } = useI18n()
-  const t = translations.nav
+  const [, setLocation] = useLocation()
 
   // Check if admin is logged in
   const { data: admin } = useQuery({
@@ -24,10 +24,8 @@ export default function Header() {
     queryFn: async () => {
       try {
         const response = await fetch('/api/admin/me')
-        if (response.ok) {
-          return response.json()
-        }
-        return null
+        if (!response.ok) throw new Error('Failed to fetch admin')
+        return response.json()
       } catch {
         return null
       }
@@ -44,10 +42,8 @@ export default function Header() {
     queryFn: async () => {
       try {
         const response = await fetch('/api/students/me')
-        if (response.ok) {
-          return response.json()
-        }
-        return null
+        if (!response.ok) throw new Error('Failed to fetch student')
+        return response.json()
       } catch {
         return null
       }
@@ -61,21 +57,23 @@ export default function Header() {
   // Logout mutations
   const adminLogoutMutation = useMutation({
     mutationFn: async () => {
-      await fetch('/api/admin/logout', { method: 'POST' })
+      const response = await fetch('/api/admin/logout', { method: 'POST' })
+      if (!response.ok) throw new Error('Failed to logout')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/me'] })
-      queryClient.setQueryData(['/api/admin/me'], null)
+      setLocation('/')
     }
   })
 
   const studentLogoutMutation = useMutation({
     mutationFn: async () => {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      const response = await fetch('/api/auth/logout', { method: 'POST' })
+      if (!response.ok) throw new Error('Failed to logout')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/students/me'] })
-      queryClient.setQueryData(['/api/students/me'], null)
+      setLocation('/')
     }
   })
 

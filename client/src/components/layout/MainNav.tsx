@@ -40,8 +40,8 @@ export function MainNav() {
               <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10">
                 {language === 'vi' ? section.title_vi : section.title_en}
               </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] p-4 gap-3 bg-[#8B4749]">
+              <NavigationMenuContent className="data-[motion=from-start]:animate-enterFromLeft data-[motion=from-end]:animate-enterFromRight data-[motion=to-start]:animate-exitToLeft data-[motion=to-end]:animate-exitToRight">
+                <ul className="w-[400px] p-4 bg-[#8B4749] rounded-md">
                   <li>
                     <Link href={`/${section.slug}`}>
                       <NavigationMenuLink className="cursor-pointer block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">

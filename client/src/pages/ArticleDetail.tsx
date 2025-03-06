@@ -99,6 +99,7 @@ export default function ArticleDetail() {
           dangerouslySetInnerHTML={{ 
             __html: language === 'vi' ? article.content_vi : article.content_en 
           }} 
+          className="prose prose-lg dark:prose-invert mt-8"
         />
       </article>
     </main>

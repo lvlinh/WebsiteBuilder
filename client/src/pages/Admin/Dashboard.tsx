@@ -1,8 +1,7 @@
 import { useState } from "react"
-import { useQuery, useMutation } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useI18n } from "@/lib/i18n"
-import { apiRequest } from "@/lib/queryClient"
-import { useToast } from "@/hooks/use-toast"
+import { Link } from "wouter"
 import {
   Card,
   CardContent,
@@ -11,297 +10,148 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RichTextEditor } from "@/components/ui/rich-text-editor"
+import { Plus, FileText, ImageIcon } from "lucide-react"
+import PageEditor from "./PageEditor"
+import BannerSlides from "./BannerSlides"
 import type { Page } from "@shared/schema"
 
 export default function AdminDashboard() {
   const { language } = useI18n()
-  const { toast } = useToast()
   const [selectedPage, setSelectedPage] = useState<Page | null>(null)
 
-  const { data: pages, isLoading } = useQuery<Page[]>({
+  const { data: pages } = useQuery<Page[]>({
     queryKey: ['/api/pages']
   })
 
-  const createPageMutation = useMutation({
-    mutationFn: async (page: Omit<Page, 'id' | 'createdAt' | 'updatedAt'>) => {
-      const res = await apiRequest("POST", "/api/admin/pages", page)
-      return res.json()
-    },
-    onSuccess: () => {
-      toast({
-        title: language === 'vi' ? 'Tạo trang thành công' : 'Page created successfully',
-      })
-    },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: language === 'vi' ? 'Tạo trang thất bại' : 'Failed to create page',
-      })
-    }
-  })
-
-  const updatePageMutation = useMutation({
-    mutationFn: async ({ id, ...page }: Partial<Page> & { id: number }) => {
-      const res = await apiRequest("PATCH", `/api/admin/pages/${id}`, page)
-      return res.json()
-    },
-    onSuccess: () => {
-      toast({
-        title: language === 'vi' ? 'Cập nhật trang thành công' : 'Page updated successfully',
-      })
-    },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: language === 'vi' ? 'Cập nhật trang thất bại' : 'Failed to update page',
-      })
-    }
-  })
-
-  const handleCreatePage = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    createPageMutation.mutate({
-      slug: formData.get('slug') as string,
-      title_vi: formData.get('title_vi') as string,
-      title_en: formData.get('title_en') as string,
-      content_vi: formData.get('content_vi') as string,
-      content_en: formData.get('content_en') as string,
-      menu_order: parseInt(formData.get('menu_order') as string),
-      published: true
-    })
-  }
-
-  const handleUpdatePage = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!selectedPage) return
-
-    const formData = new FormData(e.currentTarget)
-    updatePageMutation.mutate({
-      id: selectedPage.id,
-      title_vi: formData.get('title_vi') as string,
-      title_en: formData.get('title_en') as string,
-      content_vi: formData.get('content_vi') as string,
-      content_en: formData.get('content_en') as string,
-      published: formData.get('published') === 'true'
-    })
-  }
-
-  if (isLoading) return <div>Loading...</div>
+  const mainPages = pages?.filter(p => !p.parentId) || []
+  const subPages = pages?.filter(p => p.parentId) || []
 
   return (
     <div className="container py-10">
-      <Tabs defaultValue="pages">
-        <TabsList>
-          <TabsTrigger value="pages">
+      <Tabs defaultValue="pages" className="space-y-6">
+        <TabsList className="bg-background border">
+          <TabsTrigger value="pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <FileText className="h-4 w-4 mr-2" />
             {language === 'vi' ? 'Quản lý trang' : 'Manage Pages'}
+          </TabsTrigger>
+          <TabsTrigger value="banners" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <ImageIcon className="h-4 w-4 mr-2" />
+            {language === 'vi' ? 'Quản lý Banner' : 'Manage Banners'}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pages" className="space-y-4">
+        <TabsContent value="pages" className="space-y-6">
           {selectedPage ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {language === 'vi' ? 'Chỉnh sửa trang' : 'Edit Page'}
-                </CardTitle>
-                <CardDescription>
-                  {selectedPage.slug}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleUpdatePage} className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="title_vi">
-                        {language === 'vi' ? 'Tiêu đề tiếng Việt' : 'Vietnamese Title'}
-                      </Label>
-                      <Input 
-                        id="title_vi" 
-                        name="title_vi" 
-                        defaultValue={selectedPage.title_vi}
-                        required 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="title_en">
-                        {language === 'vi' ? 'Tiêu đề tiếng Anh' : 'English Title'}
-                      </Label>
-                      <Input 
-                        id="title_en" 
-                        name="title_en" 
-                        defaultValue={selectedPage.title_en}
-                        required 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="content_vi">
-                      {language === 'vi' ? 'Nội dung tiếng Việt' : 'Vietnamese Content'}
-                    </Label>
-                    <input 
-                      type="hidden" 
-                      name="content_vi" 
-                      id="content_vi" 
-                      value={selectedPage.content_vi} 
-                    />
-                    <RichTextEditor
-                      content={selectedPage.content_vi}
-                      onChange={(html) => {
-                        const input = document.getElementById('content_vi') as HTMLInputElement
-                        if (input) input.value = html
-                      }}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="content_en">
-                      {language === 'vi' ? 'Nội dung tiếng Anh' : 'English Content'}
-                    </Label>
-                    <input 
-                      type="hidden" 
-                      name="content_en" 
-                      id="content_en" 
-                      value={selectedPage.content_en} 
-                    />
-                    <RichTextEditor
-                      content={selectedPage.content_en}
-                      onChange={(html) => {
-                        const input = document.getElementById('content_en') as HTMLInputElement
-                        if (input) input.value = html
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between">
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={() => setSelectedPage(null)}
-                    >
-                      {language === 'vi' ? 'Quay lại' : 'Back'}
-                    </Button>
-                    <Button type="submit" disabled={updatePageMutation.isPending}>
-                      {language === 'vi' ? 'Cập nhật trang' : 'Update Page'}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
+            <PageEditor page={selectedPage} onBack={() => setSelectedPage(null)} />
           ) : (
             <>
+              {/* Create New Page Button */}
+              <div className="flex justify-end">
+                <Link href="/admin/pages/new">
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {language === 'vi' ? 'Tạo trang mới' : 'Create New Page'}
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Main Pages */}
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    {language === 'vi' ? 'Tạo trang mới' : 'Create New Page'}
+                    {language === 'vi' ? 'Trang chính' : 'Main Pages'}
                   </CardTitle>
                   <CardDescription>
                     {language === 'vi' 
-                      ? 'Tạo trang mới với nội dung song ngữ'
-                      : 'Create a new bilingual page'
+                      ? 'Các trang chính trong menu điều hướng'
+                      : 'Main pages in the navigation menu'
                     }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleCreatePage} className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="slug">Slug</Label>
-                        <Input id="slug" name="slug" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="menu_order">
-                          {language === 'vi' ? 'Thứ tự menu' : 'Menu Order'}
-                        </Label>
-                        <Input 
-                          id="menu_order" 
-                          name="menu_order" 
-                          type="number" 
-                          required 
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="title_vi">
-                          {language === 'vi' ? 'Tiêu đề tiếng Việt' : 'Vietnamese Title'}
-                        </Label>
-                        <Input id="title_vi" name="title_vi" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="title_en">
-                          {language === 'vi' ? 'Tiêu đề tiếng Anh' : 'English Title'}
-                        </Label>
-                        <Input id="title_en" name="title_en" required />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="content_vi">
-                        {language === 'vi' ? 'Nội dung tiếng Việt' : 'Vietnamese Content'}
-                      </Label>
-                      <input type="hidden" name="content_vi" id="content_vi" />
-                      <RichTextEditor
-                        content=""
-                        onChange={(html) => {
-                          const input = document.getElementById('content_vi') as HTMLInputElement
-                          if (input) input.value = html
-                        }}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="content_en">
-                        {language === 'vi' ? 'Nội dung tiếng Anh' : 'English Content'}
-                      </Label>
-                      <input type="hidden" name="content_en" id="content_en" />
-                      <RichTextEditor
-                        content=""
-                        onChange={(html) => {
-                          const input = document.getElementById('content_en') as HTMLInputElement
-                          if (input) input.value = html
-                        }}
-                      />
-                    </div>
-
-                    <Button type="submit" disabled={createPageMutation.isPending}>
-                      {language === 'vi' ? 'Tạo trang' : 'Create Page'}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {language === 'vi' ? 'Danh sách trang' : 'Page List'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {pages?.map(page => (
+                  <div className="grid gap-4">
+                    {mainPages.map(page => (
                       <Card 
                         key={page.id} 
-                        className="cursor-pointer hover:bg-accent"
+                        className="cursor-pointer hover:bg-accent transition-colors"
                         onClick={() => setSelectedPage(page)}
                       >
-                        <CardHeader>
-                          <CardTitle>{page.title_en}</CardTitle>
-                          <CardDescription>Slug: {page.slug}</CardDescription>
+                        <CardHeader className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <CardTitle className="text-lg">
+                                {language === 'vi' ? page.title_vi : page.title_en}
+                              </CardTitle>
+                              <CardDescription>/{page.slug}</CardDescription>
+                            </div>
+                            <Button variant="outline" size="sm">
+                              {language === 'vi' ? 'Chỉnh sửa' : 'Edit'}
+                            </Button>
+                          </div>
                         </CardHeader>
                       </Card>
                     ))}
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Sub Pages */}
+              {subPages.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {language === 'vi' ? 'Trang con' : 'Sub Pages'}
+                    </CardTitle>
+                    <CardDescription>
+                      {language === 'vi' 
+                        ? 'Các trang con của trang chính'
+                        : 'Sub pages of main pages'
+                      }
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4">
+                      {subPages.map(page => {
+                        const parentPage = mainPages.find(p => p.id === page.parentId)
+                        return (
+                          <Card 
+                            key={page.id} 
+                            className="cursor-pointer hover:bg-accent transition-colors"
+                            onClick={() => setSelectedPage(page)}
+                          >
+                            <CardHeader className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <CardTitle className="text-lg">
+                                    {language === 'vi' ? page.title_vi : page.title_en}
+                                  </CardTitle>
+                                  <CardDescription>
+                                    {parentPage && (
+                                      <span className="text-muted-foreground">
+                                        {language === 'vi' ? parentPage.title_vi : parentPage.title_en}
+                                      </span>
+                                    )} / {page.slug}
+                                  </CardDescription>
+                                </div>
+                                <Button variant="outline" size="sm">
+                                  {language === 'vi' ? 'Chỉnh sửa' : 'Edit'}
+                                </Button>
+                              </div>
+                            </CardHeader>
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="banners">
+          <BannerSlides />
         </TabsContent>
       </Tabs>
     </div>

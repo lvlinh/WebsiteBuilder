@@ -54,9 +54,9 @@ export default function HeroBanner() {
   }
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Navigation buttons with adjusted positioning */}
-      <div className="container max-w-6xl mx-auto">
+    <div className="relative overflow-hidden bg-background py-24 sm:py-32">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Navigation buttons with adjusted positioning */}
         <div className="absolute left-8 right-8 top-1/2 z-10 flex justify-between transform -translate-y-1/2">
           <Button
             variant="ghost"
@@ -75,55 +75,55 @@ export default function HeroBanner() {
             <ChevronRight className="h-8 w-8" />
           </Button>
         </div>
-      </div>
 
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
-          {slides.map((slide) => (
-            <div 
-              key={slide.id}
-              className="relative flex-[0_0_100%] min-w-0"
-            >
-              <img
-                src={slide.imageUrl}
-                alt={language === 'vi' ? slide.title_vi : slide.title_en}
-                className="w-full h-[600px] object-cover"
-              />
-              <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-                <div 
-                  className={`absolute inset-0 flex items-${slide.textVerticalAlign} justify-${slide.textHorizontalAlign}`}
-                >
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex">
+            {slides.map((slide) => (
+              <div 
+                key={slide.id}
+                className="relative flex-[0_0_100%] min-w-0"
+              >
+                <img
+                  src={slide.imageUrl}
+                  alt={language === 'vi' ? slide.title_vi : slide.title_en}
+                  className="w-full h-[600px] object-cover rounded-lg"
+                />
+                <div className="absolute inset-0">
                   <div 
-                    className={`max-w-lg p-8 rounded-lg ${
-                      slide.darkOverlay ? 'bg-black/50' : 'bg-white/50'
-                    } backdrop-blur-sm`}
+                    className={`absolute inset-0 flex items-${slide.textVerticalAlign} justify-${slide.textHorizontalAlign} p-8`}
                   >
-                    <h2 className={`text-3xl sm:text-4xl font-bold mb-4 ${
-                      slide.darkOverlay ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      {language === 'vi' ? slide.title_vi : slide.title_en}
-                    </h2>
-                    <p className={`text-lg ${
-                      slide.darkOverlay ? 'text-white/90' : 'text-gray-700'
-                    }`}>
-                      {language === 'vi' ? slide.description_vi : slide.description_en}
-                    </p>
-                    {slide.buttonLink && (
-                      <Button 
-                        variant={slide.darkOverlay ? "outline" : "default"}
-                        className="mt-6"
-                        asChild
-                      >
-                        <a href={slide.buttonLink}>
-                          {language === 'vi' ? slide.buttonText_vi : slide.buttonText_en}
-                        </a>
-                      </Button>
-                    )}
+                    <div 
+                      className={`max-w-lg p-8 rounded-lg ${
+                        slide.darkOverlay ? 'bg-black/50' : 'bg-white/50'
+                      } backdrop-blur-sm`}
+                    >
+                      <h2 className={`text-3xl sm:text-4xl font-bold mb-4 ${
+                        slide.darkOverlay ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {language === 'vi' ? slide.title_vi : slide.title_en}
+                      </h2>
+                      <p className={`text-lg ${
+                        slide.darkOverlay ? 'text-white/90' : 'text-gray-700'
+                      }`}>
+                        {language === 'vi' ? slide.description_vi : slide.description_en}
+                      </p>
+                      {slide.buttonLink && (
+                        <Button 
+                          variant={slide.darkOverlay ? "outline" : "default"}
+                          className="mt-6"
+                          asChild
+                        >
+                          <a href={slide.buttonLink}>
+                            {language === 'vi' ? slide.buttonText_vi : slide.buttonText_en}
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

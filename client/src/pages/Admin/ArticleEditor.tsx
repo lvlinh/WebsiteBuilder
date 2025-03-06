@@ -78,11 +78,14 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
   })
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, ...data }: Article) => {
+    mutationFn: async (data: Article) => {
+      // Only send updated fields, excluding id and system fields
+      const { id, publishedAt, viewCount, ...updateData } = data
+
       const res = await fetch(`/api/articles/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(updateData)
       })
       if (!res.ok) {
         const error = await res.json()
@@ -126,7 +129,13 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
     }
 
     if (article?.id) {
-      updateMutation.mutate({ ...data, id: article.id, publishedAt: article.publishedAt, viewCount: article.viewCount })
+      // Include original id and system fields when updating
+      updateMutation.mutate({ 
+        ...data, 
+        id: article.id,
+        publishedAt: article.publishedAt,
+        viewCount: article.viewCount || 0
+      })
     } else {
       createMutation.mutate(data)
     }

@@ -668,15 +668,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch("/api/articles/:id", async (req, res) => {
-    const parseResult = insertArticleSchema.partial().safeParse(req.body);
-    if (!parseResult.success) {
-      return res.status(400).json({ message: "Invalid article data" });
+    try {
+      const parseResult = insertArticleSchema.partial().safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid article data",
+          errors: parseResult.error.errors
+        });
+      }
+
+      const article = await storage.updateArticle(Number(req.params.id), parseResult.data);
+      if (!article) {
+        return res.status(404).json({ message: "Article not found" });
+      }
+      res.json(article);
+    } catch (error) {
+      console.error('Error updating article:', error);
+      res.status(500).json({ message: "Failed to update article" });
     }
-    const article = await storage.updateArticle(Number(req.params.id), parseResult.data);
-    if (!article) {
-      return res.status(404).json({ message: "Article not found" });
-    }
-    res.json(article);
   });
 
   app.delete("/api/articles/:id", async (req, res) => {

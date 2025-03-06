@@ -258,7 +258,14 @@ export class MemStorage implements IStorage {
     const existing = this.articles.get(id);
     if (!existing) return undefined;
 
-    const updated = { ...existing, ...article };
+    const updated = { 
+      ...existing,
+      ...article,
+      // Preserve system fields
+      id: existing.id,
+      publishedAt: existing.publishedAt,
+      viewCount: existing.viewCount
+    };
     this.articles.set(id, updated);
     return updated;
   }

@@ -1,10 +1,10 @@
-import Hero from "@/components/Home/Hero"
-import NewsFeed from "@/components/Home/NewsFeed"
+import HeroBanner from "@/components/Home/HeroBanner";
+import NewsFeed from "@/components/Home/NewsFeed";
 
 export default function Home() {
   return (
     <main>
-      <Hero />
+      <HeroBanner />
       <section className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid gap-8 md:grid-cols-2">
           <div>
@@ -17,5 +17,5 @@ export default function Home() {
         </div>
       </section>
     </main>
-  )
+  );
 }

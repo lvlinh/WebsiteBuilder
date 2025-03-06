@@ -2,6 +2,25 @@ import { pgTable, text, serial, json, timestamp, boolean } from "drizzle-orm/pg-
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Add banner slides table
+export const bannerSlides = pgTable("banner_slides", {
+  id: serial("id").primaryKey(),
+  imageUrl: text("image_url").notNull(),
+  title_vi: text("title_vi").notNull(),
+  title_en: text("title_en").notNull(),
+  description_vi: text("description_vi").notNull(),
+  description_en: text("description_en").notNull(),
+  textVerticalAlign: text("text_vertical_align").notNull().default("center"),
+  textHorizontalAlign: text("text_horizontal_align").notNull().default("center"),
+  darkOverlay: boolean("dark_overlay").default(false),
+  buttonLink: text("button_link"),
+  buttonText_vi: text("button_text_vi"),
+  buttonText_en: text("button_text_en"),
+  order: serial("order").notNull(),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Admin users table
 export const admins = pgTable("admins", {
   id: serial("id").primaryKey(),
@@ -28,7 +47,6 @@ export const pages = pgTable("pages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Existing tables remain unchanged
 export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
   title_vi: text("title_vi").notNull(),
@@ -147,6 +165,11 @@ export const insertPageSchema = createInsertSchema(pages).omit({
   updatedAt: true
 });
 
+export const insertBannerSlideSchema = createInsertSchema(bannerSlides).omit({
+  id: true,
+  createdAt: true
+});
+
 export type Article = typeof articles.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 
@@ -173,3 +196,6 @@ export type InsertAdmin = z.infer<typeof insertAdminSchema>;
 
 export type Page = typeof pages.$inferSelect;
 export type InsertPage = z.infer<typeof insertPageSchema>;
+
+export type BannerSlide = typeof bannerSlides.$inferSelect;
+export type InsertBannerSlide = z.infer<typeof insertBannerSlideSchema>;

@@ -52,6 +52,14 @@ export default function ArticleDetail() {
   // Find the category details
   const category = categories?.find(cat => cat.slug === article.category)
 
+  // Log article data for debugging
+  console.log('Article data:', {
+    title: language === 'vi' ? article.title_vi : article.title_en,
+    content: language === 'vi' ? article.content_vi : article.content_en,
+    category: category,
+    publishDate: publishDate
+  })
+
   return (
     <main className="container py-12">
       <article className="prose prose-lg dark:prose-invert mx-auto">

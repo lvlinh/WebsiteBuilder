@@ -27,7 +27,7 @@ export function MainNav() {
             return (
               <NavigationMenuItem key={section.id}>
                 <Link href={`/${section.slug}`}>
-                  <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
+                  <NavigationMenuLink className="cursor-pointer px-4 py-2 text-white hover:text-white/80">
                     {language === 'vi' ? section.title_vi : section.title_en}
                   </NavigationMenuLink>
                 </Link>
@@ -37,14 +37,14 @@ export function MainNav() {
 
           return (
             <NavigationMenuItem key={section.id}>
-              <NavigationMenuTrigger className="text-white hover:text-white/80 hover:bg-white/10 data-[state=open]:bg-white/10">
+              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10">
                 {language === 'vi' ? section.title_vi : section.title_en}
               </NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 bg-[#8B4749] dark:bg-[#8B4749]">
+                <ul className="grid w-[400px] gap-3 p-4 bg-[#8B4749]">
                   <li>
                     <Link href={`/${section.slug}`}>
-                      <NavigationMenuLink className="cursor-pointer block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">
+                      <NavigationMenuLink className="cursor-pointer block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">
                         <div className="text-sm font-medium leading-none">
                           {language === 'vi' ? section.title_vi : section.title_en}
                         </div>
@@ -54,7 +54,7 @@ export function MainNav() {
                   {subsections.map(subsection => (
                     <li key={subsection.id}>
                       <Link href={`/${section.slug}/${subsection.slug}`}>
-                        <NavigationMenuLink className="cursor-pointer block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">
+                        <NavigationMenuLink className="cursor-pointer block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">
                           <div className="text-sm font-medium leading-none">
                             {language === 'vi' ? subsection.title_vi : subsection.title_en}
                           </div>

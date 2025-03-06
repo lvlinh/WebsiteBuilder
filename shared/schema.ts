@@ -149,12 +149,7 @@ export const insertArticleCategorySchema = createInsertSchema(articleCategories)
 export const updateArticleCategorySchema = insertArticleCategorySchema.partial();
 
 // Update article schemas
-export const insertArticleSchema = createInsertSchema(articles, {
-  thumbnail: (schema) => schema.thumbnail.nullable(),
-  author: (schema) => schema.author.nullable(),
-  featured: (schema) => schema.featured.default(false),
-  published: (schema) => schema.published.default(true),
-}).omit({ 
+export const insertArticleSchema = createInsertSchema(articles).omit({ 
   id: true,
   publishedAt: true,
   viewCount: true,

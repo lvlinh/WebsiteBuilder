@@ -1,16 +1,9 @@
 import { Link } from "wouter"
 import { useI18n, translations } from "@/lib/i18n"
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu"
 import { Button } from "@/components/ui/button"
 import LocaleToggle from "./LocaleToggle"
 import { Search } from 'lucide-react';
+import { MainNav } from "./MainNav"
 
 export default function Header() {
   const { language } = useI18n()
@@ -29,73 +22,7 @@ export default function Header() {
           </span>
         </Link>
 
-        <NavigationMenu>
-          <NavigationMenuList className="space-x-2">
-            <NavigationMenuItem>
-              <Link href="/about">
-                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
-                  {t.about[language]}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link href="/admissions">
-                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
-                  {t.admissions[language]}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link href="/education">
-                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
-                  {t.education[language]}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link href="/faculty">
-                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
-                  {t.faculty[language]}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link href="/articles">
-                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
-                  {t.articles[language]}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link href="/events">
-                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
-                  {t.events[language]}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link href="/family">
-                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
-                  {t.family[language]}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link href="/resources">
-                <NavigationMenuLink className="cursor-pointer text-white hover:text-white/80">
-                  {t.resources[language]}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
+        <MainNav />
 
         <div className="flex items-center gap-4">
           <Link href="/student/login">

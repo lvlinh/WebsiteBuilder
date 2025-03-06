@@ -21,6 +21,8 @@ export const pages = pgTable("pages", {
   content_vi: text("content_vi").notNull(),
   content_en: text("content_en").notNull(),
   menu_order: serial("menu_order").notNull(),
+  parentId: serial("parent_id").references(() => pages.id),
+  isSection: boolean("is_section").default(false),
   published: boolean("published").default(true),
   updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),

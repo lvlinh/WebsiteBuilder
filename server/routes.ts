@@ -78,66 +78,128 @@ async function initializeAdminUser() {
 async function initializeDefaultPages() {
   const pages = await storage.getPages();
   if (pages.length === 0) {
-    // Create some default pages
-    const defaultPages = [
+    // Create main sections first
+    const mainSections = [
       {
-        slug: "about",
-        title_vi: "Về Chúng Tôi",
-        title_en: "About Us",
-        content_vi: "Chào mừng đến với Học Viện Công Giáo Sài Gòn - SJJS",
-        content_en: "Welcome to Saigon Jesuit Scholasticate - SJJS",
+        slug: "gioi-thieu",
+        title_vi: "Giới Thiệu",
+        title_en: "About",
+        content_vi: "Thông tin giới thiệu về Học Viện",
+        content_en: "Introduction to the Institute",
         menu_order: 1,
+        isSection: true,
         published: true
       },
       {
-        slug: "admissions",
+        slug: "tuyen-sinh",
         title_vi: "Tuyển Sinh",
         title_en: "Admissions",
-        content_vi: "Thông tin tuyển sinh của Học Viện",
-        content_en: "Admission information for the Institute",
+        content_vi: "Thông tin tuyển sinh",
+        content_en: "Admissions Information",
         menu_order: 2,
+        isSection: true,
         published: true
       },
       {
-        slug: "education",
+        slug: "dao-tao",
         title_vi: "Đào Tạo",
         title_en: "Education",
-        content_vi: "Chương trình đào tạo của Học Viện",
-        content_en: "Educational programs at the Institute",
+        content_vi: "Chương trình đào tạo",
+        content_en: "Educational Programs",
         menu_order: 3,
+        isSection: true,
         published: true
       },
       {
-        slug: "faculty",
-        title_vi: "Giảng Viên",
+        slug: "ban-giang-huan",
+        title_vi: "Ban Giảng Huấn",
         title_en: "Faculty",
-        content_vi: "Đội ngũ giảng viên của Học Viện",
-        content_en: "Our faculty members",
+        content_vi: "Thông tin về ban giảng huấn",
+        content_en: "Faculty Information",
         menu_order: 4,
+        isSection: true,
         published: true
       },
       {
-        slug: "family",
+        slug: "nghien-cuu-xuat-ban",
+        title_vi: "Nghiên Cứu và Xuất Bản",
+        title_en: "Research & Publications",
+        content_vi: "Nghiên cứu và xuất bản",
+        content_en: "Research and Publications",
+        menu_order: 5,
+        isSection: true,
+        published: true
+      },
+      {
+        slug: "gia-dinh-sjjs",
         title_vi: "Gia Đình SJJS",
         title_en: "SJJS Family",
         content_vi: "Cộng đồng SJJS",
-        content_en: "The SJJS Community",
-        menu_order: 5,
+        content_en: "SJJS Community",
+        menu_order: 6,
+        isSection: true,
         published: true
       },
       {
-        slug: "resources",
-        title_vi: "Tài Nguyên",
+        slug: "tien-ich",
+        title_vi: "Tiện Ích",
         title_en: "Resources",
-        content_vi: "Tài nguyên học tập",
-        content_en: "Learning resources",
-        menu_order: 6,
+        content_vi: "Tiện ích và tài nguyên",
+        content_en: "Resources and Utilities",
+        menu_order: 7,
+        isSection: true,
         published: true
       }
     ];
 
-    for (const page of defaultPages) {
-      await storage.createPage(page);
+    // Create main sections and store their IDs
+    const sectionIds = {};
+    for (const section of mainSections) {
+      const createdSection = await storage.createPage(section);
+      sectionIds[section.slug] = createdSection.id;
+    }
+
+    // Create subsections with parent IDs
+    const subsections = [
+      // Giới Thiệu subsections
+      {
+        slug: "tuyen-ngon-tam-nhan",
+        title_vi: "Tuyên Ngôn Tầm Nhìn",
+        title_en: "Vision Statement",
+        content_vi: "Tuyên ngôn và tầm nhìn của học viện",
+        content_en: "Institute's vision statement",
+        menu_order: 1,
+        parentId: sectionIds["gioi-thieu"],
+        published: true
+      },
+      {
+        slug: "lich-su",
+        title_vi: "Lịch Sử",
+        title_en: "History",
+        content_vi: "Lịch sử phát triển",
+        content_en: "Development history",
+        menu_order: 2,
+        parentId: sectionIds["gioi-thieu"],
+        published: true
+      },
+      // Add more subsections for each main section following the sitemap structure
+
+      // Example for Tuyển Sinh
+      {
+        slug: "thong-bao",
+        title_vi: "Thông Báo",
+        title_en: "Announcements",
+        content_vi: "Thông báo tuyển sinh",
+        content_en: "Admission announcements",
+        menu_order: 1,
+        parentId: sectionIds["tuyen-sinh"],
+        published: true
+      }
+      // Continue adding other subsections according to the sitemap
+    ];
+
+    for (const subsection of subsections) {
+      await storage.createPage(subsection);
     }
   }
 }

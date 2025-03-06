@@ -16,6 +16,11 @@ export default function DynamicPage() {
   const [editedContent, setEditedContent] = useState({ vi: "", en: "" })
   const slug = location.substring(1) // Remove leading slash
 
+  const { data: pages } = useQuery<Page[]>({
+    queryKey: ['/api/pages']
+  })
+
+  // Find the current page
   const { data: page, isLoading, error } = useQuery<Page>({
     queryKey: ['/api/pages', slug],
     queryFn: async () => {
@@ -26,6 +31,9 @@ export default function DynamicPage() {
       return response.json()
     }
   })
+
+  // Find parent page if this is a child page
+  const parentPage = page?.parentId ? pages?.find(p => p.id === page.parentId) : null
 
   // Check if user is admin
   const { data: admin } = useQuery({
@@ -114,6 +122,17 @@ export default function DynamicPage() {
 
   return (
     <div className="container py-12">
+      {/* Breadcrumb navigation */}
+      {parentPage && (
+        <div className="mb-4 text-sm text-muted-foreground">
+          <a href={`/${parentPage.slug}`} className="hover:underline">
+            {language === 'vi' ? parentPage.title_vi : parentPage.title_en}
+          </a>
+          <span className="mx-2">/</span>
+          <span>{language === 'vi' ? page.title_vi : page.title_en}</span>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">
           {language === 'vi' ? page.title_vi : page.title_en}

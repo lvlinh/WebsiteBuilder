@@ -161,7 +161,7 @@ async function initializeDefaultPages() {
 
     // Create subsections with parent IDs
     const subsections = [
-      // Giới Thiệu subsections
+      // Giới Thiệu (About) subsections
       {
         slug: "tuyen-ngon-tam-nhan",
         title_vi: "Tuyên Ngôn Tầm Nhìn",
@@ -182,9 +182,28 @@ async function initializeDefaultPages() {
         parentId: sectionIds["gioi-thieu"],
         published: true
       },
-      // Add more subsections for each main section following the sitemap structure
+      {
+        slug: "su-menh",
+        title_vi: "Sứ Mệnh",
+        title_en: "Mission",
+        content_vi: "Sứ mệnh của học viện",
+        content_en: "Institute's mission",
+        menu_order: 3,
+        parentId: sectionIds["gioi-thieu"],
+        published: true
+      },
+      {
+        slug: "muc-tieu",
+        title_vi: "Mục Tiêu",
+        title_en: "Objectives",
+        content_vi: "Mục tiêu của học viện",
+        content_en: "Institute's objectives",
+        menu_order: 4,
+        parentId: sectionIds["gioi-thieu"],
+        published: true
+      },
 
-      // Example for Tuyển Sinh
+      // Tuyển Sinh (Admissions) subsections
       {
         slug: "thong-bao",
         title_vi: "Thông Báo",
@@ -194,8 +213,228 @@ async function initializeDefaultPages() {
         menu_order: 1,
         parentId: sectionIds["tuyen-sinh"],
         published: true
+      },
+      {
+        slug: "tuyen-sinh-cao-hoc",
+        title_vi: "Tuyển Sinh Cao Học",
+        title_en: "Graduate Admissions",
+        content_vi: "Thông tin tuyển sinh cao học",
+        content_en: "Graduate admission information",
+        menu_order: 2,
+        parentId: sectionIds["tuyen-sinh"],
+        published: true
+      },
+      {
+        slug: "hoc-phi-tai-tro",
+        title_vi: "Học Phí & Tài Trợ",
+        title_en: "Tuition & Financial Aid",
+        content_vi: "Thông tin về học phí và tài trợ",
+        content_en: "Tuition and financial aid information",
+        menu_order: 3,
+        parentId: sectionIds["tuyen-sinh"],
+        published: true
+      },
+
+      // Đào Tạo (Education) subsections
+      {
+        slug: "chuong-trinh-toan-hoc",
+        title_vi: "Chương Trình Toàn Học",
+        title_en: "Full Programs",
+        content_vi: "Thông tin về chương trình toàn học",
+        content_en: "Full program information",
+        menu_order: 1,
+        parentId: sectionIds["dao-tao"],
+        published: true
+      },
+      {
+        slug: "cac-mon-hoc",
+        title_vi: "Các Môn Học",
+        title_en: "Courses",
+        content_vi: "Thông tin về các môn học",
+        content_en: "Course information",
+        menu_order: 2,
+        parentId: sectionIds["dao-tao"],
+        published: true
+      },
+      {
+        slug: "lich-hoc",
+        title_vi: "Lịch Học",
+        title_en: "Schedule",
+        content_vi: "Lịch học của học viện",
+        content_en: "Academic schedule",
+        menu_order: 3,
+        parentId: sectionIds["dao-tao"],
+        published: true
+      },
+      {
+        slug: "quy-che-hoc-tap",
+        title_vi: "Quy Chế Học Tập",
+        title_en: "Academic Policies",
+        content_vi: "Quy chế học tập của học viện",
+        content_en: "Academic policies and regulations",
+        menu_order: 4,
+        parentId: sectionIds["dao-tao"],
+        published: true
+      },
+
+      // Ban Giảng Huấn (Faculty) subsections
+      {
+        slug: "ban-giang-huan",
+        title_vi: "Ban Giảng Huấn",
+        title_en: "Faculty List",
+        content_vi: "Danh sách giảng viên",
+        content_en: "List of faculty members",
+        menu_order: 1,
+        parentId: sectionIds["ban-giang-huan"],
+        published: true
+      },
+      {
+        slug: "cac-bo-mon",
+        title_vi: "Các Bộ Môn",
+        title_en: "Departments",
+        content_vi: "Thông tin về các bộ môn",
+        content_en: "Department information",
+        menu_order: 2,
+        parentId: sectionIds["ban-giang-huan"],
+        published: true
+      },
+      {
+        slug: "hoi-thao",
+        title_vi: "Hội Thảo",
+        title_en: "Seminars",
+        content_vi: "Thông tin về các hội thảo",
+        content_en: "Seminar information",
+        menu_order: 3,
+        parentId: sectionIds["ban-giang-huan"],
+        published: true
+      },
+
+      // Nghiên Cứu và Xuất Bản (Research & Publications) subsections
+      {
+        slug: "bai-viet",
+        title_vi: "Bài Viết",
+        title_en: "Articles",
+        content_vi: "Các bài viết nghiên cứu",
+        content_en: "Research articles",
+        menu_order: 1,
+        parentId: sectionIds["nghien-cuu-xuat-ban"],
+        published: true
+      },
+      {
+        slug: "tap-chi",
+        title_vi: "Tạp Chí",
+        title_en: "Journal",
+        content_vi: "Tạp chí nghiên cứu",
+        content_en: "Research journal",
+        menu_order: 2,
+        parentId: sectionIds["nghien-cuu-xuat-ban"],
+        published: true
+      },
+      {
+        slug: "luan-van",
+        title_vi: "Luận Văn",
+        title_en: "Theses",
+        content_vi: "Luận văn nghiên cứu",
+        content_en: "Research theses",
+        menu_order: 3,
+        parentId: sectionIds["nghien-cuu-xuat-ban"],
+        published: true
+      },
+      {
+        slug: "sach",
+        title_vi: "Sách",
+        title_en: "Books",
+        content_vi: "Sách xuất bản",
+        content_en: "Published books",
+        menu_order: 4,
+        parentId: sectionIds["nghien-cuu-xuat-ban"],
+        published: true
+      },
+
+      // Gia Đình SJJS (SJJS Family) subsections
+      {
+        slug: "su-kien",
+        title_vi: "Sự Kiện",
+        title_en: "Events",
+        content_vi: "Sự kiện cộng đồng",
+        content_en: "Community events",
+        menu_order: 1,
+        parentId: sectionIds["gia-dinh-sjjs"],
+        published: true
+      },
+      {
+        slug: "ban-tin",
+        title_vi: "Bản Tin",
+        title_en: "News",
+        content_vi: "Tin tức cộng đồng",
+        content_en: "Community news",
+        menu_order: 2,
+        parentId: sectionIds["gia-dinh-sjjs"],
+        published: true
+      },
+      {
+        slug: "van-hoa-sjjs",
+        title_vi: "Văn Hóa SJJS",
+        title_en: "SJJS Culture",
+        content_vi: "Văn hóa học viện",
+        content_en: "Institute culture",
+        menu_order: 3,
+        parentId: sectionIds["gia-dinh-sjjs"],
+        published: true
+      },
+
+      // Tiện Ích (Resources) subsections
+      {
+        slug: "phong-tu",
+        title_vi: "Phòng Tư",
+        title_en: "Library",
+        content_vi: "Thông tin thư viện",
+        content_en: "Library information",
+        menu_order: 1,
+        parentId: sectionIds["tien-ich"],
+        published: true
+      },
+      {
+        slug: "co-so-hoc-tap",
+        title_vi: "Cơ Sở Học Tập",
+        title_en: "Study Facilities",
+        content_vi: "Thông tin cơ sở vật chất",
+        content_en: "Facility information",
+        menu_order: 2,
+        parentId: sectionIds["tien-ich"],
+        published: true
+      },
+      {
+        slug: "giao-an-videos",
+        title_vi: "Giáo Án/Videos",
+        title_en: "Lessons/Videos",
+        content_vi: "Tài liệu học tập",
+        content_en: "Learning materials",
+        menu_order: 3,
+        parentId: sectionIds["tien-ich"],
+        published: true
+      },
+      {
+        slug: "tai-lieu",
+        title_vi: "Tài Liệu",
+        title_en: "Documents",
+        content_vi: "Tài liệu tham khảo",
+        content_en: "Reference materials",
+        menu_order: 4,
+        parentId: sectionIds["tien-ich"],
+        published: true
+      },
+      {
+        slug: "cac-lien-ket",
+        title_vi: "Các Liên Kết",
+        title_en: "Links",
+        content_vi: "Liên kết hữu ích",
+        content_en: "Useful links",
+        menu_order: 5,
+        parentId: sectionIds["tien-ich"],
+        published: true
       }
-      // Continue adding other subsections according to the sitemap
+
     ];
 
     for (const subsection of subsections) {

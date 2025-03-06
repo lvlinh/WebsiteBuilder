@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Plus, Edit2, ChevronUp, ChevronDown, X } from "lucide-react"
-import type { ArticleCategory, InsertArticleCategory } from "@shared/schema"
+import type { ArticleCategory } from "@shared/schema"
 
 interface CategoryEditorProps {
   category?: ArticleCategory
@@ -22,7 +22,8 @@ function CategoryEditor({ category, onSave, onCancel }: CategoryEditorProps) {
   const queryClient = useQueryClient()
 
   const createMutation = useMutation({
-    mutationFn: async (data: InsertArticleCategory) => {
+    mutationFn: async (data: Omit<ArticleCategory, 'id' | 'createdAt'>) => {
+      console.log('Creating category with data:', data)
       const res = await fetch('/api/article-categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,6 +54,7 @@ function CategoryEditor({ category, onSave, onCancel }: CategoryEditorProps) {
   const updateMutation = useMutation({
     mutationFn: async (data: ArticleCategory) => {
       const { id, createdAt, ...updateData } = data
+      console.log('Updating category with data:', updateData)
       const res = await fetch(`/api/article-categories/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -235,14 +237,14 @@ export default function ArticleCategories() {
 
   const handleMoveUp = (category: ArticleCategory, index: number) => {
     if (index === 0 || !categories) return
-    const newOrder = categories[index - 1].order
-    moveOrderMutation.mutate({ id: category.id, newOrder })
+    const prevCategory = categories[index - 1]
+    moveOrderMutation.mutate({ id: category.id, newOrder: prevCategory.order })
   }
 
   const handleMoveDown = (category: ArticleCategory, index: number) => {
     if (!categories || index === categories.length - 1) return
-    const newOrder = categories[index + 1].order
-    moveOrderMutation.mutate({ id: category.id, newOrder })
+    const nextCategory = categories[index + 1]
+    moveOrderMutation.mutate({ id: category.id, newOrder: nextCategory.order })
   }
 
   return (

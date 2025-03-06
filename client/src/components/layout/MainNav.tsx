@@ -36,33 +36,35 @@ export function MainNav() {
           }
 
           return (
-            <NavigationMenuItem key={section.id}>
+            <NavigationMenuItem key={section.id} className="relative">
               <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10">
                 {language === 'vi' ? section.title_vi : section.title_en}
               </NavigationMenuTrigger>
-              <NavigationMenuContent className="data-[motion=from-start]:animate-enterFromLeft data-[motion=from-end]:animate-enterFromRight data-[motion=to-start]:animate-exitToLeft data-[motion=to-end]:animate-exitToRight">
-                <ul className="w-[400px] p-4 bg-[#8B4749] rounded-md">
-                  <li>
-                    <Link href={`/${section.slug}`}>
-                      <NavigationMenuLink className="cursor-pointer block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">
-                        <div className="text-sm font-medium leading-none">
-                          {language === 'vi' ? section.title_vi : section.title_en}
-                        </div>
-                      </NavigationMenuLink>
-                    </Link>
-                  </li>
-                  {subsections.map(subsection => (
-                    <li key={subsection.id}>
-                      <Link href={`/${section.slug}/${subsection.slug}`}>
+              <NavigationMenuContent className="absolute min-w-[400px] left-0 data-[side=bottom]:animate-slideUpAndFade">
+                <div className="bg-[#8B4749] rounded-md shadow-lg">
+                  <ul className="p-4 space-y-2">
+                    <li>
+                      <Link href={`/${section.slug}`}>
                         <NavigationMenuLink className="cursor-pointer block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">
                           <div className="text-sm font-medium leading-none">
-                            {language === 'vi' ? subsection.title_vi : subsection.title_en}
+                            {language === 'vi' ? section.title_vi : section.title_en}
                           </div>
                         </NavigationMenuLink>
                       </Link>
                     </li>
-                  ))}
-                </ul>
+                    {subsections.map(subsection => (
+                      <li key={subsection.id}>
+                        <Link href={`/${section.slug}/${subsection.slug}`}>
+                          <NavigationMenuLink className="cursor-pointer block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">
+                            <div className="text-sm font-medium leading-none">
+                              {language === 'vi' ? subsection.title_vi : subsection.title_en}
+                            </div>
+                          </NavigationMenuLink>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </NavigationMenuContent>
             </NavigationMenuItem>
           )

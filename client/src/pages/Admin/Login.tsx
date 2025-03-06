@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiRequest } from "@/lib/queryClient"
 
 export default function AdminLogin() {
@@ -15,6 +15,7 @@ export default function AdminLogin() {
   const { language } = useI18n()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const queryClient = useQueryClient()
 
   const loginMutation = useMutation({
     mutationFn: async () => {
@@ -22,6 +23,7 @@ export default function AdminLogin() {
       return res.json()
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/me'] })
       setLocation("/admin/dashboard")
       toast({
         title: language === 'vi' ? 'Đăng nhập thành công' : 'Login successful',

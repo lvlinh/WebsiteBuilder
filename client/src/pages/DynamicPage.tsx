@@ -8,6 +8,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { apiRequest } from "@/lib/queryClient"
 import type { Page } from "@shared/schema"
 import Articles from "./Articles"
+import Events from "./Events"
 
 export default function DynamicPage() {
   const [location] = useLocation()
@@ -27,6 +28,17 @@ export default function DynamicPage() {
       <div className="min-h-screen bg-background">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Articles />
+        </div>
+      </div>
+    )
+  }
+
+  // Special handling for events page
+  if (mainSlug === "gia-dinh-sjjs" && subSlug === "su-kien") {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <Events />
         </div>
       </div>
     )

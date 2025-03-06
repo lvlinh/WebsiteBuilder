@@ -700,11 +700,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(articles);
   });
 
-  app.get("/api/articles/:id", async (req, res) => {
-    const article = await storage.getArticle(Number(req.params.id));
+  app.get("/api/articles/:slugOrId", async (req, res) => {
+    const slugOrId = req.params.slugOrId;
+    let article;
+
+    // Try to get by ID first
+    if (!isNaN(Number(slugOrId))) {
+      article = await storage.getArticle(Number(slugOrId));
+    }
+
+    // If not found by ID, try to get by slug
+    if (!article) {
+      article = await storage.getArticleBySlug(slugOrId);
+    }
+
     if (!article) {
       return res.status(404).json({ message: "Article not found" });
     }
+
     res.json(article);
   });
 
@@ -724,7 +737,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!parseResult.success) {
         console.error('Article update validation errors:', parseResult.error.errors);
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Invalid article data",
           errors: parseResult.error.errors
         });
@@ -1281,7 +1294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parseResult = insertArticleCategorySchema.safeParse(req.body);
       if (!parseResult.success) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Invalid category data",
           errors: parseResult.error.errors
         });
@@ -1304,7 +1317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parseResult = updateArticleCategorySchema.safeParse(req.body);
       if (!parseResult.success) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Invalid category data",
           errors: parseResult.error.errors
         });
@@ -1338,8 +1351,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     if (articles.some(article => article.category === category.slug)) {
-      return res.status(400).json({ 
-        message: "Cannot delete category that is being used by articles" 
+      return res.status(400).json({
+        message: "Cannot delete category that is being used by articles"
       });
     }
 

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 
 import Header from "@/components/layout/Header"
 import Footer from "@/components/layout/Footer"
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav"
 import Home from "@/pages/Home"
 import DynamicPage from "@/pages/DynamicPage"
 import StudentLogin from "@/pages/StudentPortal/Login"
@@ -22,24 +23,27 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <Switch>
-        <Route path="/" component={Home} />
-        {/* Special routes that need specific handling */}
-        <Route path="/articles" component={Articles} />
-        <Route path="/articles/:slug" component={ArticleDetail} />
-        <Route path="/events" component={Events} />
-        <Route path="/student/login" component={StudentLogin} />
-        <Route path="/student/register" component={StudentRegister} />
-        <Route path="/student/dashboard" component={StudentDashboard} />
-        <Route path="/admin/login" component={AdminLogin} />
-        <Route path="/admin/dashboard" component={AdminDashboard} />
-        <Route path="/search" component={Search} />
-        {/* Dynamic page routes */}
-        <Route path="/:section/:subsection" component={DynamicPage} />
-        <Route path="/:section" component={DynamicPage} />
-        {/* 404 route */}
-        <Route component={NotFound} />
-      </Switch>
+      <BreadcrumbNav />
+      <div className="flex-grow">
+        <Switch>
+          <Route path="/" component={Home} />
+          {/* Special routes that need specific handling */}
+          <Route path="/articles" component={Articles} />
+          <Route path="/articles/:slug" component={ArticleDetail} />
+          <Route path="/events" component={Events} />
+          <Route path="/student/login" component={StudentLogin} />
+          <Route path="/student/register" component={StudentRegister} />
+          <Route path="/student/dashboard" component={StudentDashboard} />
+          <Route path="/admin/login" component={AdminLogin} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
+          <Route path="/search" component={Search} />
+          {/* Dynamic page routes */}
+          <Route path="/:section/:subsection" component={DynamicPage} />
+          <Route path="/:section" component={DynamicPage} />
+          {/* 404 route */}
+          <Route component={NotFound} />
+        </Switch>
+      </div>
       <Footer />
     </div>
   )

@@ -119,15 +119,15 @@ export default function BannerSlides() {
       textVerticalAlign: formData.get('textVerticalAlign') as string,
       textHorizontalAlign: formData.get('textHorizontalAlign') as string,
       darkOverlay: formData.get('darkOverlay') === 'on',
-      buttonLink: formData.get('buttonLink') as string,
-      buttonText_vi: formData.get('buttonText_vi') as string,
-      buttonText_en: formData.get('buttonText_en') as string,
+      buttonLink: formData.get('buttonLink') as string || null,
+      buttonText_vi: formData.get('buttonText_vi') as string || null,
+      buttonText_en: formData.get('buttonText_en') as string || null,
       order: parseInt(formData.get('order') as string),
       active: formData.get('active') === 'on',
     };
 
     if (selectedSlide) {
-      updateMutation.mutate({ ...data, id: selectedSlide.id });
+      updateMutation.mutate({ ...data, id: selectedSlide.id, createdAt: selectedSlide.createdAt });
     } else {
       createMutation.mutate(data);
     }
@@ -258,11 +258,11 @@ export default function BannerSlides() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="buttonLink">Button Link</Label>
+                    <Label htmlFor="buttonLink">Button Link (Optional)</Label>
                     <Input 
                       id="buttonLink"
                       name="buttonLink"
-                      defaultValue={selectedSlide?.buttonLink}
+                      defaultValue={selectedSlide?.buttonLink || ''}
                     />
                   </div>
                   <div>
@@ -284,7 +284,7 @@ export default function BannerSlides() {
                       <Input 
                         id="buttonText_vi"
                         name="buttonText_vi"
-                        defaultValue={selectedSlide?.buttonText_vi}
+                        defaultValue={selectedSlide?.buttonText_vi || ''}
                       />
                     </div>
                     <div>
@@ -292,7 +292,7 @@ export default function BannerSlides() {
                       <Input 
                         id="buttonText_en"
                         name="buttonText_en"
-                        defaultValue={selectedSlide?.buttonText_en}
+                        defaultValue={selectedSlide?.buttonText_en || ''}
                       />
                     </div>
                   </div>

@@ -96,7 +96,7 @@ export default function DynamicPage() {
 
   if (isLoading) {
     return (
-      <div className="container py-12">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="animate-pulse">
           <div className="h-8 w-1/3 bg-muted rounded mb-8" />
           <div className="space-y-4">
@@ -111,7 +111,7 @@ export default function DynamicPage() {
 
   if (error || !currentPage) {
     return (
-      <div className="container py-12">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl font-bold mb-4">
           {language === 'vi' ? 'Không tìm thấy trang' : 'Page not found'}
         </h1>
@@ -126,10 +126,10 @@ export default function DynamicPage() {
   }
 
   return (
-    <div className="container py-12">
+    <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Breadcrumb navigation */}
       {parentPage && (
-        <div className="mb-4 text-sm text-muted-foreground">
+        <div className="mb-6 text-sm text-muted-foreground">
           <a href={`/${parentPage.slug}`} className="hover:underline">
             {language === 'vi' ? parentPage.title_vi : parentPage.title_en}
           </a>

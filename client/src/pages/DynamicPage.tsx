@@ -14,17 +14,22 @@ export default function DynamicPage() {
   const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState({ vi: "", en: "" })
-  const slug = location.substring(1) // Remove leading slash
 
+  // Parse the full path to handle nested routes
+  const pathParts = location.substring(1).split('/')
+  const mainSlug = pathParts[0]
+  const subSlug = pathParts[1]
+
+  // Fetch all pages for navigation
   const { data: pages } = useQuery<Page[]>({
     queryKey: ['/api/pages']
   })
 
   // Find the current page
-  const { data: page, isLoading, error } = useQuery<Page>({
-    queryKey: ['/api/pages', slug],
+  const { data: currentPage, isLoading, error } = useQuery<Page>({
+    queryKey: ['/api/pages', subSlug || mainSlug],
     queryFn: async () => {
-      const response = await fetch(`/api/pages/${slug}`)
+      const response = await fetch(`/api/pages/${subSlug || mainSlug}`)
       if (!response.ok) {
         throw new Error('Page not found')
       }
@@ -33,7 +38,7 @@ export default function DynamicPage() {
   })
 
   // Find parent page if this is a child page
-  const parentPage = page?.parentId ? pages?.find(p => p.id === page.parentId) : null
+  const parentPage = currentPage?.parentId ? pages?.find(p => p.id === currentPage.parentId) : null
 
   // Check if user is admin
   const { data: admin } = useQuery({
@@ -52,13 +57,13 @@ export default function DynamicPage() {
   })
 
   useEffect(() => {
-    if (page) {
+    if (currentPage) {
       setEditedContent({
-        vi: page.content_vi,
-        en: page.content_en
+        vi: currentPage.content_vi,
+        en: currentPage.content_en
       })
     }
-  }, [page])
+  }, [currentPage])
 
   const updatePageMutation = useMutation({
     mutationFn: async ({ id, ...data }: Partial<Page> & { id: number }) => {
@@ -80,10 +85,10 @@ export default function DynamicPage() {
   })
 
   const handleSave = () => {
-    if (!page) return
+    if (!currentPage) return
 
     updatePageMutation.mutate({
-      id: page.id,
+      id: currentPage.id,
       content_vi: editedContent.vi,
       content_en: editedContent.en
     })
@@ -104,7 +109,7 @@ export default function DynamicPage() {
     )
   }
 
-  if (error || !page) {
+  if (error || !currentPage) {
     return (
       <div className="container py-12">
         <h1 className="text-4xl font-bold mb-4">
@@ -129,13 +134,13 @@ export default function DynamicPage() {
             {language === 'vi' ? parentPage.title_vi : parentPage.title_en}
           </a>
           <span className="mx-2">/</span>
-          <span>{language === 'vi' ? page.title_vi : page.title_en}</span>
+          <span>{language === 'vi' ? currentPage.title_vi : currentPage.title_en}</span>
         </div>
       )}
 
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">
-          {language === 'vi' ? page.title_vi : page.title_en}
+          {language === 'vi' ? currentPage.title_vi : currentPage.title_en}
         </h1>
         {admin && (
           <div className="flex gap-2">
@@ -187,7 +192,7 @@ export default function DynamicPage() {
       ) : (
         <div className="prose max-w-none dark:prose-invert">
           <div dangerouslySetInnerHTML={{ 
-            __html: language === 'vi' ? page.content_vi : page.content_en 
+            __html: language === 'vi' ? currentPage.content_vi : currentPage.content_en 
           }} />
         </div>
       )}

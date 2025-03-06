@@ -18,7 +18,7 @@ export function MainNav() {
   }
 
   return (
-    <NavigationMenu>
+    <NavigationMenu className="max-w-none">
       <NavigationMenuList className="hidden md:flex space-x-2">
         {mainSections.map(section => {
           const subsections = getSubsections(section.id)
@@ -41,8 +41,8 @@ export function MainNav() {
                 {language === 'vi' ? section.title_vi : section.title_en}
               </NavigationMenuTrigger>
               <NavigationMenuContent>
-                <div className="bg-[#8B4749] rounded-md shadow-lg overflow-hidden min-w-[200px]">
-                  <ul className="p-2 space-y-1">
+                <div className="bg-[#8B4749] rounded-md shadow-lg">
+                  <ul className="p-2 space-y-1 w-[200px]">
                     <li>
                       <Link href={`/${section.slug}`}>
                         <NavigationMenuLink className="block w-full rounded-md p-2 hover:bg-white/10 text-white">
@@ -70,7 +70,9 @@ export function MainNav() {
           )
         })}
       </NavigationMenuList>
-      <NavigationMenuViewport className="relative mt-2" />
+      <div className="perspective-[2000px] absolute w-full top-full left-0">
+        <NavigationMenuViewport className="relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full origin-[top_center] overflow-hidden rounded-md border bg-transparent transition-[width,_height] duration-300 data-[state=closed]:animate-scaleOut data-[state=open]:animate-scaleIn" />
+      </div>
     </NavigationMenu>
   )
 }

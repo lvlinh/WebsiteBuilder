@@ -10,8 +10,9 @@ export default function HeroBanner() {
   const { language } = useI18n()
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
 
-  const { data: slides, isLoading } = useQuery<BannerSlide[]>({
+  const { data: slides = [], isLoading } = useQuery<BannerSlide[]>({
     queryKey: ['/api/banner-slides'],
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   })
 
   const scrollPrev = useCallback(() => {
@@ -75,42 +76,42 @@ export default function HeroBanner() {
 
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
-          {slides.map((slide, index) => (
+          {slides.map((slide) => (
             <div 
-              key={index}
+              key={slide.id}
               className="relative flex-[0_0_100%] min-w-0"
             >
               <img
-                src={slide.image_url}
+                src={slide.imageUrl}
                 alt={language === 'vi' ? slide.title_vi : slide.title_en}
                 className="w-full h-[600px] object-cover"
               />
               <div 
-                className={`absolute inset-0 flex items-${slide.text_vertical_align} justify-${slide.text_horizontal_align} p-8`}
+                className={`absolute inset-0 flex items-${slide.textVerticalAlign} justify-${slide.textHorizontalAlign} p-8`}
               >
                 <div 
                   className={`max-w-lg p-6 rounded-lg ${
-                    slide.dark_overlay ? 'bg-black/50' : 'bg-white/50'
+                    slide.darkOverlay ? 'bg-black/50' : 'bg-white/50'
                   } backdrop-blur-sm`}
                 >
                   <h2 className={`text-3xl sm:text-4xl font-bold mb-4 ${
-                    slide.dark_overlay ? 'text-white' : 'text-gray-900'
+                    slide.darkOverlay ? 'text-white' : 'text-gray-900'
                   }`}>
                     {language === 'vi' ? slide.title_vi : slide.title_en}
                   </h2>
                   <p className={`text-lg ${
-                    slide.dark_overlay ? 'text-white/90' : 'text-gray-700'
+                    slide.darkOverlay ? 'text-white/90' : 'text-gray-700'
                   }`}>
                     {language === 'vi' ? slide.description_vi : slide.description_en}
                   </p>
-                  {slide.button_link && (
+                  {slide.buttonLink && (
                     <Button 
-                      variant={slide.dark_overlay ? "outline" : "default"}
+                      variant={slide.darkOverlay ? "outline" : "default"}
                       className="mt-4"
                       asChild
                     >
-                      <a href={slide.button_link}>
-                        {language === 'vi' ? slide.button_text_vi : slide.button_text_en}
+                      <a href={slide.buttonLink}>
+                        {language === 'vi' ? slide.buttonText_vi : slide.buttonText_en}
                       </a>
                     </Button>
                   )}

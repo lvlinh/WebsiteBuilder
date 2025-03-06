@@ -443,6 +443,54 @@ async function initializeDefaultPages() {
   }
 }
 
+// Add after the other initialization functions
+async function initializeSampleBannerSlides() {
+  const slides = await storage.getBannerSlides();
+  if (slides.length === 0) {
+    await storage.createBannerSlide({
+      imageUrl: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f",
+      title_vi: "Chào mừng đến với SJJS",
+      title_en: "Welcome to SJJS",
+      description_vi: "Học viện thần học Dòng Tên",
+      description_en: "Jesuit School of Theology",
+      textVerticalAlign: "center",
+      textHorizontalAlign: "center",
+      darkOverlay: true,
+      buttonLink: "/about",
+      buttonText_vi: "Tìm hiểu thêm",
+      buttonText_en: "Learn More",
+      order: 1,
+      active: true
+    });
+
+    await storage.createBannerSlide({
+      imageUrl: "https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0",
+      title_vi: "Đào tạo lãnh đạo tương lai",
+      title_en: "Forming Future Leaders",
+      description_vi: "Phát triển toàn diện con người",
+      description_en: "Developing the whole person",
+      textVerticalAlign: "bottom",
+      textHorizontalAlign: "start",
+      darkOverlay: true,
+      order: 2,
+      active: true
+    });
+
+    await storage.createBannerSlide({
+      imageUrl: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6",
+      title_vi: "Học tập suốt đời",
+      title_en: "Lifelong Learning",
+      description_vi: "Kết hợp truyền thống và hiện đại",
+      description_en: "Combining tradition and innovation",
+      textVerticalAlign: "top",
+      textHorizontalAlign: "end",
+      darkOverlay: false,
+      order: 3,
+      active: true
+    });
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session setup with better security
   app.use(session({
@@ -465,7 +513,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   await initializeSampleEvents();
   await initializeAdminUser();
-  await initializeDefaultPages(); // Add this line
+  await initializeDefaultPages();
+  await initializeSampleBannerSlides(); // Add this line
 
   passport.use(new LocalStrategy(
     { usernameField: 'email' },

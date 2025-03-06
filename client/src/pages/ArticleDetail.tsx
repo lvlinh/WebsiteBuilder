@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "wouter"
 import { useI18n } from "@/lib/i18n"
-import { format } from "date-fns"
+import { format, parseISO, isValid } from "date-fns"
 import type { Article } from "@shared/schema"
 
 export default function ArticleDetail() {
@@ -40,11 +40,15 @@ export default function ArticleDetail() {
     )
   }
 
+  // Parse and validate the date
+  const publishDate = article.publishedAt ? parseISO(article.publishedAt.toString()) : null
+  const formattedDate = publishDate && isValid(publishDate) ? format(publishDate, 'PPP') : ''
+
   return (
     <main className="container py-12">
       <article className="prose prose-lg dark:prose-invert mx-auto">
         <h1>{language === 'vi' ? article.title_vi : article.title_en}</h1>
-        
+
         <div className="flex items-center gap-4 text-sm text-muted-foreground not-prose">
           {article.author && (
             <>
@@ -52,10 +56,14 @@ export default function ArticleDetail() {
               <span>•</span>
             </>
           )}
-          <time dateTime={article.publishedAt}>
-            {format(new Date(article.publishedAt), 'PPP')}
-          </time>
-          <span>•</span>
+          {formattedDate && (
+            <>
+              <time dateTime={article.publishedAt?.toString()}>
+                {formattedDate}
+              </time>
+              <span>•</span>
+            </>
+          )}
           <span className="capitalize">
             {article.category.replace('_', ' ')}
           </span>

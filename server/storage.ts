@@ -8,7 +8,9 @@ import { admins, pages, articles, news, students, courses, enrollments, events, 
   type Enrollment, type InsertEnrollment,
   type Event, type InsertEvent,
   type EventRegistration, type InsertEventRegistration,
-  type BannerSlide, type InsertBannerSlide
+  type BannerSlide, type InsertBannerSlide,
+  articleCategories,
+  type ArticleCategory, type InsertArticleCategory
 } from "@shared/schema";
 
 export interface IStorage {
@@ -78,6 +80,14 @@ export interface IStorage {
   createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration>;
   updateEventRegistration(id: number, registration: Partial<InsertEventRegistration>): Promise<EventRegistration | undefined>;
   getEventRegistrationStatus(eventId: number, studentId: number): Promise<EventRegistration | undefined>;
+
+  // Add article category methods
+  getArticleCategories(): Promise<ArticleCategory[]>;
+  getArticleCategory(id: number): Promise<ArticleCategory | undefined>;
+  getArticleCategoryBySlug(slug: string): Promise<ArticleCategory | undefined>;
+  createArticleCategory(category: InsertArticleCategory): Promise<ArticleCategory>;
+  updateArticleCategory(id: number, category: Partial<InsertArticleCategory>): Promise<ArticleCategory | undefined>;
+  deleteArticleCategory(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -91,6 +101,7 @@ export class MemStorage implements IStorage {
   private events: Map<number, Event>;
   private eventRegistrations: Map<number, EventRegistration>;
   private bannerSlides: Map<number, BannerSlide>;
+  private articleCategories: Map<number, ArticleCategory>;
   private adminId: number;
   private pageId: number;
   private articleId: number;
@@ -101,6 +112,7 @@ export class MemStorage implements IStorage {
   private eventId: number;
   private eventRegistrationId: number;
   private bannerSlideId: number;
+  private articleCategoryId: number;
 
   constructor() {
     this.admins = new Map();
@@ -113,6 +125,7 @@ export class MemStorage implements IStorage {
     this.events = new Map();
     this.eventRegistrations = new Map();
     this.bannerSlides = new Map();
+    this.articleCategories = new Map();
     this.adminId = 1;
     this.pageId = 1;
     this.articleId = 1;
@@ -123,6 +136,7 @@ export class MemStorage implements IStorage {
     this.eventId = 1;
     this.eventRegistrationId = 1;
     this.bannerSlideId = 1;
+    this.articleCategoryId = 1;
   }
 
   // Admin methods
@@ -473,6 +487,48 @@ export class MemStorage implements IStorage {
         registration.eventId === eventId && 
         registration.studentId === studentId
       );
+  }
+
+  // Implement article category methods
+  async getArticleCategories(): Promise<ArticleCategory[]> {
+    return Array.from(this.articleCategories.values())
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .filter(category => category.active);
+  }
+
+  async getArticleCategory(id: number): Promise<ArticleCategory | undefined> {
+    return this.articleCategories.get(id);
+  }
+
+  async getArticleCategoryBySlug(slug: string): Promise<ArticleCategory | undefined> {
+    return Array.from(this.articleCategories.values())
+      .find(category => category.slug === slug);
+  }
+
+  async createArticleCategory(category: InsertArticleCategory): Promise<ArticleCategory> {
+    const id = this.articleCategoryId++;
+    const newCategory = {
+      ...category,
+      id,
+      createdAt: new Date(),
+      active: category.active ?? true,
+      order: category.order ?? id
+    } as ArticleCategory;
+    this.articleCategories.set(id, newCategory);
+    return newCategory;
+  }
+
+  async updateArticleCategory(id: number, category: Partial<InsertArticleCategory>): Promise<ArticleCategory | undefined> {
+    const existing = this.articleCategories.get(id);
+    if (!existing) return undefined;
+
+    const updated = { ...existing, ...category };
+    this.articleCategories.set(id, updated);
+    return updated;
+  }
+
+  async deleteArticleCategory(id: number): Promise<boolean> {
+    return this.articleCategories.delete(id);
   }
 }
 

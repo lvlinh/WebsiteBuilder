@@ -1,17 +1,17 @@
-import { pgTable, text, serial, json, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, json, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { integer } from "drizzle-orm/pg-core";
 
-// Add article category enum
-export const articleCategoryEnum = pgEnum('article_category', [
-  'news',           // tin tức
-  'announcement',   // thông báo
-  'internal',       // tin nội bộ
-  'catholic',       // tin công giáo
-  'admission',      // tin tuyển sinh
-  'academic'        // tin học viện
-]);
+// Add article categories table
+export const articleCategories = pgTable("article_categories", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title_vi: text("title_vi").notNull(),
+  title_en: text("title_en").notNull(),
+  order: integer("order").default(0),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Add banner slides table
 export const bannerSlides = pgTable("banner_slides", {
@@ -58,7 +58,7 @@ export const pages = pgTable("pages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Update articles table
+// Update articles table to use dynamic categories
 export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
@@ -69,7 +69,7 @@ export const articles = pgTable("articles", {
   content_vi: text("content_vi").notNull(),
   content_en: text("content_en").notNull(),
   thumbnail: text("thumbnail"),
-  category: articleCategoryEnum("category").notNull(),
+  category: text("category").notNull(), // Changed from enum to text
   featured: boolean("featured").default(false),
   published: boolean("published").default(true),
   publishedAt: timestamp("published_at").defaultNow(),
@@ -140,12 +140,27 @@ export const eventRegistrations = pgTable("event_registrations", {
   notes: text("notes"),
 });
 
-// Update insert schema
-export const insertArticleSchema = createInsertSchema(articles).omit({ 
+// Add schemas for article categories
+export const insertArticleCategorySchema = createInsertSchema(articleCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateArticleCategorySchema = insertArticleCategorySchema.partial();
+
+// Update article schemas
+export const insertArticleSchema = createInsertSchema(articles, {
+  thumbnail: (schema) => schema.thumbnail.nullable(),
+  author: (schema) => schema.author.nullable(),
+  featured: (schema) => schema.featured.default(false),
+  published: (schema) => schema.published.default(true),
+}).omit({ 
   id: true,
   publishedAt: true,
   viewCount: true,
 });
+
+export const updateArticleSchema = insertArticleSchema.partial();
 
 export const insertNewsSchema = createInsertSchema(news).omit({
   id: true,
@@ -191,8 +206,13 @@ export const insertBannerSlideSchema = createInsertSchema(bannerSlides).omit({
   createdAt: true
 });
 
+export type ArticleCategory = typeof articleCategories.$inferSelect;
+export type InsertArticleCategory = z.infer<typeof insertArticleCategorySchema>;
+export type UpdateArticleCategory = z.infer<typeof updateArticleCategorySchema>;
+
 export type Article = typeof articles.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
+export type UpdateArticle = z.infer<typeof updateArticleSchema>;
 
 export type News = typeof news.$inferSelect;
 export type InsertNews = z.infer<typeof insertNewsSchema>;

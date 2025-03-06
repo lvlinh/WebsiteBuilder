@@ -14,6 +14,7 @@ import { Plus, FileText, ImageIcon, FileEdit } from "lucide-react"
 import PageEditor from "./PageEditor"
 import BannerSlides from "./BannerSlides"
 import ArticleEditor from "./ArticleEditor"
+import ArticleCategories from "./ArticleCategories"
 import type { Page, Article } from "@shared/schema"
 
 export default function AdminDashboard() {
@@ -32,33 +33,6 @@ export default function AdminDashboard() {
   const mainPages = pages?.filter(p => !p.parentId) || []
   const subPages = pages?.filter(p => p.parentId) || []
 
-  const categories = {
-    news: {
-      vi: 'Tin tức',
-      en: 'News'
-    },
-    announcement: {
-      vi: 'Thông báo',
-      en: 'Announcements'
-    },
-    internal: {
-      vi: 'Tin nội bộ',
-      en: 'Internal News'
-    },
-    catholic: {
-      vi: 'Tin công giáo',
-      en: 'Catholic News'
-    },
-    admission: {
-      vi: 'Tin tuyển sinh',
-      en: 'Admission News'
-    },
-    academic: {
-      vi: 'Tin học viện',
-      en: 'Academic News'
-    }
-  }
-
   return (
     <div className="container py-10">
       <Tabs defaultValue="pages" className="space-y-6">
@@ -70,6 +44,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="articles" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <FileEdit className="h-4 w-4 mr-2" />
             {language === 'vi' ? 'Quản lý bài viết' : 'Manage Articles'}
+          </TabsTrigger>
+          <TabsTrigger value="article-categories" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <FileText className="h-4 w-4 mr-2" />
+            {language === 'vi' ? 'Quản lý danh mục' : 'Manage Categories'}
           </TabsTrigger>
           <TabsTrigger value="banners" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <ImageIcon className="h-4 w-4 mr-2" />
@@ -219,12 +197,7 @@ export default function AdminDashboard() {
                               <CardTitle className="text-lg">
                                 {language === 'vi' ? article.title_vi : article.title_en}
                               </CardTitle>
-                              <CardDescription>
-                                <span className="text-muted-foreground">
-                                  {categories[article.category][language]}
-                                </span>
-                                {' '}/{article.slug}
-                              </CardDescription>
+                              <CardDescription>/{article.slug}</CardDescription>
                             </div>
                             <Button variant="outline" size="sm">
                               {language === 'vi' ? 'Chỉnh sửa' : 'Edit'}
@@ -238,6 +211,10 @@ export default function AdminDashboard() {
               </Card>
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="article-categories">
+          <ArticleCategories />
         </TabsContent>
 
         <TabsContent value="banners">

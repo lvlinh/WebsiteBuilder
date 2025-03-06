@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema, insertPageSchema, insertBannerSlideSchema } from "@shared/schema"; // Added import
+import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema, insertPageSchema, insertBannerSlideSchema, updateArticleSchema, insertArticleCategorySchema, updateArticleCategorySchema } from "@shared/schema"; // Added import
 import session from "express-session";
 import MemoryStore from "memorystore";
 import passport from "passport";
@@ -573,6 +573,55 @@ async function initializeSampleArticles() {
   }
 }
 
+// Add the initialization function
+async function initializeArticleCategories() {
+  const categories = await storage.getArticleCategories();
+  if (categories.length === 0) {
+    const defaultCategories = [
+      {
+        slug: "news",
+        title_vi: "Tin tức",
+        title_en: "News",
+        order: 1
+      },
+      {
+        slug: "announcement",
+        title_vi: "Thông báo",
+        title_en: "Announcements",
+        order: 2
+      },
+      {
+        slug: "internal",
+        title_vi: "Tin nội bộ",
+        title_en: "Internal News",
+        order: 3
+      },
+      {
+        slug: "catholic",
+        title_vi: "Tin công giáo",
+        title_en: "Catholic News",
+        order: 4
+      },
+      {
+        slug: "admission",
+        title_vi: "Tin tuyển sinh",
+        title_en: "Admission News",
+        order: 5
+      },
+      {
+        slug: "academic",
+        title_vi: "Tin học viện",
+        title_en: "Academic News",
+        order: 6
+      }
+    ];
+
+    for (const category of defaultCategories) {
+      await storage.createArticleCategory(category);
+    }
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session setup with better security
   app.use(session({
@@ -597,7 +646,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await initializeAdminUser();
   await initializeDefaultPages();
   await initializeSampleBannerSlides(); // Add this line
-  await initializeSampleArticles(); // Add this line
+  await initializeArticleCategories(); // Add this line before sample articles initialization
+  await initializeSampleArticles();
 
   passport.use(new LocalStrategy(
     { usernameField: 'email' },
@@ -669,12 +719,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/articles/:id", async (req, res) => {
     try {
-      const parseResult = insertArticleSchema.partial().safeParse(req.body);
+      console.log('Update article request body:', req.body);
+      const parseResult = updateArticleSchema.safeParse(req.body);
+
       if (!parseResult.success) {
+        console.error('Article update validation errors:', parseResult.error.errors);
         return res.status(400).json({ 
           message: "Invalid article data",
           errors: parseResult.error.errors
         });
+      }
+
+      // If category is being updated, validate it exists
+      if (req.body.category) {
+        const categoryExists = await storage.getArticleCategoryBySlug(req.body.category);
+        if (!categoryExists) {
+          return res.status(400).json({ message: "Invalid category" });
+        }
       }
 
       const article = await storage.updateArticle(Number(req.params.id), parseResult.data);
@@ -822,7 +883,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(courses);
   });
 
-  app.post("/api/courses", async (req, res) => {
+  app.post("/api/courses", async (req, res)=> {
     const parseResult = insertCourseSchema.safeParse(req.body);
     if (!parseResult.success) {
       return res.status(400).json({ message: "Invalid course data" });
@@ -1206,6 +1267,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const success = await storage.deleteBannerSlide(Number(req.params.id));
     if (!success) {
       return res.status(404).json({ message: "Banner slide not found" });
+    }
+    res.status(204).end();
+  });
+
+  // Add article category routes
+  app.get("/api/article-categories", async (_req, res) => {
+    const categories = await storage.getArticleCategories();
+    res.json(categories);
+  });
+
+  app.post("/api/article-categories", async (req, res) => {
+    try {
+      const parseResult = insertArticleCategorySchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid category data",
+          errors: parseResult.error.errors
+        });
+      }
+
+      const existingCategory = await storage.getArticleCategoryBySlug(parseResult.data.slug);
+      if (existingCategory) {
+        return res.status(400).json({ message: "Category with this slug already exists" });
+      }
+
+      const category = await storage.createArticleCategory(parseResult.data);
+      res.status(201).json(category);
+    } catch (error) {
+      console.error('Error creating category:', error);
+      res.status(500).json({ message: "Failed to create category" });
+    }
+  });
+
+  app.patch("/api/article-categories/:id", async (req, res) => {
+    try {
+      const parseResult = updateArticleCategorySchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid category data",
+          errors: parseResult.error.errors
+        });
+      }
+
+      if (req.body.slug) {
+        const existingCategory = await storage.getArticleCategoryBySlug(req.body.slug);
+        if (existingCategory && existingCategory.id !== Number(req.params.id)) {
+          return res.status(400).json({ message: "Category with this slug already exists" });
+        }
+      }
+
+      const category = await storage.updateArticleCategory(Number(req.params.id), parseResult.data);
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json(category);
+    } catch (error) {
+      console.error('Error updating category:', error);
+      res.status(500).json({ message: "Failed to update category" });
+    }
+  });
+
+  app.delete("/api/article-categories/:id", async (req, res) => {
+    // Before deleting, check if any articles are using this category
+    const articles = await storage.getArticles();
+    const category = await storage.getArticleCategory(Number(req.params.id));
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    if (articles.some(article => article.category === category.slug)) {
+      return res.status(400).json({ 
+        message: "Cannot delete category that is being used by articles" 
+      });
+    }
+
+    const success = await storage.deleteArticleCategory(Number(req.params.id));
+    if (!success) {
+      return res.status(404).json({ message: "Category not found" });
     }
     res.status(204).end();
   });

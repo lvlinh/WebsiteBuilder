@@ -1,6 +1,5 @@
-import { useState } from "react"
 import { useI18n } from "@/lib/i18n"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
-import type { Article } from "@shared/schema"
+import type { Article, ArticleCategory } from "@shared/schema"
 
 interface ArticleEditorProps {
   article?: Article
@@ -21,35 +20,14 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const categories = {
-    news: {
-      vi: 'Tin tức',
-      en: 'News'
-    },
-    announcement: {
-      vi: 'Thông báo',
-      en: 'Announcements'
-    },
-    internal: {
-      vi: 'Tin nội bộ',
-      en: 'Internal News'
-    },
-    catholic: {
-      vi: 'Tin công giáo',
-      en: 'Catholic News'
-    },
-    admission: {
-      vi: 'Tin tuyển sinh',
-      en: 'Admission News'
-    },
-    academic: {
-      vi: 'Tin học viện',
-      en: 'Academic News'
-    }
-  }
+  // Fetch article categories
+  const { data: categories } = useQuery<ArticleCategory[]>({
+    queryKey: ['/api/article-categories']
+  })
 
   const createMutation = useMutation({
     mutationFn: async (data: Omit<Article, 'id' | 'publishedAt' | 'viewCount'>) => {
+      console.log('Creating article with data:', data)
       const res = await fetch('/api/articles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,8 +57,8 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
 
   const updateMutation = useMutation({
     mutationFn: async (data: Article) => {
-      // Only send updated fields, excluding id and system fields
       const { id, publishedAt, viewCount, ...updateData } = data
+      console.log('Updating article with data:', updateData)
 
       const res = await fetch(`/api/articles/${id}`, {
         method: 'PATCH',
@@ -113,6 +91,16 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
 
+    const selectedCategory = formData.get('category') as string
+    if (!selectedCategory || !categories?.some(cat => cat.slug === selectedCategory)) {
+      toast({
+        variant: "destructive",
+        title: language === 'vi' ? 'Lỗi danh mục' : 'Category Error',
+        description: language === 'vi' ? 'Vui lòng chọn danh mục hợp lệ' : 'Please select a valid category'
+      })
+      return
+    }
+
     const data = {
       slug: formData.get('slug') as string,
       title_vi: formData.get('title_vi') as string,
@@ -122,14 +110,13 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
       content_vi: formData.get('content_vi') as string,
       content_en: formData.get('content_en') as string,
       thumbnail: formData.get('thumbnail') as string || null,
-      category: formData.get('category') as "news" | "announcement" | "internal" | "catholic" | "admission" | "academic",
+      category: selectedCategory,
       featured: formData.get('featured') === 'on',
       published: formData.get('published') === 'on',
       author: formData.get('author') as string || null,
     }
 
     if (article?.id) {
-      // Include original id and system fields when updating
       updateMutation.mutate({ 
         ...data, 
         id: article.id,
@@ -139,6 +126,11 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
     } else {
       createMutation.mutate(data)
     }
+  }
+
+  // Ensure categories are loaded before rendering
+  if (!categories) {
+    return <div>Loading categories...</div>
   }
 
   return (
@@ -228,14 +220,14 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
               <Label htmlFor="category">
                 {language === 'vi' ? 'Danh mục' : 'Category'}
               </Label>
-              <Select name="category" defaultValue={article?.category || "news"}>
+              <Select name="category" defaultValue={article?.category}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(categories).map(([key, labels]) => (
-                    <SelectItem key={key} value={key}>
-                      {labels[language]}
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.slug}>
+                      {language === 'vi' ? category.title_vi : category.title_en}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -296,7 +288,7 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
               <Switch 
                 id="featured" 
                 name="featured"
-                defaultChecked={article?.featured}
+                defaultChecked={article?.featured ?? false}
               />
               <Label htmlFor="featured">
                 {language === 'vi' ? 'Nổi bật' : 'Featured'}

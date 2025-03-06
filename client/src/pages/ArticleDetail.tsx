@@ -18,15 +18,6 @@ export default function ArticleDetail() {
     queryKey: ['/api/article-categories']
   })
 
-  // Log article data for debugging
-  console.log('Article data:', {
-    title: language === 'vi' ? article.title_vi : article.title_en,
-    content: language === 'vi' ? article.content_vi : article.content_en,
-    category: categories?.find(cat => cat.slug === article.category),
-    publishDate: article.publishedAt ? parseISO(article.publishedAt.toString()) : null
-  })
-
-
   if (isLoading) {
     return (
       <main className="container py-12">
@@ -61,6 +52,13 @@ export default function ArticleDetail() {
   // Find the category details
   const category = categories?.find(cat => cat.slug === article.category)
 
+  // Log article data for debugging
+  console.log('Article data:', {
+    title: language === 'vi' ? article.title_vi : article.title_en,
+    content: language === 'vi' ? article.content_vi : article.content_en,
+    category: category,
+    publishDate: publishDate
+  })
 
   const content = language === 'vi' ? article.content_vi : article.content_en
 

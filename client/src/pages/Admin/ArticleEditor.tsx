@@ -58,12 +58,17 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
   const updateMutation = useMutation({
     mutationFn: async (data: Article) => {
       const { id, publishedAt, viewCount, ...updateData } = data
-      console.log('Updating article with data:', updateData)
+      // When updating, include the original slug
+      const payload = {
+        ...updateData,
+        slug: article?.slug // Keep the original slug during updates
+      }
+      console.log('Updating article with data:', payload)
 
       const res = await fetch(`/api/articles/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData)
+        body: JSON.stringify(payload)
       })
       if (!res.ok) {
         const error = await res.json()
@@ -102,7 +107,6 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
     }
 
     const data = {
-      slug: formData.get('slug') as string,
       title_vi: formData.get('title_vi') as string,
       title_en: formData.get('title_en') as string,
       excerpt_vi: formData.get('excerpt_vi') as string,
@@ -117,14 +121,26 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
     }
 
     if (article?.id) {
+      // For updates, include the ID, publishedAt, and viewCount from the original article
       updateMutation.mutate({ 
         ...data, 
         id: article.id,
+        slug: article.slug, // Keep the original slug
         publishedAt: article.publishedAt,
         viewCount: article.viewCount || 0
       })
     } else {
-      createMutation.mutate(data)
+      // For new articles, include the slug from the form
+      const slug = formData.get('slug') as string
+      if (!slug) {
+        toast({
+          variant: "destructive",
+          title: language === 'vi' ? 'Lỗi đường dẫn' : 'Slug Error',
+          description: language === 'vi' ? 'Vui lòng nhập đường dẫn' : 'Please enter a slug'
+        })
+        return
+      }
+      createMutation.mutate({ ...data, slug })
     }
   }
 

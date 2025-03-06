@@ -18,7 +18,7 @@ export function MainNav() {
   }
 
   return (
-    <NavigationMenu className="relative">
+    <NavigationMenu>
       <NavigationMenuList className="hidden md:flex space-x-2">
         {mainSections.map(section => {
           const subsections = getSubsections(section.id)
@@ -36,12 +36,12 @@ export function MainNav() {
           }
 
           return (
-            <NavigationMenuItem key={section.id}>
+            <NavigationMenuItem key={section.id} className="relative">
               <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10">
                 {language === 'vi' ? section.title_vi : section.title_en}
               </NavigationMenuTrigger>
-              <NavigationMenuContent className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2">
-                <div className="relative bg-[#8B4749] rounded-md shadow-lg overflow-hidden p-1">
+              <NavigationMenuContent className="absolute top-full left-0">
+                <div className="relative bg-[#8B4749] rounded-md shadow-lg overflow-hidden min-w-[200px]">
                   <ul className="p-2 space-y-1">
                     <li>
                       <Link href={`/${section.slug}`}>

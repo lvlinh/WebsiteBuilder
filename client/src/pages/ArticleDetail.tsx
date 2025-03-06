@@ -8,8 +8,18 @@ export default function ArticleDetail() {
   const { language } = useI18n()
   const { slug } = useParams()
 
+  // Fetch the specific article by slug
   const { data: article, isLoading } = useQuery<Article>({
     queryKey: ['/api/articles', slug],
+    queryFn: async () => {
+      const response = await fetch(`/api/articles/${slug}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch article')
+      }
+      const data = await response.json()
+      console.log('Fetched article data:', data) // Debug log
+      return data
+    },
     enabled: !!slug
   })
 
@@ -51,14 +61,6 @@ export default function ArticleDetail() {
 
   // Find the category details
   const category = categories?.find(cat => cat.slug === article.category)
-
-  // Log article data for debugging
-  console.log('Article data:', {
-    title: language === 'vi' ? article.title_vi : article.title_en,
-    content: language === 'vi' ? article.content_vi : article.content_en,
-    category: category,
-    publishDate: publishDate
-  })
 
   const content = language === 'vi' ? article.content_vi : article.content_en
 

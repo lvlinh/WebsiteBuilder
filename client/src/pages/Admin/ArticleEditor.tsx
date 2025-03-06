@@ -270,7 +270,7 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
               type="hidden" 
               name="content_vi" 
               id="content_vi" 
-              value={article?.content_vi || ''} 
+              defaultValue={article?.content_vi || ''} 
             />
             <RichTextEditor
               content={article?.content_vi || ''}
@@ -289,7 +289,7 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
               type="hidden" 
               name="content_en" 
               id="content_en" 
-              value={article?.content_en || ''} 
+              defaultValue={article?.content_en || ''} 
             />
             <RichTextEditor
               content={article?.content_en || ''}

@@ -12,7 +12,7 @@ export default function ArticleDetail() {
   const { data: article, isLoading } = useQuery<Article>({
     queryKey: ['/api/articles', slug],
     queryFn: async () => {
-      const response = await fetch(`/api/articles/by-slug/${slug}`)
+      const response = await fetch(`/api/articles/${slug}`)
       if (!response.ok) {
         throw new Error('Failed to fetch article')
       }

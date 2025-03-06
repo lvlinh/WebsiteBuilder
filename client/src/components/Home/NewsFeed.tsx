@@ -1,17 +1,21 @@
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useI18n } from "@/lib/i18n"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Link } from "wouter"
 import type { Article } from "@shared/schema"
 import { format } from "date-fns"
 
+const ARTICLES_PER_PAGE = 4
+
 export default function NewsFeed() {
   const { language } = useI18n()
+  const [page, setPage] = useState(1)
   const { data: articles, isLoading } = useQuery<Article[]>({ 
     queryKey: ['/api/articles'],
-    select: (data) => data.filter(article => article.featured && article.published)
+    select: (data) => data.filter(article => article.published)
                          .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-                         .slice(0, 3)
   })
 
   if (isLoading) {
@@ -19,6 +23,7 @@ export default function NewsFeed() {
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
           <Card key={i} className="animate-pulse">
+            <div className="aspect-video bg-muted rounded-t-lg" />
             <CardHeader>
               <div className="h-6 w-2/3 bg-muted rounded" />
             </CardHeader>
@@ -31,17 +36,29 @@ export default function NewsFeed() {
     )
   }
 
+  const displayedArticles = articles?.slice(0, page * ARTICLES_PER_PAGE)
+  const hasMore = articles && displayedArticles && displayedArticles.length < articles.length
+
   return (
     <div className="space-y-4">
-      {articles?.map((article) => (
+      {displayedArticles?.map((article) => (
         <Link key={article.id} href={`/articles/${article.slug}`}>
           <Card className="cursor-pointer hover:bg-accent transition-colors">
+            {article.thumbnail && (
+              <div className="aspect-video">
+                <img
+                  src={article.thumbnail}
+                  alt={language === 'vi' ? article.title_vi : article.title_en}
+                  className="w-full h-full object-cover rounded-t-lg"
+                />
+              </div>
+            )}
             <CardHeader>
-              <CardTitle className="text-lg">
+              <CardTitle className="text-lg line-clamp-2">
                 {language === 'vi' ? article.title_vi : article.title_en}
               </CardTitle>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <time dateTime={article.publishedAt}>
+                <time dateTime={article.publishedAt?.toString()}>
                   {format(new Date(article.publishedAt), 'PPP')}
                 </time>
                 <span>•</span>
@@ -58,6 +75,17 @@ export default function NewsFeed() {
           </Card>
         </Link>
       ))}
+
+      {hasMore && (
+        <div className="text-center pt-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setPage(p => p + 1)}
+          >
+            {language === 'vi' ? 'Xem thêm' : 'Load more'}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

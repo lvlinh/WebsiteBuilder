@@ -60,47 +60,53 @@ export default function ArticleDetail() {
     publishDate: publishDate
   })
 
+  const content = language === 'vi' ? article.content_vi : article.content_en
+
   return (
     <main className="container py-12">
-      <article className="prose prose-lg dark:prose-invert mx-auto">
-        <h1>{language === 'vi' ? article.title_vi : article.title_en}</h1>
+      <article className="max-w-4xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold mb-4">
+            {language === 'vi' ? article.title_vi : article.title_en}
+          </h1>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground not-prose">
-          {article.author && (
-            <>
-              <span>{article.author}</span>
-              <span>•</span>
-            </>
-          )}
-          {formattedDate && (
-            <>
-              <time dateTime={article.publishedAt?.toString()}>
-                {formattedDate}
-              </time>
-              <span>•</span>
-            </>
-          )}
-          {category && (
-            <span className="capitalize">
-              {language === 'vi' ? category.title_vi : category.title_en}
-            </span>
-          )}
-        </div>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            {article.author && (
+              <>
+                <span>{article.author}</span>
+                <span>•</span>
+              </>
+            )}
+            {formattedDate && (
+              <>
+                <time dateTime={article.publishedAt?.toString()}>
+                  {formattedDate}
+                </time>
+                <span>•</span>
+              </>
+            )}
+            {category && (
+              <span className="capitalize">
+                {language === 'vi' ? category.title_vi : category.title_en}
+              </span>
+            )}
+          </div>
+        </header>
 
         {article.thumbnail && (
           <img
             src={article.thumbnail}
             alt={language === 'vi' ? article.title_vi : article.title_en}
-            className="w-full aspect-video object-cover rounded-lg my-8"
+            className="w-full aspect-video object-cover rounded-lg mb-8"
           />
         )}
 
-        <div 
-          dangerouslySetInnerHTML={{ 
-            __html: language === 'vi' ? article.content_vi : article.content_en 
-          }} 
-          className="prose prose-lg dark:prose-invert mt-8"
-        />
+        {content && (
+          <div 
+            dangerouslySetInnerHTML={{ __html: content }}
+            className="prose prose-lg dark:prose-invert max-w-none"
+          />
+        )}
       </article>
     </main>
   )

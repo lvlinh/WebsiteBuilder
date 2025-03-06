@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useI18n } from "@/lib/i18n"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { apiRequest } from "@/lib/queryClient"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -51,7 +50,15 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
 
   const createMutation = useMutation({
     mutationFn: async (data: Omit<Article, 'id' | 'publishedAt' | 'viewCount'>) => {
-      const res = await apiRequest("POST", "/api/articles", data)
+      const res = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.message || 'Failed to create article')
+      }
       return res.json()
     },
     onSuccess: () => {
@@ -61,17 +68,26 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
       })
       onBack()
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: language === 'vi' ? 'Tạo bài viết thất bại' : 'Failed to create article',
+        description: error.message
       })
     }
   })
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, ...data }: Partial<Article> & { id: number }) => {
-      const res = await apiRequest("PATCH", `/api/articles/${id}`, data)
+    mutationFn: async ({ id, ...data }: Article) => {
+      const res = await fetch(`/api/articles/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.message || 'Failed to update article')
+      }
       return res.json()
     },
     onSuccess: () => {
@@ -81,10 +97,11 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
       })
       onBack()
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: language === 'vi' ? 'Cập nhật bài viết thất bại' : 'Failed to update article',
+        description: error.message
       })
     }
   })
@@ -101,15 +118,15 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
       excerpt_en: formData.get('excerpt_en') as string,
       content_vi: formData.get('content_vi') as string,
       content_en: formData.get('content_en') as string,
-      thumbnail: formData.get('thumbnail') as string,
-      category: formData.get('category') as string,
+      thumbnail: formData.get('thumbnail') as string || null,
+      category: formData.get('category') as "news" | "announcement" | "internal" | "catholic" | "admission" | "academic",
       featured: formData.get('featured') === 'on',
       published: formData.get('published') === 'on',
-      author: formData.get('author') as string,
+      author: formData.get('author') as string || null,
     }
 
-    if (article) {
-      updateMutation.mutate({ ...data, id: article.id })
+    if (article?.id) {
+      updateMutation.mutate({ ...data, id: article.id, publishedAt: article.publishedAt, viewCount: article.viewCount })
     } else {
       createMutation.mutate(data)
     }
@@ -119,12 +136,12 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
     <Card>
       <CardHeader>
         <CardTitle>
-          {article 
+          {article?.id
             ? language === 'vi' ? 'Chỉnh sửa bài viết' : 'Edit Article'
             : language === 'vi' ? 'Tạo bài viết mới' : 'Create New Article'
           }
         </CardTitle>
-        {article && (
+        {article?.id && (
           <CardDescription>
             Slug: {article.slug}
           </CardDescription>
@@ -132,7 +149,7 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {!article && (
+          {!article?.id && (
             <div className="space-y-2">
               <Label htmlFor="slug">Slug</Label>
               <Input id="slug" name="slug" required />
@@ -195,7 +212,7 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
               <Input 
                 id="thumbnail" 
                 name="thumbnail" 
-                defaultValue={article?.thumbnail}
+                defaultValue={article?.thumbnail || ''}
               />
             </div>
             <div className="space-y-2">
@@ -263,7 +280,7 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
               <Input 
                 id="author" 
                 name="author" 
-                defaultValue={article?.author}
+                defaultValue={article?.author || ''}
               />
             </div>
             <div className="flex items-center space-x-2">
@@ -297,7 +314,7 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
               {language === 'vi' ? 'Quay lại' : 'Back'}
             </Button>
             <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-              {article
+              {article?.id
                 ? language === 'vi' ? 'Cập nhật bài viết' : 'Update Article'
                 : language === 'vi' ? 'Tạo bài viết' : 'Create Article'
               }

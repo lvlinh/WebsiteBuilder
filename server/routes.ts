@@ -491,6 +491,88 @@ async function initializeSampleBannerSlides() {
   }
 }
 
+// Add this function after other initialization functions
+async function initializeSampleArticles() {
+  const articles = await storage.getArticles();
+  if (articles.length === 0) {
+    // Sample articles for each category
+    await storage.createArticle({
+      slug: "welcome-to-sjjs-2025",
+      title_vi: "Chào mừng đến với SJJS năm học 2025",
+      title_en: "Welcome to SJJS Academic Year 2025",
+      excerpt_vi: "Thông điệp chào mừng từ Ban Giám đốc Học viện",
+      excerpt_en: "Welcome message from the Institute's Board of Directors",
+      content_vi: "Kính gửi quý thầy cô, các sinh viên và cộng đồng SJJS...",
+      content_en: "Dear faculty members, students, and SJJS community...",
+      thumbnail: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f",
+      category: "announcement",
+      featured: true,
+      published: true,
+      author: "Ban Giám đốc / Board of Directors"
+    });
+
+    await storage.createArticle({
+      slug: "theology-symposium-2025",
+      title_vi: "Hội thảo Thần học: Đối thoại Liên tôn trong Thế giới Hiện đại",
+      title_en: "Theology Symposium: Interfaith Dialogue in the Modern World",
+      excerpt_vi: "Hội thảo chuyên đề về vai trò của đối thoại liên tôn",
+      excerpt_en: "Symposium on the role of interfaith dialogue",
+      content_vi: "Học viện SJJS tổ chức hội thảo chuyên đề về đối thoại liên tôn...",
+      content_en: "SJJS Institute organizes a symposium on interfaith dialogue...",
+      thumbnail: "https://images.unsplash.com/photo-1507692049790-de58290a4334",
+      category: "academic",
+      featured: true,
+      published: true,
+      author: "Dr. John Smith"
+    });
+
+    await storage.createArticle({
+      slug: "admission-2025-2026",
+      title_vi: "Thông báo Tuyển sinh Năm học 2025-2026",
+      title_en: "Admission Announcement for Academic Year 2025-2026",
+      excerpt_vi: "Thông tin chi tiết về kỳ tuyển sinh sắp tới",
+      excerpt_en: "Detailed information about the upcoming admission period",
+      content_vi: "Học viện SJJS thông báo tuyển sinh năm học 2025-2026...",
+      content_en: "SJJS Institute announces admissions for academic year 2025-2026...",
+      thumbnail: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1",
+      category: "admission",
+      featured: true,
+      published: true,
+      author: "Ban Tuyển sinh / Admissions Office"
+    });
+
+    await storage.createArticle({
+      slug: "christmas-retreat-2024",
+      title_vi: "Tĩnh tâm Mùa Giáng sinh 2024",
+      title_en: "Christmas Retreat 2024",
+      excerpt_vi: "Chương trình tĩnh tâm đặc biệt mùa Giáng sinh",
+      excerpt_en: "Special Christmas retreat program",
+      content_vi: "Mời cộng đồng SJJS tham dự chương trình tĩnh tâm mùa Giáng sinh...",
+      content_en: "Inviting SJJS community to join the Christmas retreat program...",
+      thumbnail: "https://images.unsplash.com/photo-1512389098783-66b81f86e199",
+      category: "catholic",
+      featured: false,
+      published: true,
+      author: "Ban Mục vụ / Pastoral Care Office"
+    });
+
+    await storage.createArticle({
+      slug: "faculty-updates-december-2024",
+      title_vi: "Cập nhật từ Ban Giảng huấn - Tháng 12/2024",
+      title_en: "Faculty Updates - December 2024",
+      excerpt_vi: "Thông tin cập nhật về hoạt động của Ban Giảng huấn",
+      excerpt_en: "Updates on Faculty activities",
+      content_vi: "Ban Giảng huấn xin thông báo một số cập nhật quan trọng...",
+      content_en: "The Faculty would like to announce several important updates...",
+      thumbnail: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655",
+      category: "internal",
+      featured: false,
+      published: true,
+      author: "Ban Giảng huấn / Faculty Board"
+    });
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session setup with better security
   app.use(session({
@@ -515,6 +597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await initializeAdminUser();
   await initializeDefaultPages();
   await initializeSampleBannerSlides(); // Add this line
+  await initializeSampleArticles(); // Add this line
 
   passport.use(new LocalStrategy(
     { usernameField: 'email' },

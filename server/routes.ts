@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema, insertPageSchema } from "@shared/schema";
+import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema, insertPageSchema, insertBannerSlideSchema } from "@shared/schema"; // Added import
 import session from "express-session";
 import MemoryStore from "memorystore";
 import passport from "passport";
@@ -1021,6 +1021,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const success = await storage.deletePage(Number(req.params.id));
     if (!success) {
       return res.status(404).json({ message: "Page not found" });
+    }
+    res.status(204).end();
+  });
+
+  // Add after existing API endpoints but before registerRoutes function
+  app.get("/api/banner-slides", async (_req, res) => {
+    try {
+      const slides = await storage.getBannerSlides();
+      res.json(slides);
+    } catch (error) {
+      console.error('Error fetching banner slides:', error);
+      res.status(500).json({ message: "Failed to fetch banner slides" });
+    }
+  });
+
+  app.post("/api/banner-slides", isAdmin, async (req, res) => {
+    const parseResult = insertBannerSlideSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        message: "Invalid banner slide data",
+        errors: parseResult.error.errors
+      });
+    }
+    const slide = await storage.createBannerSlide(parseResult.data);
+    res.status(201).json(slide);
+  });
+
+  app.patch("/api/banner-slides/:id", isAdmin, async (req, res) => {
+    const parseResult = insertBannerSlideSchema.partial().safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ message: "Invalid banner slide data" });
+    }
+    const slide = await storage.updateBannerSlide(Number(req.params.id), parseResult.data);
+    if (!slide) {
+      return res.status(404).json({ message: "Banner slide not found" });
+    }
+    res.json(slide);
+  });
+
+  app.delete("/api/banner-slides/:id", isAdmin, async (req, res) => {
+    const success = await storage.deleteBannerSlide(Number(req.params.id));
+    if (!success) {
+      return res.status(404).json({ message: "Banner slide not found" });
     }
     res.status(204).end();
   });

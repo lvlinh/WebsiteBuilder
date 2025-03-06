@@ -7,7 +7,8 @@ import { admins, pages, articles, news, students, courses, enrollments, events, 
   type Course, type InsertCourse,
   type Enrollment, type InsertEnrollment,
   type Event, type InsertEvent,
-  type EventRegistration, type InsertEventRegistration
+  type EventRegistration, type InsertEventRegistration,
+  type BannerSlide, type InsertBannerSlide
 } from "@shared/schema";
 
 export interface IStorage {
@@ -25,6 +26,12 @@ export interface IStorage {
   createPage(page: InsertPage): Promise<Page>;
   updatePage(id: number, page: Partial<InsertPage>): Promise<Page | undefined>;
   deletePage(id: number): Promise<boolean>;
+
+  //Banner Slides
+  getBannerSlides(): Promise<BannerSlide[]>;
+  createBannerSlide(slide: InsertBannerSlide): Promise<BannerSlide>;
+  updateBannerSlide(id: number, slide: Partial<InsertBannerSlide>): Promise<BannerSlide | undefined>;
+  deleteBannerSlide(id: number): Promise<boolean>;
 
   // Articles
   getArticles(): Promise<Article[]>;
@@ -83,6 +90,7 @@ export class MemStorage implements IStorage {
   private enrollments: Map<number, Enrollment>;
   private events: Map<number, Event>;
   private eventRegistrations: Map<number, EventRegistration>;
+  private bannerSlides: Map<number, BannerSlide>;
   private adminId: number;
   private pageId: number;
   private articleId: number;
@@ -92,6 +100,7 @@ export class MemStorage implements IStorage {
   private enrollmentId: number;
   private eventId: number;
   private eventRegistrationId: number;
+  private bannerSlideId: number;
 
   constructor() {
     this.admins = new Map();
@@ -103,6 +112,7 @@ export class MemStorage implements IStorage {
     this.enrollments = new Map();
     this.events = new Map();
     this.eventRegistrations = new Map();
+    this.bannerSlides = new Map();
     this.adminId = 1;
     this.pageId = 1;
     this.articleId = 1;
@@ -112,6 +122,7 @@ export class MemStorage implements IStorage {
     this.enrollmentId = 1;
     this.eventId = 1;
     this.eventRegistrationId = 1;
+    this.bannerSlideId = 1;
   }
 
   // Admin methods
@@ -188,6 +199,40 @@ export class MemStorage implements IStorage {
   async deletePage(id: number): Promise<boolean> {
     return this.pages.delete(id);
   }
+
+  //Banner Slides
+  async getBannerSlides(): Promise<BannerSlide[]> {
+    return Array.from(this.bannerSlides.values())
+      .sort((a, b) => a.order - b.order)
+      .filter(slide => slide.active);
+  }
+
+  async createBannerSlide(slide: InsertBannerSlide): Promise<BannerSlide> {
+    const id = this.bannerSlideId++;
+    const newSlide = {
+      ...slide,
+      id,
+      createdAt: new Date(),
+      active: slide.active ?? true,
+      order: slide.order ?? id
+    } as BannerSlide;
+    this.bannerSlides.set(id, newSlide);
+    return newSlide;
+  }
+
+  async updateBannerSlide(id: number, slide: Partial<InsertBannerSlide>): Promise<BannerSlide | undefined> {
+    const existing = this.bannerSlides.get(id);
+    if (!existing) return undefined;
+
+    const updated = { ...existing, ...slide };
+    this.bannerSlides.set(id, updated);
+    return updated;
+  }
+
+  async deleteBannerSlide(id: number): Promise<boolean> {
+    return this.bannerSlides.delete(id);
+  }
+
   // Articles methods
   async getArticles(): Promise<Article[]> {
     return Array.from(this.articles.values());

@@ -43,11 +43,11 @@ export default function BannerSlides() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (newSlide: Omit<BannerSlide, 'id' | 'createdAt'>) => {
+    mutationFn: async (data: Omit<BannerSlide, 'id' | 'createdAt'>) => {
       const res = await fetch('/api/banner-slides', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSlide),
+        body: JSON.stringify(data),
       });
       if (!res.ok) {
         const error = await res.json();
@@ -70,11 +70,11 @@ export default function BannerSlides() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (slide: BannerSlide) => {
-      const res = await fetch(`/api/banner-slides/${slide.id}`, {
+    mutationFn: async (data: BannerSlide) => {
+      const res = await fetch(`/api/banner-slides/${data.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(slide),
+        body: JSON.stringify(data),
       });
       if (!res.ok) {
         const error = await res.json();
@@ -120,22 +120,20 @@ export default function BannerSlides() {
     const formData = new FormData(e.currentTarget);
 
     const data = {
-      image_url: formData.get('image_url') as string,
+      imageUrl: formData.get('imageUrl') as string,
       title_vi: formData.get('title_vi') as string,
       title_en: formData.get('title_en') as string,
       description_vi: formData.get('description_vi') as string,
       description_en: formData.get('description_en') as string,
-      text_vertical_align: formData.get('text_vertical_align') as string,
-      text_horizontal_align: formData.get('text_horizontal_align') as string,
-      dark_overlay: formData.get('dark_overlay') === 'on',
-      button_link: formData.get('button_link') as string || null,
-      button_text_vi: formData.get('button_text_vi') as string || null,
-      button_text_en: formData.get('button_text_en') as string || null,
+      textVerticalAlign: formData.get('textVerticalAlign') as string,
+      textHorizontalAlign: formData.get('textHorizontalAlign') as string,
+      darkOverlay: formData.get('darkOverlay') === 'on',
+      buttonLink: formData.get('buttonLink') as string || null,
+      buttonText_vi: formData.get('buttonText_vi') as string || null,
+      buttonText_en: formData.get('buttonText_en') as string || null,
       order: parseInt(formData.get('order') as string),
       active: formData.get('active') === 'on',
     };
-
-    console.log('Submitting banner data:', data);
 
     if (selectedSlide) {
       updateMutation.mutate({ ...data, id: selectedSlide.id, createdAt: selectedSlide.createdAt });
@@ -177,11 +175,11 @@ export default function BannerSlides() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <Label htmlFor="image_url">Image URL</Label>
+                  <Label htmlFor="imageUrl">Image URL</Label>
                   <Input 
-                    id="image_url"
-                    name="image_url"
-                    defaultValue={selectedSlide?.image_url}
+                    id="imageUrl"
+                    name="imageUrl"
+                    defaultValue={selectedSlide?.imageUrl}
                     required
                   />
                 </div>
@@ -227,10 +225,10 @@ export default function BannerSlides() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="text_vertical_align">Vertical Alignment</Label>
+                    <Label htmlFor="textVerticalAlign">Vertical Alignment</Label>
                     <Select 
-                      name="text_vertical_align"
-                      defaultValue={selectedSlide?.text_vertical_align || "center"}
+                      name="textVerticalAlign"
+                      defaultValue={selectedSlide?.textVerticalAlign || "center"}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -243,10 +241,10 @@ export default function BannerSlides() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="text_horizontal_align">Horizontal Alignment</Label>
+                    <Label htmlFor="textHorizontalAlign">Horizontal Alignment</Label>
                     <Select 
-                      name="text_horizontal_align"
-                      defaultValue={selectedSlide?.text_horizontal_align || "center"}
+                      name="textHorizontalAlign"
+                      defaultValue={selectedSlide?.textHorizontalAlign || "center"}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -261,19 +259,19 @@ export default function BannerSlides() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch 
-                    id="dark_overlay" 
-                    name="dark_overlay"
-                    defaultChecked={selectedSlide?.dark_overlay}
+                    id="darkOverlay" 
+                    name="darkOverlay"
+                    defaultChecked={selectedSlide?.darkOverlay}
                   />
-                  <Label htmlFor="dark_overlay">Dark Overlay</Label>
+                  <Label htmlFor="darkOverlay">Dark Overlay</Label>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="button_link">Button Link (Optional)</Label>
+                    <Label htmlFor="buttonLink">Button Link (Optional)</Label>
                     <Input 
-                      id="button_link"
-                      name="button_link"
-                      defaultValue={selectedSlide?.button_link || ''}
+                      id="buttonLink"
+                      name="buttonLink"
+                      defaultValue={selectedSlide?.buttonLink || ''}
                     />
                   </div>
                   <div>
@@ -287,23 +285,23 @@ export default function BannerSlides() {
                     />
                   </div>
                 </div>
-                {/* Only show button text fields if button_link is present */}
-                {(selectedSlide?.button_link || !selectedSlide) && (
+                {/* Only show button text fields if buttonLink is present */}
+                {(selectedSlide?.buttonLink || !selectedSlide) && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="button_text_vi">Vietnamese Button Text</Label>
+                      <Label htmlFor="buttonText_vi">Vietnamese Button Text</Label>
                       <Input 
-                        id="button_text_vi"
-                        name="button_text_vi"
-                        defaultValue={selectedSlide?.button_text_vi || ''}
+                        id="buttonText_vi"
+                        name="buttonText_vi"
+                        defaultValue={selectedSlide?.buttonText_vi || ''}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="button_text_en">English Button Text</Label>
+                      <Label htmlFor="buttonText_en">English Button Text</Label>
                       <Input 
-                        id="button_text_en"
-                        name="button_text_en"
-                        defaultValue={selectedSlide?.button_text_en || ''}
+                        id="buttonText_en"
+                        name="buttonText_en"
+                        defaultValue={selectedSlide?.buttonText_en || ''}
                       />
                     </div>
                   </div>
@@ -360,12 +358,21 @@ export default function BannerSlides() {
               <CardDescription>Order: {slide.order}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="aspect-video relative">
+              <div className="aspect-video relative bg-muted rounded-lg overflow-hidden">
                 <img
-                  src={slide.image_url}
+                  src={slide.imageUrl}
                   alt={language === 'vi' ? slide.title_vi : slide.title_en}
-                  className="w-full h-full object-cover rounded-md"
+                  className="w-full h-full object-cover"
                 />
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className={`absolute inset-0 flex items-${slide.textVerticalAlign} justify-${slide.textHorizontalAlign} p-4`}>
+                    <div className={`max-w-lg p-4 rounded ${slide.darkOverlay ? 'bg-black/50' : 'bg-white/50'} backdrop-blur-sm`}>
+                      <p className={`text-sm ${slide.darkOverlay ? 'text-white' : 'text-gray-900'}`}>
+                        {language === 'vi' ? slide.description_vi : slide.description_en}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -49,17 +49,21 @@ export default function BannerSlides() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSlide),
       });
-      if (!res.ok) throw new Error('Failed to create slide');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to create slide');
+      }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banner-slides'] });
-      toast({ title: 'Slide created successfully' });
+      toast({ title: language === 'vi' ? 'Tạo banner thành công' : 'Banner created successfully' });
       setIsDialogOpen(false);
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({ 
-        title: 'Failed to create slide',
+        title: language === 'vi' ? 'Lỗi khi tạo banner' : 'Failed to create banner',
+        description: error.message,
         variant: 'destructive'
       });
     },
@@ -72,17 +76,21 @@ export default function BannerSlides() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(slide),
       });
-      if (!res.ok) throw new Error('Failed to update slide');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to update slide');
+      }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banner-slides'] });
-      toast({ title: 'Slide updated successfully' });
+      toast({ title: language === 'vi' ? 'Cập nhật banner thành công' : 'Banner updated successfully' });
       setIsDialogOpen(false);
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({ 
-        title: 'Failed to update slide',
+        title: language === 'vi' ? 'Lỗi khi cập nhật banner' : 'Failed to update banner',
+        description: error.message,
         variant: 'destructive'
       });
     },
@@ -97,11 +105,11 @@ export default function BannerSlides() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banner-slides'] });
-      toast({ title: 'Slide deleted successfully' });
+      toast({ title: language === 'vi' ? 'Xóa banner thành công' : 'Banner deleted successfully' });
     },
     onError: () => {
       toast({ 
-        title: 'Failed to delete slide',
+        title: language === 'vi' ? 'Lỗi khi xóa banner' : 'Failed to delete banner',
         variant: 'destructive'
       });
     },
@@ -110,21 +118,24 @@ export default function BannerSlides() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+
     const data = {
-      imageUrl: formData.get('imageUrl') as string,
+      image_url: formData.get('image_url') as string,
       title_vi: formData.get('title_vi') as string,
       title_en: formData.get('title_en') as string,
       description_vi: formData.get('description_vi') as string,
       description_en: formData.get('description_en') as string,
-      textVerticalAlign: formData.get('textVerticalAlign') as string,
-      textHorizontalAlign: formData.get('textHorizontalAlign') as string,
-      darkOverlay: formData.get('darkOverlay') === 'on',
-      buttonLink: formData.get('buttonLink') as string || null,
-      buttonText_vi: formData.get('buttonText_vi') as string || null,
-      buttonText_en: formData.get('buttonText_en') as string || null,
+      text_vertical_align: formData.get('text_vertical_align') as string,
+      text_horizontal_align: formData.get('text_horizontal_align') as string,
+      dark_overlay: formData.get('dark_overlay') === 'on',
+      button_link: formData.get('button_link') as string || null,
+      button_text_vi: formData.get('button_text_vi') as string || null,
+      button_text_en: formData.get('button_text_en') as string || null,
       order: parseInt(formData.get('order') as string),
       active: formData.get('active') === 'on',
     };
+
+    console.log('Submitting banner data:', data);
 
     if (selectedSlide) {
       updateMutation.mutate({ ...data, id: selectedSlide.id, createdAt: selectedSlide.createdAt });
@@ -166,11 +177,11 @@ export default function BannerSlides() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <Label htmlFor="imageUrl">Image URL</Label>
+                  <Label htmlFor="image_url">Image URL</Label>
                   <Input 
-                    id="imageUrl"
-                    name="imageUrl"
-                    defaultValue={selectedSlide?.imageUrl}
+                    id="image_url"
+                    name="image_url"
+                    defaultValue={selectedSlide?.image_url}
                     required
                   />
                 </div>
@@ -216,10 +227,10 @@ export default function BannerSlides() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="textVerticalAlign">Vertical Alignment</Label>
+                    <Label htmlFor="text_vertical_align">Vertical Alignment</Label>
                     <Select 
-                      name="textVerticalAlign"
-                      defaultValue={selectedSlide?.textVerticalAlign || "center"}
+                      name="text_vertical_align"
+                      defaultValue={selectedSlide?.text_vertical_align || "center"}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -232,10 +243,10 @@ export default function BannerSlides() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="textHorizontalAlign">Horizontal Alignment</Label>
+                    <Label htmlFor="text_horizontal_align">Horizontal Alignment</Label>
                     <Select 
-                      name="textHorizontalAlign"
-                      defaultValue={selectedSlide?.textHorizontalAlign || "center"}
+                      name="text_horizontal_align"
+                      defaultValue={selectedSlide?.text_horizontal_align || "center"}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -250,19 +261,19 @@ export default function BannerSlides() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch 
-                    id="darkOverlay" 
-                    name="darkOverlay"
-                    defaultChecked={selectedSlide?.darkOverlay}
+                    id="dark_overlay" 
+                    name="dark_overlay"
+                    defaultChecked={selectedSlide?.dark_overlay}
                   />
-                  <Label htmlFor="darkOverlay">Dark Overlay</Label>
+                  <Label htmlFor="dark_overlay">Dark Overlay</Label>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="buttonLink">Button Link (Optional)</Label>
+                    <Label htmlFor="button_link">Button Link (Optional)</Label>
                     <Input 
-                      id="buttonLink"
-                      name="buttonLink"
-                      defaultValue={selectedSlide?.buttonLink || ''}
+                      id="button_link"
+                      name="button_link"
+                      defaultValue={selectedSlide?.button_link || ''}
                     />
                   </div>
                   <div>
@@ -276,23 +287,23 @@ export default function BannerSlides() {
                     />
                   </div>
                 </div>
-                {/* Only show button text fields if buttonLink is present */}
-                {(selectedSlide?.buttonLink || !selectedSlide) && (
+                {/* Only show button text fields if button_link is present */}
+                {(selectedSlide?.button_link || !selectedSlide) && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="buttonText_vi">Vietnamese Button Text</Label>
+                      <Label htmlFor="button_text_vi">Vietnamese Button Text</Label>
                       <Input 
-                        id="buttonText_vi"
-                        name="buttonText_vi"
-                        defaultValue={selectedSlide?.buttonText_vi || ''}
+                        id="button_text_vi"
+                        name="button_text_vi"
+                        defaultValue={selectedSlide?.button_text_vi || ''}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="buttonText_en">English Button Text</Label>
+                      <Label htmlFor="button_text_en">English Button Text</Label>
                       <Input 
-                        id="buttonText_en"
-                        name="buttonText_en"
-                        defaultValue={selectedSlide?.buttonText_en || ''}
+                        id="button_text_en"
+                        name="button_text_en"
+                        defaultValue={selectedSlide?.button_text_en || ''}
                       />
                     </div>
                   </div>
@@ -351,7 +362,7 @@ export default function BannerSlides() {
             <CardContent>
               <div className="aspect-video relative">
                 <img
-                  src={slide.imageUrl}
+                  src={slide.image_url}
                   alt={language === 'vi' ? slide.title_vi : slide.title_en}
                   className="w-full h-full object-cover rounded-md"
                 />

@@ -22,17 +22,18 @@ function Router() {
       <Header />
       <Switch>
         <Route path="/" component={Home} />
-        {/* Main section routes */}
-        <Route path="/:section" component={DynamicPage} />
-        {/* Subsection routes */}
-        <Route path="/:section/:subsection" component={DynamicPage} />
+        {/* Special routes that need specific handling */}
+        <Route path="/events" component={Events} />
         <Route path="/student/login" component={StudentLogin} />
         <Route path="/student/register" component={StudentRegister} />
         <Route path="/student/dashboard" component={StudentDashboard} />
-        <Route path="/events" component={Events} />
-        <Route path="/search" component={Search} />
         <Route path="/admin/login" component={AdminLogin} />
         <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/search" component={Search} />
+        {/* Dynamic page routes */}
+        <Route path="/:section/:subsection" component={DynamicPage} />
+        <Route path="/:section" component={DynamicPage} />
+        {/* 404 route */}
         <Route component={NotFound} />
       </Switch>
       <Footer />

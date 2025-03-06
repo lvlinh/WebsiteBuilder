@@ -106,19 +106,30 @@ export default function ArticleEditor({ article, onBack }: ArticleEditorProps) {
       return
     }
 
+    // Get form values
+    const content_vi = document.getElementById('content_vi') as HTMLInputElement
+    const content_en = document.getElementById('content_en') as HTMLInputElement
+
     const data = {
       title_vi: formData.get('title_vi') as string,
       title_en: formData.get('title_en') as string,
       excerpt_vi: formData.get('excerpt_vi') as string,
       excerpt_en: formData.get('excerpt_en') as string,
-      content_vi: formData.get('content_vi') as string,
-      content_en: formData.get('content_en') as string,
+      content_vi: content_vi.value,
+      content_en: content_en.value,
       thumbnail: formData.get('thumbnail') as string || null,
       category: selectedCategory,
       featured: formData.get('featured') === 'on',
       published: formData.get('published') === 'on',
       author: formData.get('author') as string || null,
     }
+
+    // Log form data for debugging
+    console.log('Form submission data:', {
+      ...data,
+      content_vi_length: data.content_vi.length,
+      content_en_length: data.content_en.length
+    })
 
     if (article?.id) {
       // For updates, include the ID, publishedAt, and viewCount from the original article

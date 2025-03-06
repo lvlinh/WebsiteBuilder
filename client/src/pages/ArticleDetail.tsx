@@ -101,11 +101,15 @@ export default function ArticleDetail() {
           />
         )}
 
-        {content && (
+        {content ? (
           <div 
             dangerouslySetInnerHTML={{ __html: content }}
             className="prose prose-lg dark:prose-invert max-w-none"
           />
+        ) : (
+          <p className="text-muted-foreground text-center py-8">
+            {language === 'vi' ? 'Không có nội dung' : 'No content available'}
+          </p>
         )}
       </article>
     </main>

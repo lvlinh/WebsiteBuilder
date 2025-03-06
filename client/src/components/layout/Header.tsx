@@ -31,7 +31,10 @@ export default function Header() {
       } catch {
         return null
       }
-    }
+    },
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   })
 
   // Check if student is logged in
@@ -47,7 +50,10 @@ export default function Header() {
       } catch {
         return null
       }
-    }
+    },
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   })
 
   // Logout mutations
@@ -56,7 +62,7 @@ export default function Header() {
       await fetch('/api/admin/logout', { method: 'POST' })
     },
     onSuccess: () => {
-      queryClient.setQueryData(['/api/admin/me'], null)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/me'] })
     }
   })
 
@@ -65,7 +71,7 @@ export default function Header() {
       await fetch('/api/auth/logout', { method: 'POST' })
     },
     onSuccess: () => {
-      queryClient.setQueryData(['/api/students/me'], null)
+      queryClient.invalidateQueries({ queryKey: ['/api/students/me'] })
     }
   })
 

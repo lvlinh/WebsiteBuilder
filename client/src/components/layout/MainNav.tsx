@@ -36,12 +36,12 @@ export function MainNav() {
           }
 
           return (
-            <NavigationMenuItem key={section.id}>
+            <NavigationMenuItem key={section.id} className="relative">
               <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10">
                 {language === 'vi' ? section.title_vi : section.title_en}
               </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 bg-[#8B4749]">
+              <NavigationMenuContent className="absolute left-0 top-full w-[400px]">
+                <ul className="grid gap-3 p-4 bg-[#8B4749]">
                   <li>
                     <Link href={`/${section.slug}`}>
                       <NavigationMenuLink className="cursor-pointer block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10 text-white hover:text-white">

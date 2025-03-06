@@ -46,8 +46,8 @@ export default function Articles() {
 
   if (isLoading) {
     return (
-      <main className="container py-12">
-        <h1 className="text-4xl font-bold mb-8">
+      <div className="space-y-8">
+        <h1 className="text-4xl font-bold">
           {language === 'vi' ? 'Bài viết' : 'Articles'}
         </h1>
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -67,7 +67,7 @@ export default function Articles() {
             </Card>
           ))}
         </div>
-      </main>
+      </div>
     )
   }
 
@@ -99,13 +99,13 @@ export default function Articles() {
   }
 
   return (
-    <main className="container py-12">
-      <h1 className="text-4xl font-bold mb-8">
+    <div className="space-y-8">
+      <h1 className="text-4xl font-bold">
         {language === 'vi' ? 'Bài viết' : 'Articles'}
       </h1>
 
       <Tabs defaultValue="news" className="space-y-8">
-        <TabsList className="bg-background border w-full flex-wrap h-auto p-1 mb-6">
+        <TabsList className="bg-background border w-full flex-wrap h-auto p-1">
           {Object.entries(categories).map(([key, labels]) => (
             <TabsTrigger 
               key={key} 
@@ -139,7 +139,7 @@ export default function Articles() {
                         </div>
                       )}
                       <CardHeader>
-                        <CardTitle className="line-clamp-2">
+                        <CardTitle className="text-lg line-clamp-2">
                           {language === 'vi' ? article.title_vi : article.title_en}
                         </CardTitle>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -178,6 +178,6 @@ export default function Articles() {
           );
         })}
       </Tabs>
-    </main>
+    </div>
   )
 }

@@ -21,9 +21,15 @@ export default function DynamicPage() {
   const mainSlug = pathParts[0]
   const subSlug = pathParts[1]
 
-  // Special handling for "bai-viet" route
-  if (mainSlug === "bai-viet" && !subSlug) {
-    return <Articles />
+  // Special handling for articles page
+  if (mainSlug === "nghien-cuu-xuat-ban" && subSlug === "bai-viet") {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <Articles />
+        </div>
+      </div>
+    )
   }
 
   // Fetch all pages for navigation
@@ -132,76 +138,78 @@ export default function DynamicPage() {
   }
 
   return (
-    <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Breadcrumb navigation */}
-      {parentPage && (
-        <div className="mb-6 text-sm text-muted-foreground">
-          <a href={`/${parentPage.slug}`} className="hover:underline">
-            {language === 'vi' ? parentPage.title_vi : parentPage.title_en}
-          </a>
-          <span className="mx-2">/</span>
-          <span>{language === 'vi' ? currentPage.title_vi : currentPage.title_en}</span>
-        </div>
-      )}
+    <div className="min-h-screen bg-background">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Breadcrumb navigation */}
+        {parentPage && (
+          <div className="mb-6 text-sm text-muted-foreground">
+            <a href={`/${parentPage.slug}`} className="hover:underline">
+              {language === 'vi' ? parentPage.title_vi : parentPage.title_en}
+            </a>
+            <span className="mx-2">/</span>
+            <span>{language === 'vi' ? currentPage.title_vi : currentPage.title_en}</span>
+          </div>
+        )}
 
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">
-          {language === 'vi' ? currentPage.title_vi : currentPage.title_en}
-        </h1>
-        {admin && (
-          <div className="flex gap-2">
-            {isEditing ? (
-              <>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsEditing(false)}
-                >
-                  {language === 'vi' ? 'Hủy' : 'Cancel'}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold">
+            {language === 'vi' ? currentPage.title_vi : currentPage.title_en}
+          </h1>
+          {admin && (
+            <div className="flex gap-2">
+              {isEditing ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsEditing(false)}
+                  >
+                    {language === 'vi' ? 'Hủy' : 'Cancel'}
+                  </Button>
+                  <Button 
+                    onClick={handleSave}
+                    disabled={updatePageMutation.isPending}
+                  >
+                    {language === 'vi' ? 'Lưu' : 'Save'}
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={() => setIsEditing(true)}>
+                  {language === 'vi' ? 'Chỉnh sửa' : 'Edit'}
                 </Button>
-                <Button 
-                  onClick={handleSave}
-                  disabled={updatePageMutation.isPending}
-                >
-                  {language === 'vi' ? 'Lưu' : 'Save'}
-                </Button>
-              </>
-            ) : (
-              <Button onClick={() => setIsEditing(true)}>
-                {language === 'vi' ? 'Chỉnh sửa' : 'Edit'}
-              </Button>
-            )}
+              )}
+            </div>
+          )}
+        </div>
+
+        {isEditing ? (
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">
+                {language === 'vi' ? 'Nội dung tiếng Việt' : 'Vietnamese Content'}
+              </h2>
+              <RichTextEditor
+                content={editedContent.vi}
+                onChange={(html) => setEditedContent(prev => ({ ...prev, vi: html }))}
+              />
+            </div>
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">
+                {language === 'vi' ? 'Nội dung tiếng Anh' : 'English Content'}
+              </h2>
+              <RichTextEditor
+                content={editedContent.en}
+                onChange={(html) => setEditedContent(prev => ({ ...prev, en: html }))}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="prose max-w-none dark:prose-invert">
+            <div dangerouslySetInnerHTML={{ 
+              __html: language === 'vi' ? currentPage.content_vi : currentPage.content_en 
+            }} />
           </div>
         )}
       </div>
-
-      {isEditing ? (
-        <div className="space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">
-              {language === 'vi' ? 'Nội dung tiếng Việt' : 'Vietnamese Content'}
-            </h2>
-            <RichTextEditor
-              content={editedContent.vi}
-              onChange={(html) => setEditedContent(prev => ({ ...prev, vi: html }))}
-            />
-          </div>
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">
-              {language === 'vi' ? 'Nội dung tiếng Anh' : 'English Content'}
-            </h2>
-            <RichTextEditor
-              content={editedContent.en}
-              onChange={(html) => setEditedContent(prev => ({ ...prev, en: html }))}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="prose max-w-none dark:prose-invert">
-          <div dangerouslySetInnerHTML={{ 
-            __html: language === 'vi' ? currentPage.content_vi : currentPage.content_en 
-          }} />
-        </div>
-      )}
     </div>
   )
 }

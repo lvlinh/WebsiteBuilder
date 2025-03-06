@@ -7,7 +7,7 @@ import { Link } from "wouter"
 import type { Article } from "@shared/schema"
 import { format } from "date-fns"
 
-const ARTICLES_PER_PAGE = 4
+const ARTICLES_PER_PAGE = 6
 
 export default function NewsFeed() {
   const { language } = useI18n()
@@ -20,7 +20,7 @@ export default function NewsFeed() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {[...Array(3)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <div className="aspect-video bg-muted rounded-t-lg" />
@@ -40,41 +40,43 @@ export default function NewsFeed() {
   const hasMore = articles && displayedArticles && displayedArticles.length < articles.length
 
   return (
-    <div className="space-y-4">
-      {displayedArticles?.map((article) => (
-        <Link key={article.id} href={`/articles/${article.slug}`}>
-          <Card className="cursor-pointer hover:bg-accent transition-colors">
-            {article.thumbnail && (
-              <div className="aspect-video">
-                <img
-                  src={article.thumbnail}
-                  alt={language === 'vi' ? article.title_vi : article.title_en}
-                  className="w-full h-full object-cover rounded-t-lg"
-                />
-              </div>
-            )}
-            <CardHeader>
-              <CardTitle className="text-lg line-clamp-2">
-                {language === 'vi' ? article.title_vi : article.title_en}
-              </CardTitle>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <time dateTime={article.publishedAt?.toString()}>
-                  {format(new Date(article.publishedAt), 'PPP')}
-                </time>
-                <span>•</span>
-                <span className="capitalize">
-                  {article.category.replace('_', ' ')}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground line-clamp-2">
-                {language === 'vi' ? article.excerpt_vi : article.excerpt_en}
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
+    <div className="space-y-6">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {displayedArticles?.map((article) => (
+          <Link key={article.id} href={`/articles/${article.slug}`}>
+            <Card className="cursor-pointer hover:bg-accent transition-colors h-full flex flex-col">
+              {article.thumbnail && (
+                <div className="aspect-video">
+                  <img
+                    src={article.thumbnail}
+                    alt={language === 'vi' ? article.title_vi : article.title_en}
+                    className="w-full h-full object-cover rounded-t-lg"
+                  />
+                </div>
+              )}
+              <CardHeader>
+                <CardTitle className="text-lg line-clamp-2">
+                  {language === 'vi' ? article.title_vi : article.title_en}
+                </CardTitle>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <time dateTime={article.publishedAt?.toString()}>
+                    {format(new Date(article.publishedAt), 'PPP')}
+                  </time>
+                  <span>•</span>
+                  <span className="capitalize">
+                    {article.category.replace('_', ' ')}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-muted-foreground line-clamp-3">
+                  {language === 'vi' ? article.excerpt_vi : article.excerpt_en}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
 
       {hasMore && (
         <div className="text-center pt-4">

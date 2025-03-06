@@ -22,13 +22,10 @@ function Router() {
       <Header />
       <Switch>
         <Route path="/" component={Home} />
-        <Route path="/about" component={DynamicPage} />
-        <Route path="/admissions" component={DynamicPage} />
-        <Route path="/education" component={DynamicPage} />
-        <Route path="/faculty" component={DynamicPage} />
-        <Route path="/articles" component={DynamicPage} />
-        <Route path="/family" component={DynamicPage} />
-        <Route path="/resources" component={DynamicPage} />
+        {/* Main section routes */}
+        <Route path="/:section" component={DynamicPage} />
+        {/* Subsection routes */}
+        <Route path="/:section/:subsection" component={DynamicPage} />
         <Route path="/student/login" component={StudentLogin} />
         <Route path="/student/register" component={StudentRegister} />
         <Route path="/student/dashboard" component={StudentDashboard} />

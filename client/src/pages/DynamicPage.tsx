@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { apiRequest } from "@/lib/queryClient"
 import type { Page } from "@shared/schema"
+import Articles from "./Articles"
 
 export default function DynamicPage() {
   const [location] = useLocation()
@@ -19,6 +20,11 @@ export default function DynamicPage() {
   const pathParts = location.substring(1).split('/')
   const mainSlug = pathParts[0]
   const subSlug = pathParts[1]
+
+  // Special handling for "bai-viet" route
+  if (mainSlug === "bai-viet" && !subSlug) {
+    return <Articles />
+  }
 
   // Fetch all pages for navigation
   const { data: pages } = useQuery<Page[]>({

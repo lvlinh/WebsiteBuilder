@@ -39,7 +39,7 @@ export function MainNav() {
       {mainSections.map(section => {
         const subsections = getSubsections(section.id)
         return (
-          <div key={section.id} className="px-2 space-y-3">
+          <div key={section.id} className="px-6 space-y-3">
             <Link 
               href={`/${section.slug}`}
               onClick={() => setIsOpen(false)}
@@ -86,7 +86,7 @@ export function MainNav() {
       </Sheet>
 
       {/* Desktop Menu */}
-      <nav className="hidden md:flex items-center space-x-4">
+      <nav className="hidden md:flex items-center space-x-6">
         {mainSections.map(section => {
           const subsections = getSubsections(section.id)
 
@@ -115,7 +115,7 @@ export function MainNav() {
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="start"
-                className="w-[200px] bg-[#8B4749] text-white border-none"
+                className="w-[200px] bg-[#8B4749] text-white border-none shadow-lg"
               >
                 <Link href={`/${section.slug}`}>
                   <DropdownMenuItem className="cursor-pointer hover:bg-white/10">

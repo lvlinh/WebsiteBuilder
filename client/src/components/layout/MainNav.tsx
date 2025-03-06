@@ -1,4 +1,4 @@
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink } from "@/components/ui/navigation-menu"
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink, NavigationMenuViewport } from "@/components/ui/navigation-menu"
 import { useQuery } from "@tanstack/react-query"
 import { useI18n } from "@/lib/i18n"
 import { Link } from "wouter"
@@ -36,12 +36,12 @@ export function MainNav() {
           }
 
           return (
-            <NavigationMenuItem key={section.id} className="relative">
+            <NavigationMenuItem key={section.id}>
               <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10">
                 {language === 'vi' ? section.title_vi : section.title_en}
               </NavigationMenuTrigger>
-              <NavigationMenuContent className="absolute top-full left-0">
-                <div className="relative bg-[#8B4749] rounded-md shadow-lg overflow-hidden min-w-[200px]">
+              <NavigationMenuContent>
+                <div className="bg-[#8B4749] rounded-md shadow-lg overflow-hidden min-w-[200px]">
                   <ul className="p-2 space-y-1">
                     <li>
                       <Link href={`/${section.slug}`}>
@@ -70,6 +70,7 @@ export function MainNav() {
           )
         })}
       </NavigationMenuList>
+      <NavigationMenuViewport className="relative mt-2" />
     </NavigationMenu>
   )
 }

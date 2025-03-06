@@ -10,6 +10,8 @@ import DynamicPage from "@/pages/DynamicPage"
 import StudentLogin from "@/pages/StudentPortal/Login"
 import StudentRegister from "@/pages/StudentPortal/Register"
 import StudentDashboard from "@/pages/StudentPortal/Dashboard"
+import Articles from "@/pages/Articles"
+import ArticleDetail from "@/pages/ArticleDetail"
 import Events from "@/pages/Events"
 import Search from "@/pages/Search"
 import AdminLogin from "@/pages/Admin/Login"
@@ -23,6 +25,8 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         {/* Special routes that need specific handling */}
+        <Route path="/articles" component={Articles} />
+        <Route path="/articles/:slug" component={ArticleDetail} />
         <Route path="/events" component={Events} />
         <Route path="/student/login" component={StudentLogin} />
         <Route path="/student/register" component={StudentRegister} />

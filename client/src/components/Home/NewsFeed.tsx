@@ -1,13 +1,17 @@
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useI18n } from "@/lib/i18n"
-import type { News } from "@shared/schema"
+import { Link } from "wouter"
+import type { Article } from "@shared/schema"
 import { format } from "date-fns"
 
 export default function NewsFeed() {
   const { language } = useI18n()
-  const { data: news, isLoading } = useQuery<News[]>({ 
-    queryKey: ['/api/news']
+  const { data: articles, isLoading } = useQuery<Article[]>({ 
+    queryKey: ['/api/articles'],
+    select: (data) => data.filter(article => article.featured && article.published)
+                         .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+                         .slice(0, 3)
   })
 
   if (isLoading) {
@@ -29,22 +33,30 @@ export default function NewsFeed() {
 
   return (
     <div className="space-y-4">
-      {news?.map((item) => (
-        <Card key={item.id}>
-          <CardHeader>
-            <CardTitle>
-              {language === 'vi' ? item.title_vi : item.title_en}
-            </CardTitle>
-            <div className="text-sm text-muted-foreground">
-              {format(new Date(item.publishedAt), 'PPP')}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              {language === 'vi' ? item.content_vi : item.content_en}
-            </p>
-          </CardContent>
-        </Card>
+      {articles?.map((article) => (
+        <Link key={article.id} href={`/articles/${article.slug}`}>
+          <Card className="cursor-pointer hover:bg-accent transition-colors">
+            <CardHeader>
+              <CardTitle className="text-lg">
+                {language === 'vi' ? article.title_vi : article.title_en}
+              </CardTitle>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <time dateTime={article.publishedAt}>
+                  {format(new Date(article.publishedAt), 'PPP')}
+                </time>
+                <span>•</span>
+                <span className="capitalize">
+                  {article.category.replace('_', ' ')}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground line-clamp-2">
+                {language === 'vi' ? article.excerpt_vi : article.excerpt_en}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       ))}
     </div>
   )

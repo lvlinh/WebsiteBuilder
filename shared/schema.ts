@@ -1,6 +1,17 @@
-import { pgTable, text, serial, json, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, json, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { integer } from "drizzle-orm/pg-core";
+
+// Add article category enum
+export const articleCategoryEnum = pgEnum('article_category', [
+  'news',           // tin tức
+  'announcement',   // thông báo
+  'internal',       // tin nội bộ
+  'catholic',       // tin công giáo
+  'admission',      // tin tuyển sinh
+  'academic'        // tin học viện
+]);
 
 // Add banner slides table
 export const bannerSlides = pgTable("banner_slides", {
@@ -47,15 +58,23 @@ export const pages = pgTable("pages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Update articles table
 export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
   title_vi: text("title_vi").notNull(),
-  title_en: text("title_en").notNull(), 
+  title_en: text("title_en").notNull(),
+  excerpt_vi: text("excerpt_vi").notNull(),
+  excerpt_en: text("excerpt_en").notNull(),
   content_vi: text("content_vi").notNull(),
   content_en: text("content_en").notNull(),
-  category: text("category").notNull(),
+  thumbnail: text("thumbnail"),
+  category: articleCategoryEnum("category").notNull(),
+  featured: boolean("featured").default(false),
   published: boolean("published").default(true),
   publishedAt: timestamp("published_at").defaultNow(),
+  author: text("author"),
+  viewCount: integer("view_count").default(0),
 });
 
 export const news = pgTable("news", {
@@ -121,9 +140,11 @@ export const eventRegistrations = pgTable("event_registrations", {
   notes: text("notes"),
 });
 
+// Update insert schema
 export const insertArticleSchema = createInsertSchema(articles).omit({ 
   id: true,
-  publishedAt: true 
+  publishedAt: true,
+  viewCount: true,
 });
 
 export const insertNewsSchema = createInsertSchema(news).omit({

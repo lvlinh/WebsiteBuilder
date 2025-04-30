@@ -29,6 +29,9 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
   const { language } = useI18n()
   const { toast } = useToast()
   const [pageType, setPageType] = useState<string>(page.pageType || 'regular')
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
+    page.linkedCategoryId ? page.linkedCategoryId.toString() : ''
+  )
   
   // Fetch article categories for the select dropdown
   const { data: categories } = useQuery<ArticleCategory[]>({

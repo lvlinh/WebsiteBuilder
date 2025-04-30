@@ -259,13 +259,8 @@ function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string
                 {category && (
                   <div className="mb-6">
                     <h2 className="text-2xl font-semibold mb-2">
-                      {language === 'vi' ? category.name_vi : category.name_en}
+                      {language === 'vi' ? category.title_vi : category.title_en}
                     </h2>
-                    {(category.description_vi || category.description_en) && (
-                      <p className="text-muted-foreground">
-                        {language === 'vi' ? category.description_vi : category.description_en}
-                      </p>
-                    )}
                   </div>
                 )}
                 

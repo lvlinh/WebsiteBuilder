@@ -2,6 +2,7 @@ import HeroBanner from "@/components/Home/HeroBanner";
 import NewsFeed from "@/components/Home/NewsFeed";
 import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { Clock, Calendar, GraduationCap, Book, Users, Trophy, Edit, Save } from "lucide-react";
@@ -12,13 +13,28 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-// Define type for editable content blocks
+// Define types for editable content
 interface ContentBlock {
   id: number;
-  titleVi: string;
-  titleEn: string;
-  contentVi: string;
-  contentEn: string;
+  identifier: string;
+  title_vi: string;
+  title_en: string;
+  content_vi: string;
+  content_en: string;
+  type: string;
+  section: string;
+  order: number;
+}
+
+interface QuickLink {
+  id: number;
+  title_vi: string;
+  title_en: string;
+  url: string;
+  description_vi: string | null;
+  description_en: string | null;
+  icon: string;
+  order: number;
 }
 
 export default function Home() {
@@ -46,38 +62,39 @@ export default function Home() {
   
   const isAdmin = !!admin;
   
-  // Fetch editable content
+  // Fetch content blocks
   const { data: contentBlocks = [], isLoading: isLoadingContent } = useQuery<ContentBlock[]>({
     queryKey: ['/api/content-blocks'],
     queryFn: async () => {
       try {
-        // This would normally come from an API endpoint, but for demo purposes,
-        // we'll use local data until the API is implemented
-        return [
-          {
-            id: 1,
-            titleVi: 'Tầm nhìn',
-            titleEn: 'Our Vision',
-            contentVi: 'Trở thành một cơ sở đào tạo linh mục hàng đầu, nuôi dưỡng các nhà lãnh đạo tâm linh của Giáo hội Công giáo trong tinh thần Dòng Tên.',
-            contentEn: 'To become a leading seminary, nurturing spiritual leaders of the Catholic Church in the Jesuit tradition.'
-          },
-          {
-            id: 2,
-            titleVi: 'Sứ mệnh',
-            titleEn: 'Our Mission',
-            contentVi: 'Đào tạo các linh mục và các nhà lãnh đạo tôn giáo có học thức, tận tâm và nhiệt huyết, sẵn sàng phục vụ Giáo hội và xã hội.',
-            contentEn: 'To form educated, dedicated, and passionate priests and religious leaders ready to serve the Church and society.'
-          },
-          {
-            id: 3,
-            titleVi: 'Giá trị cốt lõi',
-            titleEn: 'Core Values',
-            contentVi: 'Xuất sắc học thuật, tâm linh sâu sắc, phục vụ tha nhân, trách nhiệm xã hội, và tinh thần cộng đồng.',
-            contentEn: 'Academic excellence, spiritual depth, service to others, social responsibility, and community spirit.'
-          }
-        ];
+        const response = await fetch('/api/content-blocks');
+        if (!response.ok) {
+          throw new Error('Failed to fetch content blocks');
+        }
+        const data = await response.json();
+        
+        // Filter by section if needed (we only want home section blocks)
+        return data.filter((block: ContentBlock) => block.section === 'home');
       } catch (error) {
         console.error('Error fetching content blocks:', error);
+        return [];
+      }
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+  
+  // Fetch quick links
+  const { data: quickLinks = [], isLoading: isLoadingQuickLinks } = useQuery<QuickLink[]>({
+    queryKey: ['/api/quick-links'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/quick-links');
+        if (!response.ok) {
+          throw new Error('Failed to fetch quick links');
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching quick links:', error);
         return [];
       }
     },
@@ -92,38 +109,54 @@ export default function Home() {
       {/* Quick Links Section - Harvard-style top navigation features */}
       <section className="bg-[#8B4749]/10 py-8 border-y border-gray-200">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <QuickLinkCard 
-              icon={<Calendar className="h-8 w-8" />}
-              title={language === 'vi' ? 'Lịch học' : 'Calendar'}
-              href="/calendar"
-            />
-            <QuickLinkCard 
-              icon={<Clock className="h-8 w-8" />}
-              title={language === 'vi' ? 'Sự kiện' : 'Events'}
-              href="/events"
-            />
-            <QuickLinkCard 
-              icon={<GraduationCap className="h-8 w-8" />}
-              title={language === 'vi' ? 'Tuyển sinh' : 'Admissions'}
-              href="/admissions"
-            />
-            <QuickLinkCard 
-              icon={<Book className="h-8 w-8" />}
-              title={language === 'vi' ? 'Thư viện' : 'Library'}
-              href="/resources"
-            />
-            <QuickLinkCard 
-              icon={<Users className="h-8 w-8" />}
-              title={language === 'vi' ? 'Giảng viên' : 'Faculty'}
-              href="/faculty"
-            />
-            <QuickLinkCard 
-              icon={<Trophy className="h-8 w-8" />}
-              title={language === 'vi' ? 'Thành tựu' : 'Achievements'}
-              href="/about"
-            />
-          </div>
+          {isLoadingQuickLinks ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border border-gray-200 shadow-sm h-full animate-pulse">
+                  <div className="h-8 w-8 bg-gray-200 rounded-full mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-16"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {quickLinks.map(link => {
+                // Map icon string to actual Lucide React icon component
+                let iconComponent;
+                switch (link.icon) {
+                  case 'calendar':
+                    iconComponent = <Calendar className="h-8 w-8" />;
+                    break;
+                  case 'clock':
+                    iconComponent = <Clock className="h-8 w-8" />;
+                    break;
+                  case 'graduation-cap':
+                    iconComponent = <GraduationCap className="h-8 w-8" />;
+                    break;
+                  case 'book':
+                    iconComponent = <Book className="h-8 w-8" />;
+                    break;
+                  case 'users':
+                    iconComponent = <Users className="h-8 w-8" />;
+                    break;
+                  case 'trophy':
+                    iconComponent = <Trophy className="h-8 w-8" />;
+                    break;
+                  default:
+                    iconComponent = <div className="h-8 w-8 bg-gray-200 rounded-full" />;
+                }
+                
+                return (
+                  <QuickLinkCard 
+                    key={link.id}
+                    icon={iconComponent}
+                    title={language === 'vi' ? link.title_vi : link.title_en}
+                    href={link.url}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
       
@@ -194,8 +227,9 @@ export default function Home() {
                   </Button>
                 )}
                 <InfoBlock 
-                  title={language === 'vi' ? block.titleVi : block.titleEn}
-                  content={language === 'vi' ? block.contentVi : block.contentEn}
+                  title={language === 'vi' ? block.title_vi : block.title_en}
+                  content={language === 'vi' ? block.content_vi : block.content_en}
+                  type={block.type}
                 />
               </div>
             ))}
@@ -231,19 +265,8 @@ export default function Home() {
             <EditContentForm 
               block={selectedBlock} 
               onSubmit={(updatedBlock) => {
-                // In a real app, you would save this to an API
-                const updatedBlocks = contentBlocks.map(b => 
-                  b.id === updatedBlock.id ? updatedBlock : b
-                );
-                
-                // For demo purposes, we'll just show a success toast
-                toast({
-                  title: language === 'vi' ? 'Đã lưu thành công' : 'Changes saved',
-                  description: language === 'vi' 
-                    ? 'Nội dung đã được cập nhật' 
-                    : 'Content has been updated',
-                });
-                
+                // Invalidate the content blocks query to refresh data
+                queryClient.invalidateQueries({ queryKey: ['/api/content-blocks'] });
                 setDialogOpen(false);
               }}
               onCancel={() => setDialogOpen(false)}
@@ -267,11 +290,15 @@ function QuickLinkCard({ icon, title, href }: { icon: React.ReactNode, title: st
   );
 }
 
-function InfoBlock({ title, content }: { title: string, content: string }) {
+function InfoBlock({ title, content, type = 'text' }: { title: string, content: string, type?: string }) {
   return (
     <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm h-full">
       <h3 className="text-xl font-bold mb-4 text-[#8B4749]">{title}</h3>
-      <p className="text-gray-700">{content}</p>
+      {type === 'rich_text' || type === 'html' ? (
+        <div className="text-gray-700 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+      ) : (
+        <p className="text-gray-700">{content}</p>
+      )}
     </div>
   );
 }
@@ -288,9 +315,54 @@ function EditContentForm({
 }) {
   const { language } = useI18n();
   const [formData, setFormData] = useState<ContentBlock>({ ...block });
+  const { toast } = useToast();
   
   const handleChange = (field: keyof ContentBlock, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+  
+  const saveContent = async () => {
+    try {
+      const response = await fetch(`/api/content-blocks/${block.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title_vi: formData.title_vi,
+          title_en: formData.title_en,
+          content_vi: formData.content_vi,
+          content_en: formData.content_en
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update content block');
+      }
+      
+      const updatedBlock = await response.json();
+      
+      // Show success message
+      toast({
+        title: language === 'vi' ? 'Đã lưu thành công' : 'Changes saved',
+        description: language === 'vi' 
+          ? 'Nội dung đã được cập nhật' 
+          : 'Content has been updated',
+      });
+      
+      onSubmit(updatedBlock);
+    } catch (error) {
+      console.error('Error updating content block:', error);
+      
+      // Show error message
+      toast({
+        title: language === 'vi' ? 'Lỗi' : 'Error',
+        description: language === 'vi'
+          ? 'Đã xảy ra lỗi khi cập nhật nội dung'
+          : 'An error occurred while updating content',
+        variant: 'destructive'
+      });
+    }
   };
   
   return (
@@ -299,8 +371,8 @@ function EditContentForm({
         {language === 'vi' ? 'Tiêu đề (Tiếng Việt)' : 'Title (Vietnamese)'}
       </h3>
       <Input 
-        value={formData.titleVi}
-        onChange={(e) => handleChange('titleVi', e.target.value)}
+        value={formData.title_vi}
+        onChange={(e) => handleChange('title_vi', e.target.value)}
         className="mb-3"
       />
       
@@ -308,8 +380,8 @@ function EditContentForm({
         {language === 'vi' ? 'Tiêu đề (Tiếng Anh)' : 'Title (English)'}
       </h3>
       <Input 
-        value={formData.titleEn}
-        onChange={(e) => handleChange('titleEn', e.target.value)}
+        value={formData.title_en}
+        onChange={(e) => handleChange('title_en', e.target.value)}
         className="mb-3"
       />
       
@@ -317,8 +389,8 @@ function EditContentForm({
         {language === 'vi' ? 'Nội dung (Tiếng Việt)' : 'Content (Vietnamese)'}
       </h3>
       <Textarea 
-        value={formData.contentVi}
-        onChange={(e) => handleChange('contentVi', e.target.value)}
+        value={formData.content_vi}
+        onChange={(e) => handleChange('content_vi', e.target.value)}
         rows={4}
         className="mb-3"
       />
@@ -327,11 +399,24 @@ function EditContentForm({
         {language === 'vi' ? 'Nội dung (Tiếng Anh)' : 'Content (English)'}
       </h3>
       <Textarea 
-        value={formData.contentEn}
-        onChange={(e) => handleChange('contentEn', e.target.value)}
+        value={formData.content_en}
+        onChange={(e) => handleChange('content_en', e.target.value)}
         rows={4}
         className="mb-3"
       />
+      
+      {formData.type === 'rich_text' && (
+        <div className="bg-amber-50 p-3 rounded-md text-amber-800 text-sm">
+          <p className="font-medium">
+            {language === 'vi' ? 'Ghi chú: Định dạng HTML' : 'Note: HTML formatting'}
+          </p>
+          <p>
+            {language === 'vi' 
+              ? 'Nội dung này hỗ trợ định dạng HTML cơ bản (như <p>, <strong>, <em>, <ul>, <li>, v.v.).'
+              : 'This content supports basic HTML formatting (like <p>, <strong>, <em>, <ul>, <li>, etc.).'}
+          </p>
+        </div>
+      )}
       
       <div className="flex justify-end gap-2 mt-4">
         <Button 
@@ -341,7 +426,7 @@ function EditContentForm({
           {language === 'vi' ? 'Hủy bỏ' : 'Cancel'}
         </Button>
         <Button 
-          onClick={() => onSubmit(formData)}
+          onClick={saveContent}
           className="bg-[#8B4749] hover:bg-[#8B4749]/90"
         >
           <Save className="h-4 w-4 mr-2" />

@@ -60,9 +60,9 @@ export default function ArticleManager() {
     queryKey: ["/api/admin/articles"],
   });
 
-  // Fetch categories from the API
+  // Fetch categories from the admin API
   const { data: categories = [], isLoading: isLoadingCategories } = useQuery<ArticleCategory[]>({
-    queryKey: ["/api/article-categories"],
+    queryKey: ["/api/admin/article-categories"],
   });
 
   // Filter, sort and process articles

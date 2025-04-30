@@ -55,7 +55,7 @@ export default function EnhancedArticleEditor({
 
   // Fetch all categories
   const { data: categories = [] } = useQuery<ArticleCategory[]>({
-    queryKey: ["/api/article-categories"],
+    queryKey: ["/api/admin/article-categories"],
   });
 
   // Auto-generate slug from title when auto-slug is enabled
@@ -76,7 +76,7 @@ export default function EnhancedArticleEditor({
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
       toast({
         title: language === "vi" ? "Tạo bài viết thành công" : "Article created successfully",
       });
@@ -98,7 +98,7 @@ export default function EnhancedArticleEditor({
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
       toast({
         title: language === "vi" ? "Cập nhật thành công" : "Update successful",
       });

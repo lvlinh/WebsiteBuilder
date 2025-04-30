@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Plus, Edit2, ChevronUp, ChevronDown, X } from "lucide-react"
+import { queryClient, apiRequest } from "@/lib/queryClient"
 import type { ArticleCategory } from "@shared/schema"
 
 interface CategoryEditorProps {
@@ -24,19 +25,11 @@ function CategoryEditor({ category, onSave, onCancel }: CategoryEditorProps) {
   const createMutation = useMutation({
     mutationFn: async (data: Omit<ArticleCategory, 'id' | 'createdAt'>) => {
       console.log('Creating category with data:', data)
-      const res = await fetch('/api/article-categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.message || 'Failed to create category')
-      }
-      return res.json()
+      const res = await apiRequest("POST", "/api/admin/article-categories", data);
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/article-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/article-categories'] })
       toast({
         title: language === 'vi' ? 'Tạo danh mục thành công' : 'Category created successfully',
       })

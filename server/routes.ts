@@ -569,6 +569,116 @@ async function initializeSampleArticles() {
   }
 }
 
+// Initialize sample content blocks and quick links
+async function initializeSampleContent() {
+  // Initialize content blocks
+  const contentBlocks = await storage.getContentBlocks();
+  if (contentBlocks.length === 0) {
+    // Create sample welcome message
+    await storage.createContentBlock({
+      identifier: "home_welcome",
+      title_vi: "Chào mừng đến với SJJS",
+      title_en: "Welcome to SJJS",
+      content_vi: "<p>Chào mừng đến với Học viện Thần học Dòng Tên Saint Joseph, nơi nuôi dưỡng những người lãnh đạo tâm linh và học thuật trong tinh thần Ignatius!</p><p>Chúng tôi cung cấp nền giáo dục toàn diện và xuất sắc mà các sinh viên của chúng tôi cần để phục vụ trong thế giới phức tạp và luôn thay đổi.</p>",
+      content_en: "<p>Welcome to the Saint Joseph Jesuit Seminary, where spiritual and academic leaders are nurtured in the Ignatian tradition!</p><p>We provide the comprehensive and excellent education our students need to serve in a complex and ever-changing world.</p>",
+      type: "rich_text",
+      section: "home",
+      order: 1
+    });
+    
+    // Create sample mission statement
+    await storage.createContentBlock({
+      identifier: "home_mission",
+      title_vi: "Sứ mệnh của chúng tôi",
+      title_en: "Our Mission",
+      content_vi: "<p>Học viện Thần học Dòng Tên Saint Joseph cam kết đào tạo các nhà lãnh đạo tâm linh và trí tuệ thông qua giáo dục xuất sắc, nghiên cứu học thuật nghiêm túc và đối thoại liên văn hóa.</p>",
+      content_en: "<p>The Saint Joseph Jesuit Seminary is committed to forming spiritual and intellectual leaders through excellent education, rigorous academic research, and intercultural dialogue.</p>",
+      type: "rich_text",
+      section: "home",
+      order: 2
+    });
+    
+    // Create sample upcoming events section
+    await storage.createContentBlock({
+      identifier: "home_events_intro",
+      title_vi: "Sự kiện sắp tới",
+      title_en: "Upcoming Events",
+      content_vi: "<p>Khám phá các sự kiện và hoạt động sắp tới tại SJJS. Tham gia vào cộng đồng học thuật và tâm linh của chúng tôi!</p>",
+      content_en: "<p>Discover upcoming events and activities at SJJS. Join our academic and spiritual community!</p>",
+      type: "rich_text",
+      section: "home",
+      order: 3
+    });
+    
+    // Create sample news section introduction
+    await storage.createContentBlock({
+      identifier: "home_news_intro",
+      title_vi: "Tin tức mới nhất",
+      title_en: "Latest News",
+      content_vi: "<p>Cập nhật thông tin mới nhất về các hoạt động, thành tựu và sự kiện tại Học viện Thần học Dòng Tên Saint Joseph.</p>",
+      content_en: "<p>Get updated with the latest information about activities, achievements, and events at the Saint Joseph Jesuit Seminary.</p>",
+      type: "rich_text",
+      section: "home",
+      order: 4
+    });
+  }
+  
+  // Initialize quick links
+  const quickLinks = await storage.getQuickLinks();
+  if (quickLinks.length === 0) {
+    // Create sample quick links
+    await storage.createQuickLink({
+      title_vi: "Tuyển sinh",
+      title_en: "Admissions",
+      url: "/tuyen-sinh",
+      description_vi: "Thông tin tuyển sinh",
+      description_en: "Admissions information",
+      icon: "GraduationCap",
+      order: 1
+    });
+    
+    await storage.createQuickLink({
+      title_vi: "Chương trình học",
+      title_en: "Programs",
+      url: "/dao-tao",
+      description_vi: "Khám phá các chương trình học",
+      description_en: "Explore our educational programs",
+      icon: "BookOpen",
+      order: 2
+    });
+    
+    await storage.createQuickLink({
+      title_vi: "Lịch học",
+      title_en: "Schedule",
+      url: "/dao-tao/lich-hoc",
+      description_vi: "Lịch học và sự kiện",
+      description_en: "Class schedule and events",
+      icon: "Calendar",
+      order: 3
+    });
+    
+    await storage.createQuickLink({
+      title_vi: "Thư viện",
+      title_en: "Library",
+      url: "/tien-ich",
+      description_vi: "Nguồn tài liệu học tập",
+      description_en: "Learning resources",
+      icon: "Library",
+      order: 4
+    });
+    
+    await storage.createQuickLink({
+      title_vi: "Liên hệ",
+      title_en: "Contact",
+      url: "/contact",
+      description_vi: "Thông tin liên hệ",
+      description_en: "Contact information",
+      icon: "Mail",
+      order: 5
+    });
+  }
+}
+
 // Add the initialization function
 async function initializeArticleCategories() {
   const categories = await storage.getArticleCategories();
@@ -678,9 +788,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await initializeSampleEvents();
   await initializeAdminUser();
   await initializeDefaultPages();
-  await initializeSampleBannerSlides(); // Add this line
-  await initializeArticleCategories(); // Add this line before sample articles initialization
+  await initializeSampleBannerSlides();
+  await initializeArticleCategories();
   await initializeSampleArticles();
+  await initializeSampleContent(); // Initialize content blocks and quick links
 
   passport.use(new LocalStrategy(
     { usernameField: 'email' },
@@ -1582,6 +1693,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Category not found" });
     }
     res.status(204).end();
+  });
+
+  // Content Blocks API endpoints
+  app.get("/api/content-blocks", async (_req, res) => {
+    try {
+      const blocks = await storage.getContentBlocks();
+      res.json(blocks);
+    } catch (error) {
+      console.error('Error fetching content blocks:', error);
+      res.status(500).json({ message: "Failed to fetch content blocks" });
+    }
+  });
+
+  app.get("/api/content-blocks/:id", async (req, res) => {
+    try {
+      const block = await storage.getContentBlock(Number(req.params.id));
+      if (!block) {
+        return res.status(404).json({ message: "Content block not found" });
+      }
+      res.json(block);
+    } catch (error) {
+      console.error('Error fetching content block:', error);
+      res.status(500).json({ message: "Failed to fetch content block" });
+    }
+  });
+
+  app.post("/api/content-blocks", isAdmin, async (req, res) => {
+    try {
+      const parseResult = insertContentBlockSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "Invalid content block data",
+          errors: parseResult.error.errors
+        });
+      }
+      const block = await storage.createContentBlock(parseResult.data);
+      res.status(201).json(block);
+    } catch (error) {
+      console.error('Error creating content block:', error);
+      res.status(500).json({ message: "Failed to create content block" });
+    }
+  });
+
+  app.patch("/api/content-blocks/:id", isAdmin, async (req, res) => {
+    try {
+      const parseResult = insertContentBlockSchema.partial().safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "Invalid content block data",
+          errors: parseResult.error.errors
+        });
+      }
+      const block = await storage.updateContentBlock(Number(req.params.id), parseResult.data);
+      if (!block) {
+        return res.status(404).json({ message: "Content block not found" });
+      }
+      res.json(block);
+    } catch (error) {
+      console.error('Error updating content block:', error);
+      res.status(500).json({ message: "Failed to update content block" });
+    }
+  });
+
+  app.delete("/api/content-blocks/:id", isAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteContentBlock(Number(req.params.id));
+      if (!success) {
+        return res.status(404).json({ message: "Content block not found" });
+      }
+      res.status(204).end();
+    } catch (error) {
+      console.error('Error deleting content block:', error);
+      res.status(500).json({ message: "Failed to delete content block" });
+    }
+  });
+
+  // Quick Links API endpoints
+  app.get("/api/quick-links", async (_req, res) => {
+    try {
+      const links = await storage.getQuickLinks();
+      res.json(links);
+    } catch (error) {
+      console.error('Error fetching quick links:', error);
+      res.status(500).json({ message: "Failed to fetch quick links" });
+    }
+  });
+
+  app.get("/api/quick-links/:id", async (req, res) => {
+    try {
+      const link = await storage.getQuickLink(Number(req.params.id));
+      if (!link) {
+        return res.status(404).json({ message: "Quick link not found" });
+      }
+      res.json(link);
+    } catch (error) {
+      console.error('Error fetching quick link:', error);
+      res.status(500).json({ message: "Failed to fetch quick link" });
+    }
+  });
+
+  app.post("/api/quick-links", isAdmin, async (req, res) => {
+    try {
+      const parseResult = insertQuickLinkSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "Invalid quick link data",
+          errors: parseResult.error.errors
+        });
+      }
+      const link = await storage.createQuickLink(parseResult.data);
+      res.status(201).json(link);
+    } catch (error) {
+      console.error('Error creating quick link:', error);
+      res.status(500).json({ message: "Failed to create quick link" });
+    }
+  });
+
+  app.patch("/api/quick-links/:id", isAdmin, async (req, res) => {
+    try {
+      const parseResult = insertQuickLinkSchema.partial().safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "Invalid quick link data",
+          errors: parseResult.error.errors
+        });
+      }
+      const link = await storage.updateQuickLink(Number(req.params.id), parseResult.data);
+      if (!link) {
+        return res.status(404).json({ message: "Quick link not found" });
+      }
+      res.json(link);
+    } catch (error) {
+      console.error('Error updating quick link:', error);
+      res.status(500).json({ message: "Failed to update quick link" });
+    }
+  });
+
+  app.delete("/api/quick-links/:id", isAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteQuickLink(Number(req.params.id));
+      if (!success) {
+        return res.status(404).json({ message: "Quick link not found" });
+      }
+      res.status(204).end();
+    } catch (error) {
+      console.error('Error deleting quick link:', error);
+      res.status(500).json({ message: "Failed to delete quick link" });
+    }
   });
 
   const httpServer = createServer(app);

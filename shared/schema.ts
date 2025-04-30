@@ -250,12 +250,13 @@ export type InsertBannerSlide = z.infer<typeof insertBannerSlideSchema>;
 // Content blocks for homepage
 export const contentBlocks = pgTable("content_blocks", {
   id: serial("id").primaryKey(),
-  titleVi: text("title_vi").notNull(),
-  titleEn: text("title_en").notNull(),
-  contentVi: text("content_vi").notNull(),
-  contentEn: text("content_en").notNull(),
-  blockType: text("block_type").default("info"), // info, mission, vision, etc.
-  richContent: boolean("rich_content").default(true), // Whether to render as rich text
+  identifier: text("identifier").notNull().unique(), // Unique identifier for the content block
+  title_vi: text("title_vi").notNull(),
+  title_en: text("title_en").notNull(),
+  content_vi: text("content_vi").notNull(),
+  content_en: text("content_en").notNull(),
+  type: text("type").default("text"), // text, rich_text, html, etc.
+  section: text("section").default("home"), // homepage, about, etc.
   order: integer("order").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -264,9 +265,11 @@ export const contentBlocks = pgTable("content_blocks", {
 // Quick links for homepage
 export const quickLinks = pgTable("quick_links", {
   id: serial("id").primaryKey(),
-  titleVi: text("title_vi").notNull(),
-  titleEn: text("title_en").notNull(),
-  href: text("href").notNull(),
+  title_vi: text("title_vi").notNull(),
+  title_en: text("title_en").notNull(),
+  url: text("url").notNull(),
+  description_vi: text("description_vi"),
+  description_en: text("description_en"),
   icon: text("icon").notNull(), // Store the icon name as a string
   order: integer("order").default(0),
   createdAt: timestamp("created_at").defaultNow(),

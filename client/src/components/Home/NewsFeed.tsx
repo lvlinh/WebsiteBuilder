@@ -15,7 +15,11 @@ export default function NewsFeed() {
   const { data: articles, isLoading } = useQuery<Article[]>({ 
     queryKey: ['/api/articles'],
     select: (data) => data.filter(article => article.published)
-                         .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+                         .sort((a, b) => {
+                           const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date();
+                           const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date();
+                           return dateB.getTime() - dateA.getTime();
+                         })
   })
 
   if (isLoading) {
@@ -45,10 +49,10 @@ export default function NewsFeed() {
         {displayedArticles?.map((article) => (
           <Link key={article.id} href={`/articles/${article.slug}`}>
             <Card className="cursor-pointer hover:bg-accent transition-colors h-full flex flex-col">
-              {article.thumbnail && (
+              {article.featuredImage && (
                 <div className="aspect-video">
                   <img
-                    src={article.thumbnail}
+                    src={article.featuredImage}
                     alt={language === 'vi' ? article.title_vi : article.title_en}
                     className="w-full h-full object-cover rounded-t-lg"
                   />
@@ -60,17 +64,17 @@ export default function NewsFeed() {
                 </CardTitle>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <time dateTime={article.publishedAt?.toString()}>
-                    {format(new Date(article.publishedAt), 'PPP')}
+                    {article.publishedAt ? format(new Date(article.publishedAt), 'PPP') : format(new Date(), 'PPP')}
                   </time>
                   <span>•</span>
                   <span className="capitalize">
-                    {article.category.replace('_', ' ')}
+                    {article.categoryId ? `Category ${article.categoryId}` : 'Uncategorized'}
                   </span>
                 </div>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-muted-foreground line-clamp-3">
-                  {language === 'vi' ? article.excerpt_vi : article.excerpt_en}
+                  {language === 'vi' ? article.summary_vi || '' : article.summary_en || ''}
                 </p>
               </CardContent>
             </Card>

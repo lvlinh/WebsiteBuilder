@@ -495,17 +495,58 @@ async function initializeSampleBannerSlides() {
 async function initializeSampleArticles() {
   const articles = await storage.getArticles();
   if (articles.length === 0) {
-    // Sample articles for each category
+    // Get all categories to use in article creation
+    const categories = await storage.getArticleCategories();
+    
+    // Function to create an article with proper schema fields
+    const createSampleArticle = async (index, categorySlug) => {
+      // Find category by slug
+      const category = categories.find(c => c.slug === categorySlug);
+      if (!category) return;
+      
+      const categoryId = category.id;
+      const isFeatured = index % 7 === 0; // Make some articles featured
+      
+      const randomDate = new Date();
+      randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 60)); // Random date within last 60 days
+      
+      // Create unique slugs by combining category and index
+      const slug = `${categorySlug}-article-${index}`;
+      
+      await storage.createArticle({
+        slug,
+        title_vi: `Bài viết ${index} của danh mục ${category.title_vi}`,
+        title_en: `Article ${index} of category ${category.title_en}`,
+        summary_vi: `Tóm tắt bài viết ${index} thuộc danh mục ${category.title_vi}`,
+        summary_en: `Summary of article ${index} in the ${category.title_en} category`,
+        content_vi: `<p>Đây là nội dung bài viết ${index} thuộc danh mục ${category.title_vi}. Bài viết này được tạo để kiểm tra phân trang và tính năng liên kết danh mục.</p><p>Nội dung chi tiết của bài viết sẽ hiển thị ở đây, bao gồm nhiều đoạn văn để làm cho bài viết trông đầy đủ và thực tế hơn.</p><p>Đối với bài viết này, chúng tôi đang kiểm tra khả năng hiển thị nội dung dài, định dạng HTML, và cách các liên kết giữa bài viết và danh mục hoạt động.</p>`,
+        content_en: `<p>This is the content of article ${index} in the ${category.title_en} category. This article was created to test pagination and category linking functionality.</p><p>The detailed content of the article will be displayed here, including multiple paragraphs to make the article look more complete and realistic.</p><p>For this article, we are testing the ability to display long content, HTML formatting, and how links between articles and categories work.</p>`,
+        thumbnail: `https://source.unsplash.com/random/800x600?${categorySlug}`,
+        categoryId,
+        featured: isFeatured,
+        published: true,
+        author: "Admin SJJS"
+      });
+    };
+    
+    // Create 5 articles for each category (60 total articles for 12 categories)
+    for (const category of categories) {
+      for (let i = 1; i <= 5; i++) {
+        await createSampleArticle((categories.indexOf(category) * 5) + i, category.slug);
+      }
+    }
+    
+    // Add a few special featured articles
     await storage.createArticle({
       slug: "welcome-to-sjjs-2025",
       title_vi: "Chào mừng đến với SJJS năm học 2025",
       title_en: "Welcome to SJJS Academic Year 2025",
-      excerpt_vi: "Thông điệp chào mừng từ Ban Giám đốc Học viện",
-      excerpt_en: "Welcome message from the Institute's Board of Directors",
-      content_vi: "Kính gửi quý thầy cô, các sinh viên và cộng đồng SJJS...",
-      content_en: "Dear faculty members, students, and SJJS community...",
+      summary_vi: "Thông điệp chào mừng từ Ban Giám đốc Học viện",
+      summary_en: "Welcome message from the Institute's Board of Directors",
+      content_vi: "<p>Kính gửi quý thầy cô, các sinh viên và cộng đồng SJJS,</p><p>Nhân dịp khởi đầu năm học mới 2025-2026, thay mặt Ban Giám đốc Học viện, tôi xin gửi lời chào mừng nồng nhiệt và lời chúc tốt đẹp nhất đến tất cả các thành viên của cộng đồng SJJS. Một năm học với nhiều cơ hội và thách thức mới đang chờ đón chúng ta.</p>",
+      content_en: "<p>Dear faculty members, students, and SJJS community,</p><p>On the occasion of the beginning of the new academic year 2025-2026, on behalf of the Institute's Board of Directors, I would like to extend my warmest welcome and best wishes to all members of the SJJS community. A year with many new opportunities and challenges awaits us.</p>",
       thumbnail: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f",
-      category: "announcement",
+      categoryId: categories.find(c => c.slug === "announcement")?.id,
       featured: true,
       published: true,
       author: "Ban Giám đốc / Board of Directors"
@@ -515,60 +556,15 @@ async function initializeSampleArticles() {
       slug: "theology-symposium-2025",
       title_vi: "Hội thảo Thần học: Đối thoại Liên tôn trong Thế giới Hiện đại",
       title_en: "Theology Symposium: Interfaith Dialogue in the Modern World",
-      excerpt_vi: "Hội thảo chuyên đề về vai trò của đối thoại liên tôn",
-      excerpt_en: "Symposium on the role of interfaith dialogue",
-      content_vi: "Học viện SJJS tổ chức hội thảo chuyên đề về đối thoại liên tôn...",
-      content_en: "SJJS Institute organizes a symposium on interfaith dialogue...",
+      summary_vi: "Hội thảo chuyên đề về vai trò của đối thoại liên tôn",
+      summary_en: "Symposium on the role of interfaith dialogue",
+      content_vi: "<p>Học viện SJJS tổ chức hội thảo chuyên đề về đối thoại liên tôn trong thế giới hiện đại. Hội thảo sẽ diễn ra từ ngày 15-17 tháng 8 năm 2025 tại Học viện SJJS.</p>",
+      content_en: "<p>SJJS Institute is organizing a symposium on interfaith dialogue in the modern world. The symposium will take place from August 15-17, 2025, at the SJJS Institute.</p>",
       thumbnail: "https://images.unsplash.com/photo-1507692049790-de58290a4334",
-      category: "academic",
+      categoryId: categories.find(c => c.slug === "academic")?.id,
       featured: true,
       published: true,
-      author: "Dr. John Smith"
-    });
-
-    await storage.createArticle({
-      slug: "admission-2025-2026",
-      title_vi: "Thông báo Tuyển sinh Năm học 2025-2026",
-      title_en: "Admission Announcement for Academic Year 2025-2026",
-      excerpt_vi: "Thông tin chi tiết về kỳ tuyển sinh sắp tới",
-      excerpt_en: "Detailed information about the upcoming admission period",
-      content_vi: "Học viện SJJS thông báo tuyển sinh năm học 2025-2026...",
-      content_en: "SJJS Institute announces admissions for academic year 2025-2026...",
-      thumbnail: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1",
-      category: "admission",
-      featured: true,
-      published: true,
-      author: "Ban Tuyển sinh / Admissions Office"
-    });
-
-    await storage.createArticle({
-      slug: "christmas-retreat-2024",
-      title_vi: "Tĩnh tâm Mùa Giáng sinh 2024",
-      title_en: "Christmas Retreat 2024",
-      excerpt_vi: "Chương trình tĩnh tâm đặc biệt mùa Giáng sinh",
-      excerpt_en: "Special Christmas retreat program",
-      content_vi: "Mời cộng đồng SJJS tham dự chương trình tĩnh tâm mùa Giáng sinh...",
-      content_en: "Inviting SJJS community to join the Christmas retreat program...",
-      thumbnail: "https://images.unsplash.com/photo-1512389098783-66b81f86e199",
-      category: "catholic",
-      featured: false,
-      published: true,
-      author: "Ban Mục vụ / Pastoral Care Office"
-    });
-
-    await storage.createArticle({
-      slug: "faculty-updates-december-2024",
-      title_vi: "Cập nhật từ Ban Giảng huấn - Tháng 12/2024",
-      title_en: "Faculty Updates - December 2024",
-      excerpt_vi: "Thông tin cập nhật về hoạt động của Ban Giảng huấn",
-      excerpt_en: "Updates on Faculty activities",
-      content_vi: "Ban Giảng huấn xin thông báo một số cập nhật quan trọng...",
-      content_en: "The Faculty would like to announce several important updates...",
-      thumbnail: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655",
-      category: "internal",
-      featured: false,
-      published: true,
-      author: "Ban Giảng huấn / Faculty Board"
+      author: "Ban Học thuật / Academic Board"
     });
   }
 }

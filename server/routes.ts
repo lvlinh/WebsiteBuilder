@@ -1188,7 +1188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!admin) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-
+    
     req.admin = admin;
     next();
   };
@@ -1236,6 +1236,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const success = await storage.deletePage(Number(req.params.id));
     if (!success) {
       return res.status(404).json({ message: "Page not found" });
+    }
+    res.status(204).end();
+  });
+  
+  // Admin Article routes (protected)
+  app.get("/api/admin/articles", isAdmin, async (_req, res) => {
+    const articles = await storage.getArticles();
+    res.json(articles);
+  });
+
+  app.post("/api/admin/articles", isAdmin, async (req, res) => {
+    const parseResult = insertArticleSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        message: "Invalid article data",
+        errors: parseResult.error.errors
+      });
+    }
+    const article = await storage.createArticle(parseResult.data);
+    res.status(201).json(article);
+  });
+
+  app.patch("/api/admin/articles/:id", isAdmin, async (req, res) => {
+    try {
+      const parseResult = updateArticleSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "Invalid article data",
+          errors: parseResult.error.errors
+        });
+      }
+
+      if (req.body.slug) {
+        const existingArticle = await storage.getArticleBySlug(req.body.slug);
+        if (existingArticle && existingArticle.id !== Number(req.params.id)) {
+          return res.status(400).json({ message: "Article with this slug already exists" });
+        }
+      }
+
+      const article = await storage.updateArticle(Number(req.params.id), parseResult.data);
+      if (!article) {
+        return res.status(404).json({ message: "Article not found" });
+      }
+      res.json(article);
+    } catch (error) {
+      console.error('Error updating article:', error);
+      res.status(500).json({ message: "Failed to update article" });
+    }
+  });
+
+  app.delete("/api/admin/articles/:id", isAdmin, async (req, res) => {
+    const success = await storage.deleteArticle(Number(req.params.id));
+    if (!success) {
+      return res.status(404).json({ message: "Article not found" });
     }
     res.status(204).end();
   });

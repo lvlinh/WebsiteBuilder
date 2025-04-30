@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Define types for editable content
 interface ContentBlock {
@@ -279,7 +280,46 @@ export default function Home() {
 }
 
 // Helper Components
-function QuickLinkCard({ icon, title, href }: { icon: React.ReactNode, title: string, href: string }) {
+function QuickLinkCard({ 
+  icon, 
+  title, 
+  href, 
+  id,
+  isAdmin,
+  editMode,
+  onEdit
+}: { 
+  icon: React.ReactNode, 
+  title: string, 
+  href: string,
+  id?: number,
+  isAdmin?: boolean,
+  editMode?: boolean,
+  onEdit?: (id: number) => void
+}) {
+  if (isAdmin && editMode && id && onEdit) {
+    return (
+      <div className="relative group">
+        <Button
+          size="sm"
+          variant="outline"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onEdit(id);
+          }}
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+        <div className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border border-gray-200 hover:border-[#8B4749] shadow-sm hover:shadow transition-all cursor-pointer h-full">
+          {icon}
+          <h3 className="mt-2 text-sm font-medium text-gray-900 text-center">{title}</h3>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <Link href={href}>
       <div className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border border-gray-200 hover:border-[#8B4749] shadow-sm hover:shadow transition-all cursor-pointer h-full">

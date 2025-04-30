@@ -246,3 +246,49 @@ export type InsertPage = z.infer<typeof insertPageSchema>;
 
 export type BannerSlide = typeof bannerSlides.$inferSelect;
 export type InsertBannerSlide = z.infer<typeof insertBannerSlideSchema>;
+
+// Content blocks for homepage
+export const contentBlocks = pgTable("content_blocks", {
+  id: serial("id").primaryKey(),
+  titleVi: text("title_vi").notNull(),
+  titleEn: text("title_en").notNull(),
+  contentVi: text("content_vi").notNull(),
+  contentEn: text("content_en").notNull(),
+  blockType: text("block_type").default("info"), // info, mission, vision, etc.
+  richContent: boolean("rich_content").default(true), // Whether to render as rich text
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Quick links for homepage
+export const quickLinks = pgTable("quick_links", {
+  id: serial("id").primaryKey(),
+  titleVi: text("title_vi").notNull(),
+  titleEn: text("title_en").notNull(),
+  href: text("href").notNull(),
+  icon: text("icon").notNull(), // Store the icon name as a string
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Create insert schemas
+export const insertContentBlockSchema = createInsertSchema(contentBlocks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertQuickLinkSchema = createInsertSchema(quickLinks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Create types
+export type ContentBlock = typeof contentBlocks.$inferSelect;
+export type InsertContentBlock = z.infer<typeof insertContentBlockSchema>;
+
+export type QuickLink = typeof quickLinks.$inferSelect;
+export type InsertQuickLink = z.infer<typeof insertQuickLinkSchema>;

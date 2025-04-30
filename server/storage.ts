@@ -9,8 +9,10 @@ import { admins, pages, articles, news, students, courses, enrollments, events, 
   type Event, type InsertEvent,
   type EventRegistration, type InsertEventRegistration,
   type BannerSlide, type InsertBannerSlide,
-  articleCategories,
-  type ArticleCategory, type InsertArticleCategory
+  articleCategories, contentBlocks, quickLinks,
+  type ArticleCategory, type InsertArticleCategory,
+  type ContentBlock, type InsertContentBlock,
+  type QuickLink, type InsertQuickLink
 } from "@shared/schema";
 
 export interface IStorage {
@@ -89,6 +91,20 @@ export interface IStorage {
   createArticleCategory(category: InsertArticleCategory): Promise<ArticleCategory>;
   updateArticleCategory(id: number, category: Partial<InsertArticleCategory>): Promise<ArticleCategory | undefined>;
   deleteArticleCategory(id: number): Promise<boolean>;
+  
+  // Content Blocks
+  getContentBlocks(): Promise<ContentBlock[]>;
+  getContentBlock(id: number): Promise<ContentBlock | undefined>;
+  createContentBlock(block: InsertContentBlock): Promise<ContentBlock>;
+  updateContentBlock(id: number, block: Partial<InsertContentBlock>): Promise<ContentBlock | undefined>;
+  deleteContentBlock(id: number): Promise<boolean>;
+  
+  // Quick Links
+  getQuickLinks(): Promise<QuickLink[]>;
+  getQuickLink(id: number): Promise<QuickLink | undefined>;
+  createQuickLink(link: InsertQuickLink): Promise<QuickLink>;
+  updateQuickLink(id: number, link: Partial<InsertQuickLink>): Promise<QuickLink | undefined>;
+  deleteQuickLink(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -103,6 +119,8 @@ export class MemStorage implements IStorage {
   private eventRegistrations: Map<number, EventRegistration>;
   private bannerSlides: Map<number, BannerSlide>;
   private articleCategories: Map<number, ArticleCategory>;
+  private contentBlocks: Map<number, ContentBlock>;
+  private quickLinks: Map<number, QuickLink>;
   private adminId: number;
   private pageId: number;
   private articleId: number;
@@ -114,6 +132,8 @@ export class MemStorage implements IStorage {
   private eventRegistrationId: number;
   private bannerSlideId: number;
   private articleCategoryId: number;
+  private contentBlockId: number;
+  private quickLinkId: number;
 
   constructor() {
     this.admins = new Map();

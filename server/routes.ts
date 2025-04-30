@@ -1277,20 +1277,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/admin/articles", isAdmin, async (req, res) => {
-    const parseResult = insertArticleSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return res.status(400).json({
-        message: "Invalid article data",
-        errors: parseResult.error.errors
-      });
+    try {
+      // Make a copy of the request body to modify it
+      const requestData = { ...req.body };
+      
+      // Handle date conversion if needed
+      if (requestData.publishedAt && typeof requestData.publishedAt === 'string') {
+        requestData.publishedAt = new Date(requestData.publishedAt);
+      }
+      
+      const parseResult = insertArticleSchema.safeParse(requestData);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "Invalid article data",
+          errors: parseResult.error.errors
+        });
+      }
+      const article = await storage.createArticle(parseResult.data);
+      res.status(201).json(article);
+    } catch (error) {
+      console.error('Error creating article:', error);
+      res.status(500).json({ message: "Failed to create article" });
     }
-    const article = await storage.createArticle(parseResult.data);
-    res.status(201).json(article);
   });
 
   app.patch("/api/admin/articles/:id", isAdmin, async (req, res) => {
     try {
-      const parseResult = updateArticleSchema.safeParse(req.body);
+      // Make a copy of the request body to modify it
+      const requestData = { ...req.body };
+      
+      // Handle date conversion if needed
+      if (requestData.publishedAt && typeof requestData.publishedAt === 'string') {
+        requestData.publishedAt = new Date(requestData.publishedAt);
+      }
+      
+      const parseResult = updateArticleSchema.safeParse(requestData);
       if (!parseResult.success) {
         return res.status(400).json({
           message: "Invalid article data",
@@ -1298,8 +1319,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      if (req.body.slug) {
-        const existingArticle = await storage.getArticleBySlug(req.body.slug);
+      if (requestData.slug) {
+        const existingArticle = await storage.getArticleBySlug(requestData.slug);
         if (existingArticle && existingArticle.id !== Number(req.params.id)) {
           return res.status(400).json({ message: "Article with this slug already exists" });
         }

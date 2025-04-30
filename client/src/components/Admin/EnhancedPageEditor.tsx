@@ -180,14 +180,14 @@ export default function EnhancedPageEditor({
                 {language === "vi" ? "Trang cha" : "Parent Page"}
               </Label>
               <Select
-                value={parentId?.toString() || ""}
-                onValueChange={(value) => setParentId(value ? parseInt(value) : null)}
+                value={parentId?.toString() || "none"}
+                onValueChange={(value) => setParentId(value === "none" ? null : parseInt(value))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={language === "vi" ? "Chọn trang cha" : "Select parent page"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">
+                  <SelectItem value="none">
                     {language === "vi" ? "Không có (trang gốc)" : "None (root page)"}
                   </SelectItem>
                   {validParentPages.map((p) => (

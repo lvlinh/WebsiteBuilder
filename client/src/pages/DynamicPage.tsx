@@ -58,6 +58,30 @@ function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string
   // Find parent page if this is a child page
   const parentPage = currentPage?.parentId ? pages?.find(p => p.id === currentPage.parentId) : null
 
+  // Fetch articles from the linked category if this is a category page
+  const { data: categoryArticles } = useQuery({
+    queryKey: ['/api/articles/by-category', currentPage?.linkedCategoryId],
+    queryFn: async () => {
+      if (!currentPage?.linkedCategoryId) return []
+      const response = await fetch(`/api/articles/by-category/${currentPage.linkedCategoryId}`)
+      if (!response.ok) throw new Error('Failed to fetch articles')
+      return response.json()
+    },
+    enabled: !!currentPage?.linkedCategoryId && currentPage?.pageType === 'category'
+  })
+
+  // Fetch the article category for display
+  const { data: category } = useQuery({
+    queryKey: ['/api/article-categories', currentPage?.linkedCategoryId],
+    queryFn: async () => {
+      if (!currentPage?.linkedCategoryId) return null
+      const response = await fetch(`/api/article-categories/${currentPage.linkedCategoryId}`)
+      if (!response.ok) throw new Error('Failed to fetch category')
+      return response.json()
+    },
+    enabled: !!currentPage?.linkedCategoryId && currentPage?.pageType === 'category'
+  })
+
   // Check if user is admin
   const { data: admin } = useQuery({
     queryKey: ['/api/admin/me'],
@@ -209,11 +233,97 @@ function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string
             </div>
           </div>
         ) : (
-          <div className="prose max-w-none dark:prose-invert">
-            <div dangerouslySetInnerHTML={{ 
-              __html: language === 'vi' ? currentPage.content_vi : currentPage.content_en 
-            }} />
-          </div>
+          <>
+            {/* Regular page content */}
+            {(currentPage.pageType === 'regular' || !currentPage.pageType) && (
+              <div className="prose max-w-none dark:prose-invert">
+                <div dangerouslySetInnerHTML={{ 
+                  __html: language === 'vi' ? currentPage.content_vi : currentPage.content_en 
+                }} />
+              </div>
+            )}
+            
+            {/* Category page content - first show intro text, then article list */}
+            {currentPage.pageType === 'category' && (
+              <div className="space-y-8">
+                {/* Intro content if any */}
+                {(currentPage.content_vi || currentPage.content_en) && (
+                  <div className="prose max-w-none dark:prose-invert">
+                    <div dangerouslySetInnerHTML={{ 
+                      __html: language === 'vi' ? currentPage.content_vi : currentPage.content_en 
+                    }} />
+                  </div>
+                )}
+                
+                {/* Category title and description */}
+                {category && (
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-semibold mb-2">
+                      {language === 'vi' ? category.name_vi : category.name_en}
+                    </h2>
+                    {(category.description_vi || category.description_en) && (
+                      <p className="text-muted-foreground">
+                        {language === 'vi' ? category.description_vi : category.description_en}
+                      </p>
+                    )}
+                  </div>
+                )}
+                
+                {/* Articles grid */}
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {categoryArticles?.map(article => (
+                    <a 
+                      key={article.id} 
+                      href={`/nghien-cuu-xuat-ban/bai-viet/${article.slug}`}
+                      className="group block overflow-hidden rounded-lg border border-muted bg-card transition-all hover:shadow-md"
+                    >
+                      {article.featuredImage && (
+                        <div className="aspect-video w-full overflow-hidden">
+                          <img 
+                            src={article.featuredImage} 
+                            alt={language === 'vi' ? article.title_vi : article.title_en}
+                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          />
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <h3 className="line-clamp-2 text-xl font-semibold group-hover:text-primary">
+                          {language === 'vi' ? article.title_vi : article.title_en}
+                        </h3>
+                        {(article.summary_vi || article.summary_en) && (
+                          <p className="line-clamp-3 mt-2 text-muted-foreground">
+                            {language === 'vi' ? article.summary_vi : article.summary_en}
+                          </p>
+                        )}
+                        <div className="mt-4 flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {new Date(article.publishedAt).toLocaleDateString(
+                              language === 'vi' ? 'vi-VN' : 'en-US', 
+                              { year: 'numeric', month: 'long', day: 'numeric' }
+                            )}
+                          </span>
+                          <span className="text-primary font-medium">
+                            {language === 'vi' ? 'Đọc thêm' : 'Read more'}
+                          </span>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+                
+                {/* Empty state if no articles */}
+                {(!categoryArticles || categoryArticles.length === 0) && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>
+                      {language === 'vi' 
+                        ? 'Chưa có bài viết nào trong danh mục này.'
+                        : 'No articles in this category yet.'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

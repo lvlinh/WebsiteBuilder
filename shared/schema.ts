@@ -54,6 +54,10 @@ export const pages = pgTable("pages", {
   parentId: serial("parent_id").references(() => pages.id),
   isSection: boolean("is_section").default(false),
   published: boolean("published").default(true),
+  // New field to connect a page to an article category
+  linkedCategoryId: integer("linked_category_id"),
+  // Page type: 'regular' for normal content pages, 'category' for pages displaying article categories
+  pageType: text("page_type").default('regular'),
   updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });

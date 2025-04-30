@@ -116,6 +116,7 @@ function SortableArticleItem({
           isDragging ? "bg-accent" : "bg-card",
           !article.published && "opacity-70"
         )}
+        onDoubleClick={() => onEdit(article)}
       >
         <div
           {...listeners}
@@ -124,10 +125,13 @@ function SortableArticleItem({
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
 
-        <div className={cn(
-          "flex-1",
-          !article.published && "text-muted-foreground"
-        )}>
+        <div 
+          className={cn(
+            "flex-1 cursor-pointer",
+            !article.published && "text-muted-foreground"
+          )}
+          onClick={() => onEdit(article)}
+        >
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span className="font-medium line-clamp-1">
@@ -147,7 +151,7 @@ function SortableArticleItem({
           <div className="flex text-xs text-muted-foreground mt-1 items-center">
             <span className="flex items-center">
               <Calendar className="h-3 w-3 mr-1" />
-              {format(new Date(article.publishedAt || article.createdAt), "PP")}
+              {format(new Date(article.publishedAt || (article as any).createdAt || new Date()), "PP")}
             </span>
             <span className="mx-2">•</span>
             <span>/{article.slug}</span>

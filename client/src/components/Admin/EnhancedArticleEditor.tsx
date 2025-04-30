@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarIcon, ChevronLeft, ImageIcon } from "lucide-react";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { slugify } from "@/lib/utils";
 import type { Article, ArticleCategory } from "@shared/schema";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -72,12 +72,7 @@ export default function EnhancedArticleEditor({
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: Omit<Article, "id" | "createdAt" | "updatedAt">) => {
-      const res = await fetch(`/api/admin/articles`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed to create article");
+      const res = await apiRequest("POST", "/api/admin/articles", data);
       return res.json();
     },
     onSuccess: () => {
@@ -91,7 +86,7 @@ export default function EnhancedArticleEditor({
       toast({
         variant: "destructive",
         title: language === "vi" ? "Tạo bài viết thất bại" : "Failed to create article",
-        description: error.message,
+        description: error instanceof Error ? error.message : String(error),
       });
     },
   });
@@ -99,12 +94,7 @@ export default function EnhancedArticleEditor({
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...data }: Partial<Article> & { id: number }) => {
-      const res = await fetch(`/api/admin/articles/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed to update article");
+      const res = await apiRequest("PATCH", `/api/admin/articles/${id}`, data);
       return res.json();
     },
     onSuccess: () => {
@@ -118,7 +108,7 @@ export default function EnhancedArticleEditor({
       toast({
         variant: "destructive",
         title: language === "vi" ? "Cập nhật thất bại" : "Update failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : String(error),
       });
     },
   });

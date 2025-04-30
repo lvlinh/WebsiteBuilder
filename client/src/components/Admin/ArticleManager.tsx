@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, SortAsc, SortDesc, FilePlus2, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import EnhancedArticleEditor from "./EnhancedArticleEditor";
 import ArticleTree from "./ArticleTree";
 import {
@@ -41,6 +41,10 @@ export default function ArticleManager() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [viewType, setViewType] = useState<ViewType>("tree");
   const [showUnpublished, setShowUnpublished] = useState(true);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Display 10 articles per page
 
   // Fetch articles from the API
   const { data: articles = [], isLoading: isLoadingArticles } = useQuery<Article[]>({
@@ -105,27 +109,11 @@ export default function ArticleManager() {
   // Delete article mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      try {
-        const res = await fetch(`/api/admin/articles/${id}`, {
-          method: "DELETE",
-        });
-        
-        if (!res.ok) {
-          // Try to parse error message, but don't fail if it's not JSON
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.message || `Failed to delete article ${id}`);
-        }
-        
-        // Some DELETE endpoints return 204 No Content
-        if (res.status === 204) {
-          return { success: true };
-        }
-        
-        return res.json().catch(() => ({ success: true }));
-      } catch (error) {
-        console.error("Error deleting article:", error);
-        throw error;
+      const res = await apiRequest("DELETE", `/api/admin/articles/${id}`);
+      if (res.status === 204) {
+        return { success: true };
       }
+      return res.json().catch(() => ({ success: true }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
@@ -145,23 +133,8 @@ export default function ArticleManager() {
   // Toggle article publish status
   const togglePublishMutation = useMutation({
     mutationFn: async ({ id, published }: { id: number; published: boolean }) => {
-      try {
-        const res = await fetch(`/api/admin/articles/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ published }),
-        });
-        
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.message || "Failed to update article");
-        }
-        
-        return res.json();
-      } catch (error) {
-        console.error("Error toggling publish status:", error);
-        throw error;
-      }
+      const res = await apiRequest("PATCH", `/api/admin/articles/${id}`, { published });
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
@@ -181,29 +154,18 @@ export default function ArticleManager() {
   // Reorder articles mutation
   const reorderArticlesMutation = useMutation({
     mutationFn: async (updatedArticles: Article[]) => {
-      try {
-        // Update articles one by one with their new order
-        const promises = updatedArticles.map(async (article) => {
-          const response = await fetch(`/api/admin/articles/${article.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ display_order: article.display_order }),
-          });
-          
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Failed to update article ${article.id}`);
-          }
-          
-          return response.json();
-        });
-        
-        await Promise.all(promises);
-        return true;
-      } catch (error) {
-        console.error("Error reordering articles:", error);
-        throw error;
-      }
+      // Update articles one by one with their new order
+      const promises = updatedArticles.map(async (article) => {
+        const response = await apiRequest(
+          "PATCH", 
+          `/api/admin/articles/${article.id}`, 
+          { display_order: article.display_order }
+        );
+        return response.json();
+      });
+      
+      await Promise.all(promises);
+      return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/articles"] });

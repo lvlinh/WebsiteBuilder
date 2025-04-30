@@ -15,23 +15,18 @@ import PageEditor from "./PageEditor"
 import BannerSlides from "./BannerSlides"
 import ArticleEditor from "./ArticleEditor"
 import ArticleCategories from "./ArticleCategories"
+import PageManager from "@/components/Admin/PageManager"
 import type { Page, Article } from "@shared/schema"
 
 export default function AdminDashboard() {
   const { language } = useI18n()
-  const [selectedPage, setSelectedPage] = useState<Page | null>(null)
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
-
-  const { data: pages } = useQuery<Page[]>({
-    queryKey: ['/api/pages']
-  })
+  const [showLegacyPageEditor, setShowLegacyPageEditor] = useState(false)
+  const [selectedLegacyPage, setSelectedLegacyPage] = useState<Page | null>(null)
 
   const { data: articles } = useQuery<Article[]>({
     queryKey: ['/api/articles']
   })
-
-  const mainPages = pages?.filter(p => !p.parentId) || []
-  const subPages = pages?.filter(p => p.parentId) || []
 
   return (
     <div className="container py-10">
@@ -56,106 +51,16 @@ export default function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="pages" className="space-y-6">
-          {selectedPage ? (
-            <PageEditor page={selectedPage} onBack={() => setSelectedPage(null)} />
+          {showLegacyPageEditor ? (
+            <PageEditor 
+              page={selectedLegacyPage || {} as Page} 
+              onBack={() => {
+                setShowLegacyPageEditor(false)
+                setSelectedLegacyPage(null)
+              }} 
+            />
           ) : (
-            <>
-              <div className="flex justify-end">
-                <Button onClick={() => setSelectedPage({} as Page)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {language === 'vi' ? 'Tạo trang mới' : 'Create New Page'}
-                </Button>
-              </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {language === 'vi' ? 'Trang chính' : 'Main Pages'}
-                  </CardTitle>
-                  <CardDescription>
-                    {language === 'vi' 
-                      ? 'Các trang chính trong menu điều hướng'
-                      : 'Main pages in the navigation menu'
-                    }
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    {mainPages.map(page => (
-                      <Card 
-                        key={page.id} 
-                        className="cursor-pointer hover:bg-accent transition-colors"
-                        onClick={() => setSelectedPage(page)}
-                      >
-                        <CardHeader className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <CardTitle className="text-lg">
-                                {language === 'vi' ? page.title_vi : page.title_en}
-                              </CardTitle>
-                              <CardDescription>/{page.slug}</CardDescription>
-                            </div>
-                            <Button variant="outline" size="sm">
-                              {language === 'vi' ? 'Chỉnh sửa' : 'Edit'}
-                            </Button>
-                          </div>
-                        </CardHeader>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {subPages.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      {language === 'vi' ? 'Trang con' : 'Sub Pages'}
-                    </CardTitle>
-                    <CardDescription>
-                      {language === 'vi' 
-                        ? 'Các trang con của trang chính'
-                        : 'Sub pages of main pages'
-                      }
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4">
-                      {subPages.map(page => {
-                        const parentPage = mainPages.find(p => p.id === page.parentId)
-                        return (
-                          <Card 
-                            key={page.id} 
-                            className="cursor-pointer hover:bg-accent transition-colors"
-                            onClick={() => setSelectedPage(page)}
-                          >
-                            <CardHeader className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <CardTitle className="text-lg">
-                                    {language === 'vi' ? page.title_vi : page.title_en}
-                                  </CardTitle>
-                                  <CardDescription>
-                                    {parentPage && (
-                                      <span className="text-muted-foreground">
-                                        {language === 'vi' ? parentPage.title_vi : parentPage.title_en}
-                                      </span>
-                                    )} / {page.slug}
-                                  </CardDescription>
-                                </div>
-                                <Button variant="outline" size="sm">
-                                  {language === 'vi' ? 'Chỉnh sửa' : 'Edit'}
-                                </Button>
-                              </div>
-                            </CardHeader>
-                          </Card>
-                        )
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </>
+            <PageManager />
           )}
         </TabsContent>
 

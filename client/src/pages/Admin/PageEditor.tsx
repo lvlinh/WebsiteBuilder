@@ -172,7 +172,11 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
               <Label htmlFor="linkedCategoryId" className="font-semibold">
                 {language === 'vi' ? 'Danh mục bài viết' : 'Article Category'}
               </Label>
-              <Select name="linkedCategoryId" defaultValue={page.linkedCategoryId?.toString() || ''}>
+              <Select 
+                name="linkedCategoryId" 
+                value={selectedCategoryId}
+                onValueChange={setSelectedCategoryId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder={language === 'vi' ? "Chọn danh mục" : "Select category"} />
                 </SelectTrigger>

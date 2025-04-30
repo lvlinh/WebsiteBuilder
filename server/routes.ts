@@ -1389,16 +1389,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).end();
   });
 
-  // Add article category routes
+  // Add article category routes for public (non-admin) access
   app.get("/api/article-categories", async (_req, res) => {
     const categories = await storage.getArticleCategories();
     res.json(categories);
   });
 
-  app.post("/api/article-categories", async (req, res) => {
+  // Add article category routes for admin access
+  app.get("/api/admin/article-categories", isAdmin, async (_req, res) => {
+    const categories = await storage.getArticleCategories();
+    res.json(categories);
+  });
+
+  app.post("/api/admin/article-categories", isAdmin, async (req, res) => {
     try {
-      const parseResult = insertArticleCategorySchema.safeParse(req.body);
+      console.log("Received category data:", req.body);
+      
+      // Handle string input that might not be valid JSON
+      let categoryData = req.body;
+      if (typeof categoryData === 'string') {
+        try {
+          categoryData = JSON.parse(categoryData);
+        } catch (err) {
+          console.error("Error parsing category data:", err);
+          return res.status(400).json({
+            message: "Invalid JSON format",
+            error: "The provided data is not valid JSON"
+          });
+        }
+      }
+      
+      const parseResult = insertArticleCategorySchema.safeParse(categoryData);
       if (!parseResult.success) {
+        console.error("Category validation failed:", parseResult.error.errors);
         return res.status(400).json({
           message: "Invalid category data",
           errors: parseResult.error.errors
@@ -1411,6 +1434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const category = await storage.createArticleCategory(parseResult.data);
+      console.log("Category created successfully:", category);
       res.status(201).json(category);
     } catch (error) {
       console.error('Error creating category:', error);
@@ -1418,18 +1442,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/article-categories/:id", async (req, res) => {
+  app.patch("/api/admin/article-categories/:id", isAdmin, async (req, res) => {
     try {
-      const parseResult = updateArticleCategorySchema.safeParse(req.body);
+      console.log("Received update category data:", req.body);
+      
+      // Handle string input that might not be valid JSON
+      let categoryData = req.body;
+      if (typeof categoryData === 'string') {
+        try {
+          categoryData = JSON.parse(categoryData);
+        } catch (err) {
+          console.error("Error parsing category data:", err);
+          return res.status(400).json({
+            message: "Invalid JSON format",
+            error: "The provided data is not valid JSON"
+          });
+        }
+      }
+      
+      const parseResult = updateArticleCategorySchema.safeParse(categoryData);
       if (!parseResult.success) {
+        console.error("Category validation failed:", parseResult.error.errors);
         return res.status(400).json({
           message: "Invalid category data",
           errors: parseResult.error.errors
         });
       }
 
-      if (req.body.slug) {
-        const existingCategory = await storage.getArticleCategoryBySlug(req.body.slug);
+      if (categoryData.slug) {
+        const existingCategory = await storage.getArticleCategoryBySlug(categoryData.slug);
         if (existingCategory && existingCategory.id !== Number(req.params.id)) {
           return res.status(400).json({ message: "Category with this slug already exists" });
         }
@@ -1439,6 +1480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!category) {
         return res.status(404).json({ message: "Category not found" });
       }
+      console.log("Category updated successfully:", category);
       res.json(category);
     } catch (error) {
       console.error('Error updating category:', error);
@@ -1446,7 +1488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/article-categories/:id", async (req, res) => {
+  app.delete("/api/admin/article-categories/:id", isAdmin, async (req, res) => {
     // Before deleting, check if any articles are using this category
     const articles = await storage.getArticles();
     const category = await storage.getArticleCategory(Number(req.params.id));

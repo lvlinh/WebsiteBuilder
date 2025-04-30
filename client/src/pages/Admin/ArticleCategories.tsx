@@ -213,13 +213,15 @@ export default function ArticleCategories() {
   const handleMoveUp = (category: ArticleCategory, index: number) => {
     if (index === 0 || !categories) return
     const prevCategory = categories[index - 1]
-    moveOrderMutation.mutate({ id: category.id, newOrder: prevCategory.order })
+    const newOrder = prevCategory.order ?? 0 // Use zero as fallback if order is null
+    moveOrderMutation.mutate({ id: category.id, newOrder })
   }
 
   const handleMoveDown = (category: ArticleCategory, index: number) => {
     if (!categories || index === categories.length - 1) return
     const nextCategory = categories[index + 1]
-    moveOrderMutation.mutate({ id: category.id, newOrder: nextCategory.order })
+    const newOrder = nextCategory.order ?? 0 // Use zero as fallback if order is null
+    moveOrderMutation.mutate({ id: category.id, newOrder })
   }
 
   return (

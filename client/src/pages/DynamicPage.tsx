@@ -10,39 +10,33 @@ import type { Page } from "@shared/schema"
 import Articles from "./Articles"
 import Events from "./Events"
 
-export default function DynamicPage() {
-  const [location] = useLocation()
+// Separate components for special pages to maintain proper React hooks
+function ArticlesPage() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Articles />
+      </div>
+    </div>
+  )
+}
+
+function EventsPage() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Events />
+      </div>
+    </div>
+  )
+}
+
+// Regular page component
+function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string }) {
   const { language } = useI18n()
   const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState({ vi: "", en: "" })
-
-  // Parse the full path to handle nested routes
-  const pathParts = location.substring(1).split('/')
-  const mainSlug = pathParts[0]
-  const subSlug = pathParts[1]
-
-  // Special handling for articles page
-  if (mainSlug === "nghien-cuu-xuat-ban" && subSlug === "bai-viet") {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Articles />
-        </div>
-      </div>
-    )
-  }
-
-  // Special handling for events page
-  if (mainSlug === "gia-dinh-sjjs" && subSlug === "su-kien") {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Events />
-        </div>
-      </div>
-    )
-  }
 
   // Fetch all pages for navigation
   const { data: pages } = useQuery<Page[]>({
@@ -224,4 +218,27 @@ export default function DynamicPage() {
       </div>
     </div>
   )
+}
+
+// Main component that determines which page to display
+export default function DynamicPage() {
+  const [location] = useLocation()
+  
+  // Parse the full path to handle nested routes
+  const pathParts = location.substring(1).split('/')
+  const mainSlug = pathParts[0]
+  const subSlug = pathParts[1]
+
+  // Special handling for articles page
+  if (mainSlug === "nghien-cuu-xuat-ban" && subSlug === "bai-viet") {
+    return <ArticlesPage />
+  }
+
+  // Special handling for events page
+  if (mainSlug === "gia-dinh-sjjs" && subSlug === "su-kien") {
+    return <EventsPage />
+  }
+
+  // Regular page
+  return <RegularPage mainSlug={mainSlug} subSlug={subSlug} />
 }

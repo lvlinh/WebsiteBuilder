@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema, insertPageSchema, insertBannerSlideSchema, updateArticleSchema, insertArticleCategorySchema, updateArticleCategorySchema } from "@shared/schema"; // Added import
+import { insertArticleSchema, insertNewsSchema, insertStudentSchema, insertCourseSchema, insertEnrollmentSchema, insertEventSchema, insertEventRegistrationSchema, insertPageSchema, insertBannerSlideSchema, updateArticleSchema, insertArticleCategorySchema, updateArticleCategorySchema, insertContentBlockSchema, insertQuickLinkSchema } from "@shared/schema"; // Added import
 import session from "express-session";
 import MemoryStore from "memorystore";
 import passport from "passport";

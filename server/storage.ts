@@ -147,6 +147,8 @@ export class MemStorage implements IStorage {
     this.eventRegistrations = new Map();
     this.bannerSlides = new Map();
     this.articleCategories = new Map();
+    this.contentBlocks = new Map();
+    this.quickLinks = new Map();
     this.adminId = 1;
     this.pageId = 1;
     this.articleId = 1;
@@ -158,6 +160,8 @@ export class MemStorage implements IStorage {
     this.eventRegistrationId = 1;
     this.bannerSlideId = 1;
     this.articleCategoryId = 1;
+    this.contentBlockId = 1;
+    this.quickLinkId = 1;
   }
 
   // Admin methods
@@ -554,6 +558,86 @@ export class MemStorage implements IStorage {
 
   async deleteArticleCategory(id: number): Promise<boolean> {
     return this.articleCategories.delete(id);
+  }
+
+  // Content Blocks methods
+  async getContentBlocks(): Promise<ContentBlock[]> {
+    return Array.from(this.contentBlocks.values())
+      .sort((a, b) => a.order - b.order);
+  }
+
+  async getContentBlock(id: number): Promise<ContentBlock | undefined> {
+    return this.contentBlocks.get(id);
+  }
+
+  async createContentBlock(block: InsertContentBlock): Promise<ContentBlock> {
+    const id = this.contentBlockId++;
+    const newBlock = {
+      ...block,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      order: block.order ?? id
+    } as ContentBlock;
+    this.contentBlocks.set(id, newBlock);
+    return newBlock;
+  }
+
+  async updateContentBlock(id: number, block: Partial<InsertContentBlock>): Promise<ContentBlock | undefined> {
+    const existing = this.contentBlocks.get(id);
+    if (!existing) return undefined;
+
+    const updated = { 
+      ...existing, 
+      ...block,
+      updatedAt: new Date()
+    };
+    this.contentBlocks.set(id, updated);
+    return updated;
+  }
+
+  async deleteContentBlock(id: number): Promise<boolean> {
+    return this.contentBlocks.delete(id);
+  }
+
+  // Quick Links methods
+  async getQuickLinks(): Promise<QuickLink[]> {
+    return Array.from(this.quickLinks.values())
+      .sort((a, b) => a.order - b.order);
+  }
+
+  async getQuickLink(id: number): Promise<QuickLink | undefined> {
+    return this.quickLinks.get(id);
+  }
+
+  async createQuickLink(link: InsertQuickLink): Promise<QuickLink> {
+    const id = this.quickLinkId++;
+    const newLink = {
+      ...link,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      order: link.order ?? id
+    } as QuickLink;
+    this.quickLinks.set(id, newLink);
+    return newLink;
+  }
+
+  async updateQuickLink(id: number, link: Partial<InsertQuickLink>): Promise<QuickLink | undefined> {
+    const existing = this.quickLinks.get(id);
+    if (!existing) return undefined;
+
+    const updated = { 
+      ...existing, 
+      ...link,
+      updatedAt: new Date()
+    };
+    this.quickLinks.set(id, updated);
+    return updated;
+  }
+
+  async deleteQuickLink(id: number): Promise<boolean> {
+    return this.quickLinks.delete(id);
   }
 }
 

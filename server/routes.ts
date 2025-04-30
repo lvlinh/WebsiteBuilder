@@ -1046,78 +1046,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(registration);
   });
 
-  // Search routes
+  // Search routes - completely rewritten to fix async issues
   app.get("/api/search", async (req, res) => {
     const { query, type, category } = req.query;
     let results = [];
 
     try {
+      // Handle articles
       if (!type || type === 'article') {
         const articles = await storage.getArticles();
-        const filteredArticles = articles.filter(article => {
-          const matchesQuery = !query ||
-            article.title_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
-            article.title_en.toLowerCase().includes(query.toString().toLowerCase()) ||
-            article.content_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
-            article.content_en.toLowerCase().includes(query.toString().toLowerCase());
-
-          const matchesCategory = !category || article.category === category;
-
-          return matchesQuery && matchesCategory;
-        }).map(article => ({
-          type: 'article',
-          id: article.id,
-          title: article.title_en,
-          description: article.content_en,
-          category: article.category,
-          date: article.publishedAt
-        }));
-        results.push(...filteredArticles);
+        const articleResults = [];
+        
+        for (const article of articles) {
+          // Match by content
+          const matchesQuery = !query || 
+            article.title_vi.toLowerCase().includes(String(query).toLowerCase()) ||
+            article.title_en.toLowerCase().includes(String(query).toLowerCase()) ||
+            article.content_vi.toLowerCase().includes(String(query).toLowerCase()) ||
+            article.content_en.toLowerCase().includes(String(query).toLowerCase());
+          
+          // Get category info
+          let categorySlug = null;
+          if (article.categoryId) {
+            const categoryObj = await storage.getArticleCategory(article.categoryId);
+            if (categoryObj) {
+              categorySlug = categoryObj.slug;
+            }
+          }
+          
+          // Match by category
+          const matchesCategory = !category || categorySlug === category;
+          
+          // Add to results if matches
+          if (matchesQuery && matchesCategory) {
+            articleResults.push({
+              type: 'article',
+              id: article.id,
+              title: article.title_en || article.title_vi,
+              description: article.content_en || article.content_vi,
+              category: categorySlug,
+              date: article.publishedAt
+            });
+          }
+        }
+        
+        results = [...results, ...articleResults];
       }
-
+      
+      // Handle events
       if (!type || type === 'event') {
         const events = await storage.getEvents();
-        const filteredEvents = events.filter(event => {
+        const eventResults = [];
+        
+        for (const event of events) {
           const matchesQuery = !query ||
-            event.title_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
-            event.title_en.toLowerCase().includes(query.toString().toLowerCase()) ||
-            event.description_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
-            event.description_en.toLowerCase().includes(query.toString().toLowerCase());
-
+            event.title_vi.toLowerCase().includes(String(query).toLowerCase()) ||
+            event.title_en.toLowerCase().includes(String(query).toLowerCase()) ||
+            event.description_vi.toLowerCase().includes(String(query).toLowerCase()) ||
+            event.description_en.toLowerCase().includes(String(query).toLowerCase());
+          
           const matchesCategory = !category || event.category === category;
-
-          return matchesQuery && matchesCategory;
-        }).map(event => ({
-          type: 'event',
-          id: event.id,
-          title: event.title_en,
-          description: event.description_en,
-          category: event.category,
-          date: event.startDate
-        }));
-        results.push(...filteredEvents);
+          
+          if (matchesQuery && matchesCategory) {
+            eventResults.push({
+              type: 'event',
+              id: event.id,
+              title: event.title_en || event.title_vi,
+              description: event.description_en || event.description_vi,
+              category: event.category,
+              date: event.startDate
+            });
+          }
+        }
+        
+        results = [...results, ...eventResults];
       }
-
+      
+      // Handle courses
       if (!type || type === 'course') {
         const courses = await storage.getCourses();
-        const filteredCourses = courses.filter(course => {
+        const courseResults = [];
+        
+        for (const course of courses) {
           const matchesQuery = !query ||
-            course.name_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
-            course.name_en.toLowerCase().includes(query.toString().toLowerCase()) ||
-            course.description_vi.toLowerCase().includes(query.toString().toLowerCase()) ||
-            course.description_en.toLowerCase().includes(query.toString().toLowerCase());
-
+            course.name_vi.toLowerCase().includes(String(query).toLowerCase()) ||
+            course.name_en.toLowerCase().includes(String(query).toLowerCase()) ||
+            course.description_vi.toLowerCase().includes(String(query).toLowerCase()) ||
+            course.description_en.toLowerCase().includes(String(query).toLowerCase());
+          
           const matchesCategory = !category || course.semester === category;
-
-          return matchesQuery && matchesCategory;
-        }).map(course => ({
-          type: 'course',
-          id: course.id,
-          title: course.name_en,
-          description: course.description_en,
-          category: course.semester
-        }));
-        results.push(...filteredCourses);
+          
+          if (matchesQuery && matchesCategory) {
+            courseResults.push({
+              type: 'course',
+              id: course.id,
+              title: course.name_en || course.name_vi,
+              description: course.description_en || course.description_vi,
+              category: course.semester
+            });
+          }
+        }
+        
+        results = [...results, ...courseResults];
       }
 
       res.json(results);
@@ -1404,7 +1434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Category not found" });
     }
 
-    if (articles.some(article => article.category === category.slug)) {
+    if (articles.some(article => article.categoryId === category.id)) {
       return res.status(400).json({
         message: "Cannot delete category that is being used by articles"
       });

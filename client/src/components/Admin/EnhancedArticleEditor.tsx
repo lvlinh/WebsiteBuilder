@@ -141,7 +141,8 @@ export default function EnhancedArticleEditor({
       published,
       featuredImage,
       categoryId: categoryId || undefined,
-      publishedAt: publishDate,
+      // Convert to ISO string for serialization, the server will parse it
+      publishedAt: publishDate.toISOString(),
     };
 
     if (isNew) {

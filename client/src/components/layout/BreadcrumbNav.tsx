@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Link } from "wouter"
+import { Home } from "lucide-react"
 
 interface BreadcrumbItem {
   slug: string
@@ -75,36 +76,43 @@ export default function BreadcrumbNav() {
   if (breadcrumbItems.length === 0) return null
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link href="/">
-              {language === 'vi' ? 'Trang chủ' : 'Home'}
-            </Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
+    <div className="bg-gray-50 border-b shadow-sm">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <Breadcrumb>
+          <BreadcrumbList className="text-sm md:text-base">
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/" className="flex items-center hover:text-[#8B4749] transition-colors duration-200">
+                  <Home className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1" />
+                  <span className="sr-only md:not-sr-only">
+                    {language === 'vi' ? 'Trang chủ' : 'Home'}
+                  </span>
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
 
-        {breadcrumbItems.map((item, index) => (
-          <BreadcrumbItem key={item.path}>
-            {index === breadcrumbItems.length - 1 ? (
-              <BreadcrumbPage>
-                {language === 'vi' ? item.title_vi : item.title_en}
-              </BreadcrumbPage>
-            ) : (
-              <>
-                <BreadcrumbLink asChild>
-                  <Link href={item.path}>
+            {breadcrumbItems.map((item, index) => (
+              <BreadcrumbItem key={item.path}>
+                {index === breadcrumbItems.length - 1 ? (
+                  <BreadcrumbPage className="font-medium">
                     {language === 'vi' ? item.title_vi : item.title_en}
-                  </Link>
-                </BreadcrumbLink>
-                <BreadcrumbSeparator />
-              </>
-            )}
-          </BreadcrumbItem>
-        ))}
-      </BreadcrumbList>
-    </Breadcrumb>
+                  </BreadcrumbPage>
+                ) : (
+                  <>
+                    <BreadcrumbLink asChild>
+                      <Link href={item.path} className="hover:text-[#8B4749] transition-colors duration-200">
+                        {language === 'vi' ? item.title_vi : item.title_en}
+                      </Link>
+                    </BreadcrumbLink>
+                    <BreadcrumbSeparator />
+                  </>
+                )}
+              </BreadcrumbItem>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+    </div>
   )
 }

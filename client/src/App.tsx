@@ -22,8 +22,13 @@ import NotFound from "@/pages/not-found"
 function Router() {
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Always visible header */}
       <Header />
+      
+      {/* Breadcrumb navigation - only visible on non-home pages */}
       <BreadcrumbNav />
+      
+      {/* Main content area */}
       <div className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
@@ -44,6 +49,8 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </div>
+      
+      {/* Always visible footer */}
       <Footer />
     </div>
   )

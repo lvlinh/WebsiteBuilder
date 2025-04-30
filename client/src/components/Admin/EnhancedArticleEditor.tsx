@@ -141,7 +141,7 @@ export default function EnhancedArticleEditor({
       published,
       featuredImage,
       categoryId: categoryId || undefined,
-      publishedAt: publishDate.toISOString(),
+      publishedAt: publishDate,
     };
 
     if (isNew) {

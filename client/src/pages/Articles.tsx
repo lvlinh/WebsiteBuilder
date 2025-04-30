@@ -51,19 +51,21 @@ export default function Articles() {
     )
   }
 
-  // Group articles by category slug
+  // Group articles by category ID
   const articlesByCategory = (categories || []).reduce((acc, cat) => {
     acc[cat.slug] = (articles || []).filter(
-      article => article.category === cat.slug
+      article => article.categoryId === cat.id
     )
     return acc
   }, {} as Record<string, Article[]>)
 
   // Sort articles by date within each category
   Object.values(articlesByCategory).forEach(categoryArticles => {
-    categoryArticles.sort((a, b) => 
-      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    );
+    categoryArticles.sort((a, b) => {
+      const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date();
+      const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date();
+      return dateB.getTime() - dateA.getTime();
+    });
   });
 
   // Get total pages for current category
@@ -109,10 +111,10 @@ export default function Articles() {
                 {displayedArticles.map((article) => (
                   <Link key={article.id} href={`/articles/${article.slug}`}>
                     <Card className="cursor-pointer hover:bg-accent transition-colors h-full flex flex-col">
-                      {article.thumbnail && (
+                      {article.featuredImage && (
                         <div className="aspect-video">
                           <img
-                            src={article.thumbnail}
+                            src={article.featuredImage}
                             alt={language === 'vi' ? article.title_vi : article.title_en}
                             className="w-full h-full object-cover rounded-t-lg"
                           />

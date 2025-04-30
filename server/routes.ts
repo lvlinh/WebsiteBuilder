@@ -613,6 +613,43 @@ async function initializeArticleCategories() {
         title_vi: "Tin học viện",
         title_en: "Academic News",
         order: 6
+      },
+      // Additional categories for testing
+      {
+        slug: "events",
+        title_vi: "Sự kiện",
+        title_en: "Events",
+        order: 7
+      },
+      {
+        slug: "research",
+        title_vi: "Nghiên cứu học thuật",
+        title_en: "Academic Research",
+        order: 8
+      },
+      {
+        slug: "student-life",
+        title_vi: "Đời sống sinh viên",
+        title_en: "Student Life",
+        order: 9
+      },
+      {
+        slug: "publications",
+        title_vi: "Ấn phẩm",
+        title_en: "Publications",
+        order: 10
+      },
+      {
+        slug: "faculty",
+        title_vi: "Giảng viên",
+        title_en: "Faculty",
+        order: 11
+      },
+      {
+        slug: "community-outreach",
+        title_vi: "Cộng đồng",
+        title_en: "Community Outreach",
+        order: 12
       }
     ];
 

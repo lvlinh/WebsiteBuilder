@@ -55,9 +55,9 @@ export default function ArticleManager() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Display 10 articles per page
 
-  // Fetch articles from the API
+  // Fetch articles from the admin API
   const { data: articles = [], isLoading: isLoadingArticles } = useQuery<Article[]>({
-    queryKey: ["/api/articles"],
+    queryKey: ["/api/admin/articles"],
   });
 
   // Fetch categories from the API
@@ -125,7 +125,7 @@ export default function ArticleManager() {
       return res.json().catch(() => ({ success: true }));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
       toast({
         title: language === "vi" ? "Xóa bài viết thành công" : "Article deleted successfully",
       });
@@ -146,7 +146,7 @@ export default function ArticleManager() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
       toast({
         title: language === "vi" ? "Cập nhật trạng thái thành công" : "Status updated successfully",
       });
@@ -177,7 +177,7 @@ export default function ArticleManager() {
       return true;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
       toast({
         title: language === "vi" ? "Sắp xếp thành công" : "Articles reordered successfully",
       });

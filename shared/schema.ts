@@ -58,29 +58,33 @@ export const pages = pgTable("pages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Update articles table to use dynamic categories
+// Update articles table with enhanced fields
 export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   title_vi: text("title_vi").notNull(),
   title_en: text("title_en").notNull(),
-  excerpt_vi: text("excerpt_vi").notNull(),
-  excerpt_en: text("excerpt_en").notNull(),
+  summary_vi: text("summary_vi"),
+  summary_en: text("summary_en"),
   content_vi: text("content_vi").notNull(),
   content_en: text("content_en").notNull(),
-  thumbnail: text("thumbnail").default(null),
-  category: text("category").notNull(),
+  featuredImage: text("featured_image"),
+  categoryId: integer("category_id").references(() => articleCategories.id),
   featured: boolean("featured").default(false),
   published: boolean("published").default(true),
   publishedAt: timestamp("published_at").defaultNow(),
-  author: text("author").default(null),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  author: text("author"),
+  display_order: integer("display_order").default(0),
   viewCount: integer("view_count").default(0),
 });
 
 // Simplify schema creation to avoid runtime errors
 export const insertArticleSchema = createInsertSchema(articles).omit({ 
   id: true,
-  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
   viewCount: true,
 });
 

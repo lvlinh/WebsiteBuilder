@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import type { Page, ArticleCategory } from "@shared/schema"
+import { useEffect, useState } from "react"
 
 interface PageEditorProps {
   page: Page
@@ -27,6 +28,7 @@ interface PageEditorProps {
 export default function PageEditor({ page, onBack }: PageEditorProps) {
   const { language } = useI18n()
   const { toast } = useToast()
+  const [pageType, setPageType] = useState<string>(page.pageType || 'regular')
   
   // Fetch article categories for the select dropdown
   const { data: categories } = useQuery<ArticleCategory[]>({
@@ -37,6 +39,11 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
       return res.json()
     }
   })
+  
+  // Handle page type change to toggle category selector visibility
+  const handlePageTypeChange = (value: string) => {
+    setPageType(value)
+  }
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...data }: Partial<Page> & { id: number }) => {
@@ -135,7 +142,12 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
             <Label>
               {language === 'vi' ? 'Loại trang' : 'Page Type'}
             </Label>
-            <RadioGroup defaultValue={page.pageType || 'regular'} name="pageType" className="flex flex-col space-y-1">
+            <RadioGroup 
+              defaultValue={page.pageType || 'regular'} 
+              name="pageType" 
+              className="flex flex-col space-y-1"
+              onValueChange={handlePageTypeChange}
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="regular" id="page-type-regular" />
                 <Label htmlFor="page-type-regular" className="cursor-pointer">
@@ -152,28 +164,30 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
           </div>
           
           {/* Category Selection (conditionally shown for category pages) */}
-          <div className="space-y-2" id="category-select-container">
-            <Label htmlFor="linkedCategoryId">
-              {language === 'vi' ? 'Danh mục bài viết' : 'Article Category'}
-            </Label>
-            <Select name="linkedCategoryId" defaultValue={page.linkedCategoryId?.toString() || ''}>
-              <SelectTrigger>
-                <SelectValue placeholder={language === 'vi' ? "Chọn danh mục" : "Select category"} />
-              </SelectTrigger>
-              <SelectContent>
-                {categories?.map(category => (
-                  <SelectItem key={category.id} value={category.id.toString()}>
-                    {language === 'vi' ? category.name_vi : category.name_en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-muted-foreground">
-              {language === 'vi' 
-                ? 'Trang sẽ hiển thị các bài viết từ danh mục đã chọn'
-                : 'The page will display articles from the selected category'}
-            </p>
-          </div>
+          {pageType === 'category' && (
+            <div className="space-y-2 border-l-2 border-primary/20 pl-4 ml-1 mt-2" id="category-select-container">
+              <Label htmlFor="linkedCategoryId" className="font-semibold">
+                {language === 'vi' ? 'Danh mục bài viết' : 'Article Category'}
+              </Label>
+              <Select name="linkedCategoryId" defaultValue={page.linkedCategoryId?.toString() || ''}>
+                <SelectTrigger>
+                  <SelectValue placeholder={language === 'vi' ? "Chọn danh mục" : "Select category"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map(category => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {language === 'vi' ? category.title_vi : category.title_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                {language === 'vi' 
+                  ? 'Trang sẽ hiển thị các bài viết từ danh mục đã chọn'
+                  : 'The page will display articles from the selected category'}
+              </p>
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="content" className="w-full">

@@ -157,15 +157,22 @@ export default function EnhancedArticleEditor({
         <Button variant="outline" size="icon" onClick={onBack} className="flex-shrink-0">
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold">
-          {isNew
-            ? language === "vi"
-              ? "Tạo bài viết mới"
-              : "Create New Article"
-            : language === "vi"
-            ? "Chỉnh sửa bài viết"
-            : "Edit Article"}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {isNew
+              ? language === "vi"
+                ? "Tạo bài viết mới"
+                : "Create New Article"
+              : language === "vi"
+              ? "Chỉnh sửa bài viết"
+              : "Edit Article"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {language === "vi" 
+              ? "Nội dung tiếng Việt là bắt buộc, nội dung tiếng Anh là tùy chọn." 
+              : "Vietnamese content is required, English content is optional."}
+          </p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">

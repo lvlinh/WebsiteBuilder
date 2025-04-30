@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,15 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import EnhancedArticleEditor from "./EnhancedArticleEditor";
 import ArticleTree from "./ArticleTree";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,8 +106,8 @@ export default function ArticleManager() {
         comparison = (language === "vi" ? a.title_vi : a.title_en)
           .localeCompare(language === "vi" ? b.title_vi : b.title_en);
       } else if (sortField === "publishedAt" || sortField === "createdAt") {
-        const dateA = new Date(a[sortField] || a.createdAt);
-        const dateB = new Date(b[sortField] || b.createdAt);
+        const dateA = new Date(a[sortField] || a.createdAt || new Date());
+        const dateB = new Date(b[sortField] || b.createdAt || new Date());
         comparison = dateA.getTime() - dateB.getTime();
       }
 
@@ -347,15 +356,82 @@ export default function ArticleManager() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : (
-          <ArticleTree
-            articles={processedArticles}
-            categories={categories}
-            onEditArticle={handleEditArticle}
-            onCreateArticle={handleCreateArticle}
-            onDeleteArticle={handleDeleteArticle}
-            onTogglePublish={handleTogglePublish}
-            onReorderArticles={handleReorderArticles}
-          />
+          <>
+            <ArticleTree
+              articles={processedArticles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)}
+              categories={categories}
+              onEditArticle={handleEditArticle}
+              onCreateArticle={handleCreateArticle}
+              onDeleteArticle={handleDeleteArticle}
+              onTogglePublish={handleTogglePublish}
+              onReorderArticles={handleReorderArticles}
+            />
+            
+            {/* Pagination */}
+            {processedArticles.length > itemsPerPage && (
+              <div className="mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: Math.ceil(processedArticles.length / itemsPerPage) }, (_, i) => i + 1)
+                      .filter(page => {
+                        const totalPages = Math.ceil(processedArticles.length / itemsPerPage);
+                        // Show first, last, current page, and pages around current
+                        return (
+                          page === 1 || 
+                          page === totalPages || 
+                          Math.abs(page - currentPage) <= 1
+                        );
+                      })
+                      .map((page, index, array) => {
+                        // Add ellipsis if there are gaps in the sequence
+                        if (index > 0 && page - array[index - 1] > 1) {
+                          return (
+                            <React.Fragment key={`ellipsis-${page}`}>
+                              <PaginationItem>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                              <PaginationItem key={page}>
+                                <PaginationLink 
+                                  onClick={() => setCurrentPage(page)}
+                                  isActive={currentPage === page}
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            </React.Fragment>
+                          );
+                        }
+                        
+                        return (
+                          <PaginationItem key={page}>
+                            <PaginationLink 
+                              onClick={() => setCurrentPage(page)}
+                              isActive={currentPage === page}
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(processedArticles.length / itemsPerPage)))}
+                        disabled={currentPage === Math.ceil(processedArticles.length / itemsPerPage)}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

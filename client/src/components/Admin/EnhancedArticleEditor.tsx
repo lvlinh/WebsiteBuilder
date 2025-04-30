@@ -116,25 +116,27 @@ export default function EnhancedArticleEditor({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!title_vi.trim() || !title_en.trim() || !slug.trim()) {
+    // Vietnamese title is always required
+    if (!title_vi.trim() || !slug.trim()) {
       toast({
         variant: "destructive",
         title: language === "vi" ? "Thiếu thông tin" : "Missing information",
         description:
           language === "vi"
-            ? "Vui lòng điền đầy đủ tiêu đề và đường dẫn"
-            : "Please fill in all titles and slug",
+            ? "Vui lòng điền tiêu đề tiếng Việt và đường dẫn"
+            : "Please fill in the Vietnamese title and slug",
       });
       return;
     }
 
+    // Create the article data with Vietnamese content required
     const articleData = {
       title_vi,
-      title_en,
+      title_en: title_en.trim() || title_vi, // Fallback to Vietnamese if English is empty
       content_vi,
-      content_en,
+      content_en: content_en.trim() || content_vi, // Fallback to Vietnamese if English is empty
       summary_vi,
-      summary_en,
+      summary_en: summary_en.trim() || summary_vi, // Fallback to Vietnamese if English is empty
       slug,
       published,
       featuredImage,
@@ -173,9 +175,15 @@ export default function EnhancedArticleEditor({
               <TabsList className="w-full">
                 <TabsTrigger value="vi" className="flex-1">
                   {language === "vi" ? "Tiếng Việt" : "Vietnamese"}
+                  <span className="ml-1 text-xs bg-red-500 text-white rounded px-1">
+                    {language === "vi" ? "Bắt buộc" : "Required"}
+                  </span>
                 </TabsTrigger>
                 <TabsTrigger value="en" className="flex-1">
                   {language === "vi" ? "Tiếng Anh" : "English"}
+                  <span className="ml-1 text-xs bg-gray-500 text-white rounded px-1">
+                    {language === "vi" ? "Tùy chọn" : "Optional"}
+                  </span>
                 </TabsTrigger>
               </TabsList>
 
@@ -203,6 +211,7 @@ export default function EnhancedArticleEditor({
                     value={summary_vi}
                     onChange={(e) => setSummaryVi(e.target.value)}
                     className="w-full min-h-[100px] p-2 border rounded-md resize-y"
+                    placeholder={language === "vi" ? "Tóm tắt ngắn gọn về bài viết" : "Brief summary of the article"}
                   />
                 </div>
               </TabsContent>
@@ -217,7 +226,7 @@ export default function EnhancedArticleEditor({
                     name="title_en"
                     value={title_en}
                     onChange={(e) => setTitleEn(e.target.value)}
-                    required
+                    placeholder={language === "vi" ? "(Tùy chọn)" : "(Optional)"}
                   />
                 </div>
 
@@ -231,6 +240,7 @@ export default function EnhancedArticleEditor({
                     value={summary_en}
                     onChange={(e) => setSummaryEn(e.target.value)}
                     className="w-full min-h-[100px] p-2 border rounded-md resize-y"
+                    placeholder={language === "vi" ? "(Tùy chọn)" : "(Optional)"}
                   />
                 </div>
               </TabsContent>

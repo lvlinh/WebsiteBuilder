@@ -7,12 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ChevronLeft } from "lucide-react";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { slugify } from "@/lib/utils";
-import type { Page } from "@shared/schema";
+import type { Page, ArticleCategory } from "@shared/schema";
 
 interface EnhancedPageEditorProps {
   page: Partial<Page>;
@@ -36,10 +37,24 @@ export default function EnhancedPageEditor({
   const [published, setPublished] = useState(page.published !== false);
   const [parentId, setParentId] = useState<number | null>(page.parentId || null);
   const [autoSlug, setAutoSlug] = useState(isNew);
+  const [pageType, setPageType] = useState<string>(page.pageType || 'regular');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
+    page.linkedCategoryId ? page.linkedCategoryId.toString() : ''
+  );
 
   // Fetch all pages for parent selection
   const { data: pages } = useQuery<Page[]>({
     queryKey: ["/api/pages"],
+  });
+  
+  // Fetch article categories for the select dropdown
+  const { data: categories } = useQuery<ArticleCategory[]>({
+    queryKey: ['/api/admin/article-categories'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/article-categories')
+      if (!res.ok) throw new Error('Failed to fetch categories')
+      return res.json()
+    }
   });
 
   // List of valid parent pages (can't select itself or its descendants)
@@ -123,6 +138,11 @@ export default function EnhancedPageEditor({
     },
   });
 
+  // Handle page type change to toggle category selector visibility
+  const handlePageTypeChange = (value: string) => {
+    setPageType(value)
+  }
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -138,7 +158,8 @@ export default function EnhancedPageEditor({
       return;
     }
 
-    const pageData = {
+    // Basic fields every page needs
+    const pageData: Partial<Page> = {
       title_vi,
       title_en,
       content_vi,
@@ -146,12 +167,21 @@ export default function EnhancedPageEditor({
       slug,
       published,
       parentId: parentId || undefined,
+      pageType, // Add page type
     };
+    
+    // For category pages, set the linked category ID
+    if (pageType === 'category') {
+      pageData.linkedCategoryId = selectedCategoryId ? parseInt(selectedCategoryId, 10) : null;
+    } else {
+      // Clear any linked category for regular pages
+      pageData.linkedCategoryId = null;
+    }
 
     if (isNew) {
       createMutation.mutate(pageData as any);
     } else if (page.id) {
-      updateMutation.mutate({ id: page.id, ...pageData });
+      updateMutation.mutate({ id: page.id, ...pageData } as any);
     }
   };
 
@@ -253,6 +283,63 @@ export default function EnhancedPageEditor({
                   ? "Trang chưa xuất bản sẽ không hiển thị cho người dùng"
                   : "Unpublished pages will not be visible to users"}
               </p>
+            </div>
+            
+            {/* Page Type Selection */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>
+                  {language === 'vi' ? 'Loại trang' : 'Page Type'}
+                </Label>
+                <RadioGroup 
+                  value={pageType}
+                  onValueChange={handlePageTypeChange}
+                  name="pageType" 
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="regular" id="page-type-regular" />
+                    <Label htmlFor="page-type-regular" className="cursor-pointer">
+                      {language === 'vi' ? 'Trang thường' : 'Regular Page'} <span className="text-muted-foreground">({language === 'vi' ? 'nội dung tĩnh' : 'static content'})</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="category" id="page-type-category" />
+                    <Label htmlFor="page-type-category" className="cursor-pointer">
+                      {language === 'vi' ? 'Trang danh mục bài viết' : 'Article Category Page'} <span className="text-muted-foreground">({language === 'vi' ? 'hiển thị các bài viết từ danh mục' : 'displays articles from a category'})</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              {/* Category Selection (conditionally shown for category pages) */}
+              {pageType === 'category' && (
+                <div className="space-y-2 border-l-2 border-primary/20 pl-4 ml-1 mt-2" id="category-select-container">
+                  <Label htmlFor="linkedCategoryId" className="font-semibold">
+                    {language === 'vi' ? 'Danh mục bài viết' : 'Article Category'}
+                  </Label>
+                  <Select 
+                    value={selectedCategoryId}
+                    onValueChange={setSelectedCategoryId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={language === 'vi' ? "Chọn danh mục" : "Select category"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map(category => (
+                        <SelectItem key={category.id} value={category.id.toString()}>
+                          {language === 'vi' ? category.title_vi : category.title_en}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'vi' 
+                      ? 'Trang sẽ hiển thị các bài viết từ danh mục đã chọn'
+                      : 'The page will display articles from the selected category'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

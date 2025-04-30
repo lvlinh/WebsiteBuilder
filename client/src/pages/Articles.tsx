@@ -126,7 +126,7 @@ export default function Articles() {
                         </CardTitle>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <time dateTime={article.publishedAt?.toString()}>
-                            {format(new Date(article.publishedAt), 'PPP')}
+                            {article.publishedAt ? format(new Date(article.publishedAt), 'PPP') : format(new Date(), 'PPP')}
                           </time>
                           {article.author && (
                             <>
@@ -138,7 +138,7 @@ export default function Articles() {
                       </CardHeader>
                       <CardContent className="flex-grow">
                         <p className="text-muted-foreground line-clamp-3">
-                          {language === 'vi' ? article.excerpt_vi : article.excerpt_en}
+                          {language === 'vi' ? article.summary_vi : article.summary_en}
                         </p>
                       </CardContent>
                     </Card>

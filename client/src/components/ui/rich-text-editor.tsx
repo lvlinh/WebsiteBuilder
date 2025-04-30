@@ -1,6 +1,9 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
+
+import "./rich-text-editor.css";
+
 import Link from "@tiptap/extension-link";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,7 +121,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
           <LinkIcon className="h-4 w-4" />
         </Button>
       </div>
-      <EditorContent editor={editor} className="prose max-w-none p-4" />
+      <EditorContent editor={editor} className="prose max-w-none p-4 min-h-[400px]" />
     </div>
   );
 }

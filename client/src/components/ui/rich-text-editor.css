@@ -1,0 +1,9 @@
+
+.ProseMirror {
+  min-height: 400px;
+  padding: 1rem;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}

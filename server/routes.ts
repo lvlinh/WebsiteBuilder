@@ -700,6 +700,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(articles);
   });
 
+  // Get articles by category ID
+  app.get("/api/articles/by-category/:categoryId", async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.categoryId, 10);
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+      
+      const articles = await storage.getArticles();
+      const categoryArticles = articles.filter(
+        article => article.published && article.categoryId === categoryId
+      );
+      
+      res.json(categoryArticles);
+    } catch (error) {
+      console.error("Error fetching articles by category:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get article by slug or ID - keep this after the by-category route to avoid route conflicts
   app.get("/api/articles/:slugOrId", async (req, res) => {
     const slugOrId = req.params.slugOrId;
     let article;
@@ -1393,6 +1414,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/article-categories", async (_req, res) => {
     const categories = await storage.getArticleCategories();
     res.json(categories);
+  });
+  
+  // Get article category by ID (public route)
+  app.get("/api/article-categories/:id", async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id, 10);
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+      
+      const category = await storage.getArticleCategory(categoryId);
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      res.json(category);
+    } catch (error) {
+      console.error("Error fetching article category:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   // Add article category routes for admin access

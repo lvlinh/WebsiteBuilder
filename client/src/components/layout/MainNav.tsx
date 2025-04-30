@@ -25,12 +25,26 @@ export function MainNav() {
 
   const { data: pages } = useQuery<Page[]>({
     queryKey: ['/api/pages'],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 10000, // Refetch every 10 seconds
   })
 
   // Organize pages into a hierarchical structure
-  const mainSections = pages?.filter(page => page.isSection) || []
+  // Only show published pages and sort by menu_order
+  const publishedPages = pages?.filter(page => page.published !== false) || []
+  
+  // Get main pages (no parent or marked as section)
+  const mainSections = publishedPages
+    .filter(page => !page.parentId || page.isSection)
+    .sort((a, b) => (a.menu_order || 0) - (b.menu_order || 0))
+  
+  // Get child pages for a parent, respecting menu_order
   const getSubsections = (parentId: number) => {
-    return pages?.filter(page => page.parentId === parentId) || []
+    return publishedPages
+      .filter(page => page.parentId === parentId)
+      .sort((a, b) => (a.menu_order || 0) - (b.menu_order || 0))
   }
 
   // Mobile navigation content

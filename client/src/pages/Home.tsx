@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import { Clock, Calendar, GraduationCap, Book, Users, Trophy, Edit, Save } from "lucide-react";
+import { Clock, Calendar, GraduationCap, Book, Users, Trophy, Edit, Save, BookOpen, Mail, Library, Pencil } from "lucide-react";
 import { type Event } from "@shared/schema";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
@@ -44,7 +44,9 @@ export default function Home() {
   const [, navigate] = useLocation();
   const [editMode, setEditMode] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<ContentBlock | null>(null);
+  const [selectedQuickLink, setSelectedQuickLink] = useState<QuickLink | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [quickLinkDialogOpen, setQuickLinkDialogOpen] = useState(false);
   
   // Check if user is admin
   const { data: admin, isLoading: isLoadingAdmin } = useQuery({
@@ -125,6 +127,34 @@ export default function Home() {
                 // Map icon string to actual Lucide React icon component
                 let iconComponent;
                 switch (link.icon) {
+                  case 'Calendar':
+                    iconComponent = <Calendar className="h-8 w-8" />;
+                    break;
+                  case 'Clock':
+                    iconComponent = <Clock className="h-8 w-8" />;
+                    break;
+                  case 'GraduationCap':
+                    iconComponent = <GraduationCap className="h-8 w-8" />;
+                    break;
+                  case 'Book':
+                    iconComponent = <Book className="h-8 w-8" />;
+                    break;
+                  case 'BookOpen':
+                    iconComponent = <BookOpen className="h-8 w-8" />;
+                    break;
+                  case 'Users':
+                    iconComponent = <Users className="h-8 w-8" />;
+                    break;
+                  case 'Trophy':
+                    iconComponent = <Trophy className="h-8 w-8" />;
+                    break;
+                  case 'Mail':
+                    iconComponent = <Mail className="h-8 w-8" />;
+                    break;
+                  case 'Library':
+                    iconComponent = <Library className="h-8 w-8" />;
+                    break;
+                  // Also support lowercase versions for backwards compatibility
                   case 'calendar':
                     iconComponent = <Calendar className="h-8 w-8" />;
                     break;
@@ -150,9 +180,19 @@ export default function Home() {
                 return (
                   <QuickLinkCard 
                     key={link.id}
+                    id={link.id}
                     icon={iconComponent}
                     title={language === 'vi' ? link.title_vi : link.title_en}
                     href={link.url}
+                    isAdmin={isAdmin}
+                    editMode={editMode}
+                    onEdit={(id) => {
+                      const quickLink = quickLinks.find(link => link.id === id);
+                      if (quickLink) {
+                        setSelectedQuickLink(quickLink);
+                        setQuickLinkDialogOpen(true);
+                      }
+                    }}
                   />
                 );
               })}
@@ -271,6 +311,29 @@ export default function Home() {
                 setDialogOpen(false);
               }}
               onCancel={() => setDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Quick Link Dialog */}
+      <Dialog open={quickLinkDialogOpen} onOpenChange={setQuickLinkDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              {language === 'vi' ? 'Chỉnh sửa liên kết nhanh' : 'Edit Quick Link'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedQuickLink && (
+            <QuickLinkEditForm 
+              quickLink={selectedQuickLink} 
+              onSubmit={(updatedQuickLink) => {
+                // Invalidate the quick links query to refresh data
+                queryClient.invalidateQueries({ queryKey: ['/api/quick-links'] });
+                setQuickLinkDialogOpen(false);
+              }}
+              onCancel={() => setQuickLinkDialogOpen(false)}
             />
           )}
         </DialogContent>
@@ -467,6 +530,167 @@ function EditContentForm({
         </Button>
         <Button 
           onClick={saveContent}
+          className="bg-[#8B4749] hover:bg-[#8B4749]/90"
+        >
+          <Save className="h-4 w-4 mr-2" />
+          {language === 'vi' ? 'Lưu thay đổi' : 'Save changes'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// Edit Quick Link Form
+function QuickLinkEditForm({ 
+  quickLink, 
+  onSubmit,
+  onCancel 
+}: { 
+  quickLink: QuickLink, 
+  onSubmit: (quickLink: QuickLink) => void,
+  onCancel: () => void
+}) {
+  const { language } = useI18n();
+  const [formData, setFormData] = useState<QuickLink>({ ...quickLink });
+  const { toast } = useToast();
+  
+  const iconOptions = [
+    { value: 'GraduationCap', label: 'Graduation Cap' },
+    { value: 'BookOpen', label: 'Book Open' },
+    { value: 'Book', label: 'Book' },
+    { value: 'Calendar', label: 'Calendar' },
+    { value: 'Clock', label: 'Clock' },
+    { value: 'Users', label: 'Users' },
+    { value: 'Trophy', label: 'Trophy' },
+    { value: 'Mail', label: 'Mail' },
+    { value: 'Library', label: 'Library' },
+  ];
+  
+  const handleChange = (field: keyof QuickLink, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+  
+  const saveQuickLink = async () => {
+    try {
+      const response = await fetch(`/api/quick-links/${quickLink.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title_vi: formData.title_vi,
+          title_en: formData.title_en,
+          url: formData.url,
+          description_vi: formData.description_vi,
+          description_en: formData.description_en,
+          icon: formData.icon
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update quick link');
+      }
+      
+      const updatedQuickLink = await response.json();
+      
+      // Show success message
+      toast({
+        title: language === 'vi' ? 'Đã lưu thành công' : 'Changes saved',
+        description: language === 'vi' 
+          ? 'Liên kết nhanh đã được cập nhật' 
+          : 'Quick link has been updated',
+      });
+      
+      onSubmit(updatedQuickLink);
+    } catch (error) {
+      console.error('Error updating quick link:', error);
+      
+      // Show error message
+      toast({
+        title: language === 'vi' ? 'Lỗi' : 'Error',
+        description: language === 'vi'
+          ? 'Đã xảy ra lỗi khi cập nhật liên kết nhanh'
+          : 'An error occurred while updating the quick link',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  return (
+    <div className="space-y-4 pt-4">
+      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+        {language === 'vi' ? 'Tiêu đề (Tiếng Việt)' : 'Title (Vietnamese)'}
+      </h3>
+      <Input 
+        value={formData.title_vi}
+        onChange={(e) => handleChange('title_vi', e.target.value)}
+        className="mb-3"
+      />
+      
+      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+        {language === 'vi' ? 'Tiêu đề (Tiếng Anh)' : 'Title (English)'}
+      </h3>
+      <Input 
+        value={formData.title_en}
+        onChange={(e) => handleChange('title_en', e.target.value)}
+        className="mb-3"
+      />
+      
+      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+        {language === 'vi' ? 'URL' : 'URL'}
+      </h3>
+      <Input 
+        value={formData.url}
+        onChange={(e) => handleChange('url', e.target.value)}
+        className="mb-3"
+      />
+      
+      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+        {language === 'vi' ? 'Mô tả (Tiếng Việt)' : 'Description (Vietnamese)'}
+      </h3>
+      <Input 
+        value={formData.description_vi || ''}
+        onChange={(e) => handleChange('description_vi', e.target.value)}
+        className="mb-3"
+      />
+      
+      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+        {language === 'vi' ? 'Mô tả (Tiếng Anh)' : 'Description (English)'}
+      </h3>
+      <Input 
+        value={formData.description_en || ''}
+        onChange={(e) => handleChange('description_en', e.target.value)}
+        className="mb-3"
+      />
+      
+      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+        {language === 'vi' ? 'Biểu tượng' : 'Icon'}
+      </h3>
+      <Select
+        value={formData.icon}
+        onValueChange={(value) => handleChange('icon', value)}
+      >
+        <SelectTrigger className="mb-3">
+          <SelectValue placeholder={language === 'vi' ? 'Chọn biểu tượng' : 'Select icon'} />
+        </SelectTrigger>
+        <SelectContent>
+          {iconOptions.map(option => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      <div className="flex justify-end gap-2 mt-4">
+        <Button 
+          variant="outline" 
+          onClick={onCancel}
+        >
+          {language === 'vi' ? 'Hủy bỏ' : 'Cancel'}
+        </Button>
+        <Button 
+          onClick={saveQuickLink}
           className="bg-[#8B4749] hover:bg-[#8B4749]/90"
         >
           <Save className="h-4 w-4 mr-2" />

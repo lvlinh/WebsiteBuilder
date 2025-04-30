@@ -48,19 +48,11 @@ function CategoryEditor({ category, onSave, onCancel }: CategoryEditorProps) {
     mutationFn: async (data: ArticleCategory) => {
       const { id, createdAt, ...updateData } = data
       console.log('Updating category with data:', updateData)
-      const res = await fetch(`/api/article-categories/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData)
-      })
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.message || 'Failed to update category')
-      }
-      return res.json()
+      const res = await apiRequest("PATCH", `/api/admin/article-categories/${id}`, updateData);
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/article-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/article-categories'] })
       toast({
         title: language === 'vi' ? 'Cập nhật danh mục thành công' : 'Category updated successfully',
       })
@@ -182,21 +174,19 @@ export default function ArticleCategories() {
   const [isCreating, setIsCreating] = useState(false)
 
   const { data: categories } = useQuery<ArticleCategory[]>({
-    queryKey: ['/api/article-categories']
+    queryKey: ['/api/admin/article-categories']
   })
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/article-categories/${id}`, {
-        method: 'DELETE'
-      })
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.message || 'Failed to delete category')
+      const res = await apiRequest("DELETE", `/api/admin/article-categories/${id}`);
+      if (res.status === 204) {
+        return { success: true };
       }
+      return res.json().catch(() => ({ success: true }));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/article-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/article-categories'] })
       toast({
         title: language === 'vi' ? 'Xóa danh mục thành công' : 'Category deleted successfully',
       })
@@ -212,19 +202,11 @@ export default function ArticleCategories() {
 
   const moveOrderMutation = useMutation({
     mutationFn: async ({ id, newOrder }: { id: number, newOrder: number }) => {
-      const res = await fetch(`/api/article-categories/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: newOrder })
-      })
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.message || 'Failed to update category order')
-      }
-      return res.json()
+      const res = await apiRequest("PATCH", `/api/admin/article-categories/${id}`, { order: newOrder });
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/article-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/article-categories'] })
     }
   })
 

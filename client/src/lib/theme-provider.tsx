@@ -156,7 +156,15 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('Full theme reset requested');
 
     // Hard reset by incrementing reset counter
-    setResetCount(prev => prev + 1);
+    const newResetCount = resetCount + 1;
+    setResetCount(newResetCount);
+    
+    // Track the reset count in localStorage for debugging
+    try {
+      localStorage.setItem('resetCount', newResetCount.toString());
+    } catch (e) {
+      console.error('Failed to update reset count:', e);
+    }
     
     // Create a hard-coded default theme to avoid any reference issues
     const hardResetTheme: Theme = {
@@ -177,10 +185,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem('theme');
     localStorage.setItem('theme', JSON.stringify(hardResetTheme));
     
+    // Force set the computed primary color to ensure it's updated
+    setComputedPrimary(SJJS_RED);
+    
     console.log('Theme has been completely reset to SJJS defaults');
     
     return hardResetTheme;
-  }, [applyDefaultThemeToDom]);
+  }, [applyDefaultThemeToDom, resetCount]);
 
   // Load theme from localStorage on initial load
   useEffect(() => {

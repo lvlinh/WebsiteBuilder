@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { HexColorPicker } from 'react-colorful';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Monitor, Save, CheckCircle2 } from 'lucide-react';
+import { Moon, Sun, Monitor, Save, CheckCircle2, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -24,6 +24,20 @@ export default function ThemeConfigurator() {
   useEffect(() => {
     setDraftTheme(currentTheme);
   }, [currentTheme]);
+  
+  // Function to handle complete theme reset
+  const handleResetAllTheme = () => {
+    // Set the reset flag to trigger default theme restoration
+    setTheme({ reset: true });
+    setIsSaved(true);
+    toast({
+      title: language === 'vi' ? 'Đã khôi phục giao diện mặc định' : 'Theme reset to default',
+      description: language === 'vi' 
+        ? 'Tất cả các cài đặt giao diện đã được khôi phục về mặc định' 
+        : 'All theme settings have been restored to default values',
+      variant: 'default',
+    });
+  };
   
   const handlePrimaryColorChange = (color: string) => {
     setDraftTheme(prev => ({ ...prev, primary: color }));
@@ -65,7 +79,18 @@ export default function ThemeConfigurator() {
   
   return (
     <>
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between mb-4">
+        {/* Reset all theme settings button */}
+        <Button 
+          onClick={handleResetAllTheme}
+          className="flex items-center gap-2"
+          variant="outline"
+        >
+          <RotateCcw className="h-4 w-4" />
+          {language === 'vi' ? 'Khôi phục mặc định' : 'Reset all settings'}
+        </Button>
+        
+        {/* Save changes button */}
         <Button 
           onClick={handleSaveChanges}
           disabled={isSaved}

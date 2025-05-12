@@ -1,13 +1,16 @@
 import React from 'react';
 import { useI18n } from '@/hooks/use-i18n';
+import { useTheme } from '@/lib/theme-provider';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import HeroBanner from '@/components/Home/HeroBanner';
 
 export default function Home() {
   const { language } = useI18n();
+  const { theme } = useTheme();
   
   // Fetch quick links
   const { data: quickLinks = [] } = useQuery({
@@ -54,7 +57,12 @@ export default function Home() {
       <HeroBanner />
       
       {/* Audience Navigation (Harvard-style) */}
-      <section className="container mx-auto px-8 mt-16 mb-16">
+      <section className={cn(
+        "mx-auto px-8 mt-16 mb-16",
+        theme.contentWidth === 'normal' ? 'container' : 
+        theme.contentWidth === 'wide' ? 'container max-w-7xl' : 
+        'container-fluid px-4 sm:px-6 lg:px-8 max-w-none'
+      )}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="bg-primary text-white">
@@ -159,7 +167,12 @@ export default function Home() {
       
       {/* Welcome Section with Content Block */}
       {welcomeBlock && (
-        <section className="container mx-auto px-8 mb-16">
+        <section className={cn(
+          "mx-auto px-8 mb-16",
+          theme.contentWidth === 'normal' ? 'container' : 
+          theme.contentWidth === 'wide' ? 'container max-w-7xl' : 
+          'container-fluid px-4 sm:px-6 lg:px-8 max-w-none'
+        )}>
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-8">
               {language === 'vi' ? welcomeBlock.title_vi : welcomeBlock.title_en}
@@ -177,7 +190,12 @@ export default function Home() {
       {/* Quick Links Section */}
       {quickLinks.length > 0 && (
         <section className="bg-gray-100 py-12 mb-16">
-          <div className="container mx-auto px-8">
+          <div className={cn(
+            "mx-auto px-8",
+            theme.contentWidth === 'normal' ? 'container' : 
+            theme.contentWidth === 'wide' ? 'container max-w-7xl' : 
+            'container-fluid px-4 sm:px-6 lg:px-8 max-w-none'
+          )}>
             <h2 className="text-2xl font-bold mb-8 text-center">
               {language === 'vi' ? 'Liên kết Nhanh' : 'Quick Links'}
             </h2>
@@ -199,7 +217,12 @@ export default function Home() {
       )}
       
       {/* News and Events Section */}
-      <section className="container mx-auto px-8 mb-16">
+      <section className={cn(
+        "mx-auto px-8 mb-16",
+        theme.contentWidth === 'normal' ? 'container' : 
+        theme.contentWidth === 'wide' ? 'container max-w-7xl' : 
+        'container-fluid px-4 sm:px-6 lg:px-8 max-w-none'
+      )}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* News/Articles Column - Takes 2/3 width on desktop */}
           <div className="md:col-span-2">

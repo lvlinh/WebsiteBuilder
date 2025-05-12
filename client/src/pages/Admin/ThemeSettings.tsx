@@ -27,8 +27,8 @@ export default function ThemeSettings() {
     );
   }
   
-  // Only render if authenticated
-  if (!isAuthenticated) {
+  // Only render if authenticated and is admin
+  if (!admin || !isAdmin) {
     return null;
   }
   

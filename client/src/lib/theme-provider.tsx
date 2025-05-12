@@ -12,6 +12,7 @@ export interface Theme {
   variant?: ThemeVariant;
   radius?: number;
   contentWidth?: ContentWidth;
+  reset?: boolean; // Used to reset theme to default
 }
 
 export interface ThemeContextType {
@@ -126,6 +127,16 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }, [theme.mode]);
 
   const setTheme = (newTheme: Partial<Theme>) => {
+    // Special case: if we receive an empty object or a reset request
+    if (!Object.keys(newTheme).length || (newTheme as any).reset) {
+      // Reset to default theme
+      setThemeState({...defaultTheme});
+      applyThemeToDOM(defaultTheme);
+      console.log('Theme reset to default:', defaultTheme);
+      return;
+    }
+    
+    // For normal theme updates
     // Create the updated theme
     const updatedTheme = {
       ...theme,

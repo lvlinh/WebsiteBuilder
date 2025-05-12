@@ -3,11 +3,11 @@ import { useI18n } from '@/hooks/use-i18n';
 
 export default function LocaleToggle() {
   const { language, setLanguage } = useI18n();
-
+  
   const toggleLanguage = () => {
     setLanguage(language === 'vi' ? 'en' : 'vi');
   };
-
+  
   return (
     <button
       onClick={toggleLanguage}

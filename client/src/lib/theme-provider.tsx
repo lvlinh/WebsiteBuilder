@@ -1,29 +1,20 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Define theme types
+// Simplified theme types
 type ThemeMode = 'light' | 'dark' | 'system';
-type ThemeColor = string;
-type ThemeContentWidth = 'narrow' | 'regular' | 'wide';
-type ThemeRadius = 'none' | 'small' | 'medium' | 'large';
-
-export interface Theme {
-  mode: ThemeMode;
-  color: ThemeColor;
-  contentWidth: ThemeContentWidth;
-  radius: ThemeRadius;
-}
 
 export interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: {
+    primary: string;
+    mode: ThemeMode;
+  };
+  setTheme: (newTheme: Partial<{primary: string; mode: ThemeMode}>) => void;
   resolvedTheme: ThemeMode;
 }
 
-const defaultTheme: Theme = {
-  mode: 'light',
-  color: '#8B4749', // SJJS primary color
-  contentWidth: 'regular',
-  radius: 'medium'
+const defaultTheme = {
+  primary: 'hsl(351, 32%, 42%)', // SJJS primary color
+  mode: 'light' as ThemeMode
 };
 
 // Create context with default values
@@ -34,7 +25,7 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme>(defaultTheme);
+  const [theme, setThemeState] = useState(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<ThemeMode>('light');
 
   // Load theme from localStorage on initial load
@@ -43,39 +34,27 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (storedTheme) {
       try {
         const parsedTheme = JSON.parse(storedTheme);
-        setThemeState(parsedTheme);
+        setThemeState({
+          ...defaultTheme,
+          ...parsedTheme
+        });
       } catch (error) {
         console.error('Failed to parse stored theme:', error);
       }
     }
   }, []);
 
-  // Apply CSS variables based on theme
+  // Apply theme settings
   useEffect(() => {
-    // Set CSS custom properties
-    const root = document.documentElement;
-    
-    // Set color scheme
-    root.style.setProperty('--primary', theme.color);
-    
-    // Set border radius based on theme
-    const radiusValues = {
-      none: '0',
-      small: '0.25rem',
-      medium: '0.5rem',
-      large: '1rem'
-    };
-    root.style.setProperty('--radius', radiusValues[theme.radius]);
-    
-    // Determine color scheme based on theme mode or system preference
+    // Apply color scheme (light/dark)
     if (theme.mode === 'system') {
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const newResolvedTheme = systemPrefersDark ? 'dark' : 'light';
       setResolvedTheme(newResolvedTheme);
-      root.classList.toggle('dark', newResolvedTheme === 'dark');
+      document.documentElement.classList.toggle('dark', newResolvedTheme === 'dark');
     } else {
       setResolvedTheme(theme.mode);
-      root.classList.toggle('dark', theme.mode === 'dark');
+      document.documentElement.classList.toggle('dark', theme.mode === 'dark');
     }
     
     // Save to localStorage
@@ -97,8 +76,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme.mode]);
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
+  const setTheme = (newTheme: Partial<{primary: string; mode: ThemeMode}>) => {
+    setThemeState({
+      ...theme,
+      ...newTheme
+    });
   };
 
   return (

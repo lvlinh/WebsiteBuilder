@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'wouter';
 import { useTheme } from '@/lib/theme-provider';
 import { useI18n } from '@/hooks/use-i18n';
+import LocaleToggle from './LocaleToggle';
 
 export default function Header() {
-  const { theme } = useTheme();
   const { language } = useI18n();
   
   return (
@@ -58,13 +58,7 @@ export default function Header() {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => {}}
-              className="flex items-center justify-center px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors"
-              aria-label={language === 'vi' ? 'Switch to English' : 'Chuyển sang tiếng Việt'}
-            >
-              <span className="font-medium">{language === 'vi' ? 'EN' : 'VI'}</span>
-            </button>
+            <LocaleToggle />
             <Link href="/student/login">
               <span className="bg-white text-primary px-3 py-1 rounded-md font-medium hover:bg-white/90 transition-colors cursor-pointer">
                 {language === 'vi' ? 'Cổng sinh viên' : 'Student Portal'}

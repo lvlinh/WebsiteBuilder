@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { useLocation } from "wouter"
 import { useI18n } from "@/lib/i18n"
+import { useTheme } from "@/lib/theme-provider"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
@@ -35,6 +36,7 @@ function EventsPage() {
 function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string }) {
   const { language } = useI18n()
   const { toast } = useToast()
+  const { getContentWidthClass } = useTheme()
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState({ vi: "", en: "" })
 

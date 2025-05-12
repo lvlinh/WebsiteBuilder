@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useI18n } from "@/hooks/use-i18n"
 import { useAdmin } from "@/hooks/use-admin"
+import { useTheme } from "@/lib/theme-provider"
 import { useLocation } from "wouter"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
@@ -32,6 +33,7 @@ import type { Page } from "@shared/schema"
 export default function AdminDashboard() {
   const { t } = useI18n()
   const { admin, isLoading, logout } = useAdmin()
+  const { getContentWidthClass } = useTheme()
   const [, navigate] = useLocation()
   const [activeTab, setActiveTab] = useState("dashboard")
   
@@ -58,7 +60,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container py-8">
+    <div className={getContentWidthClass("py-8")}>
       <PageHeader>
         <PageHeaderHeading>{t('Hệ thống quản trị nội dung', 'Content Management System')}</PageHeaderHeading>
         <PageHeaderDescription>

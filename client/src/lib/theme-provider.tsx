@@ -127,12 +127,23 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }, [theme.mode]);
 
   const setTheme = (newTheme: Partial<Theme>) => {
+    console.log('setTheme called with:', newTheme);
+    
     // Special case: if we receive an empty object or a reset request
     if (!Object.keys(newTheme).length || (newTheme as any).reset) {
-      // Reset to default theme
-      setThemeState({...defaultTheme});
-      applyThemeToDOM(defaultTheme);
-      console.log('Theme reset to default:', defaultTheme);
+      console.log('Resetting to default theme:', defaultTheme);
+      
+      // Reset to default theme - clone to avoid reference issues
+      const resetTheme = JSON.parse(JSON.stringify(defaultTheme));
+      
+      // Set state
+      setThemeState(resetTheme);
+      
+      // Apply changes immediately without waiting for re-render
+      applyThemeToDOM(resetTheme);
+      
+      // Log the change for debugging
+      console.log('Theme has been reset to default');
       return;
     }
     

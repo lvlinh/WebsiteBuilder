@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/lib/theme-provider';
+import { useTheme, Theme } from '@/lib/theme-provider';
 import { useI18n } from '@/hooks/use-i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
@@ -28,7 +28,24 @@ export default function ThemeConfigurator() {
   // Function to handle complete theme reset
   const handleResetAllTheme = () => {
     // Set the reset flag to trigger default theme restoration
+    console.log('Resetting theme to default...');
+    
+    // Create default theme with proper typing
+    const defaultTheme: Theme = {
+      primary: 'hsl(351, 32%, 42%)', // SJJS primary color
+      mode: 'light',
+      variant: 'professional',
+      radius: 0.5,
+      contentWidth: 'normal'
+    };
+    
+    // Update the local draft state first
+    setDraftTheme(defaultTheme);
+    
+    // Then update the global theme state with reset flag
     setTheme({ reset: true });
+    
+    // Update saved status and show a toast
     setIsSaved(true);
     toast({
       title: language === 'vi' ? 'Đã khôi phục giao diện mặc định' : 'Theme reset to default',
@@ -79,6 +96,27 @@ export default function ThemeConfigurator() {
   
   return (
     <>
+      {/* Direct reset button for immediate theme reset */}
+      <Button 
+        variant="destructive" 
+        onClick={() => {
+          console.log('Direct theme reset trigger');
+          // This bypasses the draft theme and directly sends reset: true to the theme context
+          setTheme({ reset: true });
+          setIsSaved(true);
+          toast({
+            title: language === 'vi' ? 'Đã khôi phục giao diện mặc định' : 'Theme reset to default',
+            description: language === 'vi' 
+              ? 'Tất cả các cài đặt giao diện đã được khôi phục về mặc định' 
+              : 'All theme settings have been restored to default values',
+          });
+        }}
+        className="w-full mb-4 flex items-center gap-2 justify-center"
+      >
+        <RotateCcw className="h-4 w-4" />
+        {language === 'vi' ? 'Khôi phục tất cả cài đặt về mặc định' : 'Reset all settings to default immediately'}
+      </Button>
+      
       <div className="flex justify-between mb-4">
         {/* Reset all theme settings button */}
         <Button 

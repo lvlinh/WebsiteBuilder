@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider, useTheme } from "@/lib/theme-provider"
 import { I18nProvider } from "@/hooks/use-i18n"
 import { AdminProvider } from "@/hooks/use-admin"
+import DirectThemeReset from "@/components/DirectThemeReset"
 
 import Header from "@/components/layout/Header"
 import Footer from "@/components/layout/Footer"
@@ -83,6 +84,10 @@ function App() {
           <AdminProvider>
             <Router />
             <Toaster />
+            {/* Fixed position theme reset tool - always accessible */}
+            <div className="fixed bottom-4 right-4 z-50">
+              <DirectThemeReset />
+            </div>
           </AdminProvider>
         </ThemeProvider>
       </I18nProvider>

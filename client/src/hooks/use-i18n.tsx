@@ -1,77 +1,71 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+// Types
 type Language = 'vi' | 'en';
 
 interface I18nContextType {
   language: Language;
-  setLanguage: (lang: Language) => void;
-  t: (viText: string, enText: string) => string;
-  getLocalizedValue: <T extends Record<string, any>>(
-    item: T, 
-    viKey: keyof T, 
-    enKey: keyof T
-  ) => string;
+  setLanguage: (language: Language) => void;
+  t: (key: string, defaultEn: string, defaultVi: string) => string;
 }
 
-const I18nContext = createContext<I18nContextType>({
-  language: 'vi',
-  setLanguage: () => {},
-  t: (viText) => viText,
-  getLocalizedValue: () => '',
-});
+// Create context
+const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // Get language preference from localStorage or default to Vietnamese
+// Provider component
+export function I18nProvider({ children }: { children: ReactNode }) {
+  // Initialize state from localStorage or browser language
   const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('sjjs-language');
-      return (savedLang === 'en' || savedLang === 'vi') ? savedLang : 'vi';
+    try {
+      const storedLang = localStorage.getItem('sjjs-language');
+      if (storedLang && (storedLang === 'vi' || storedLang === 'en')) {
+        return storedLang as Language;
+      }
+      
+      // If no stored language, try to detect from browser
+      const browserLang = navigator.language.substring(0, 2);
+      return browserLang === 'vi' ? 'vi' : 'en';
+    } catch (error) {
+      console.error('Error loading language from localStorage:', error);
+      return 'en'; // Default to English
     }
-    return 'vi';
   });
 
-  // Update localStorage when language changes
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('sjjs-language', lang);
-    }
-    
-    // Update HTML lang attribute for accessibility
-    document.documentElement.lang = lang;
-    
-    // Set data-language attribute for CSS targeting
-    document.documentElement.setAttribute('data-language', lang);
-  };
-
-  // Initialize HTML lang on first render
+  // Save language to localStorage when it changes
   useEffect(() => {
-    document.documentElement.lang = language;
-    document.documentElement.setAttribute('data-language', language);
-  }, []);
+    try {
+      localStorage.setItem('sjjs-language', language);
+      // Also update html lang attribute for accessibility
+      document.documentElement.lang = language;
+    } catch (error) {
+      console.error('Error saving language to localStorage:', error);
+    }
+  }, [language]);
+
+  // Wrapper function to set language
+  const setLanguage = (newLanguage: Language) => {
+    setLanguageState(newLanguage);
+  };
 
   // Translation function
-  const t = (viText: string, enText: string): string => {
-    return language === 'vi' ? viText : enText;
+  const t = (key: string, defaultEn: string, defaultVi: string) => {
+    return language === 'vi' ? defaultVi : defaultEn;
   };
 
-  // Dynamic field selection from objects with _vi and _en suffixes
-  const getLocalizedValue = <T extends Record<string, any>>(
-    item: T, 
-    viKey: keyof T, 
-    enKey: keyof T
-  ): string => {
-    if (!item) return '';
-    return language === 'vi' ? item[viKey] as string : item[enKey] as string;
+  const value = {
+    language,
+    setLanguage,
+    t
   };
 
   return (
-    <I18nContext.Provider value={{ language, setLanguage, t, getLocalizedValue }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   );
 }
 
+// Hook to use internationalization
 export function useI18n() {
   const context = useContext(I18nContext);
   if (context === undefined) {

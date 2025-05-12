@@ -1,132 +1,144 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Define theme types
-export type ColorScheme = 'light' | 'dark' | 'system';
-export type ThemeColor = 'red' | 'blue' | 'green' | 'purple' | 'orange';
-export type ThemeRadius = 'small' | 'medium' | 'large' | 'none';
-export type ThemeFont = 'sans' | 'serif' | 'mono';
-
-export interface Theme {
-  colorScheme: ColorScheme;
-  primaryColor: ThemeColor;
-  radius: ThemeRadius;
-  fontFamily: ThemeFont;
-  contentWidth: string;
+// Theme interface to define the structure of our theme settings
+interface Theme {
+  primary: string;
+  variant: 'professional' | 'tint' | 'vibrant';
+  appearance: 'light' | 'dark' | 'system';
+  radius: number;
+  contentWidth: 'default' | 'narrow' | 'wide' | 'full';
   logoPosition: 'left' | 'center';
-  navStyle: 'standard' | 'mega' | 'minimal';
-  footerStyle: 'standard' | 'minimal' | 'detailed';
+  menuStyle: 'horizontal' | 'vertical' | 'dropdown';
+  font: 'default' | 'serif' | 'sans';
 }
 
-interface ThemeContextType {
-  theme: Theme;
-  updateTheme: (updates: Partial<Theme>) => void;
-  isDarkMode: boolean;
-}
-
-// Default theme
+// Provide default theme
 const defaultTheme: Theme = {
-  colorScheme: 'light',
-  primaryColor: 'red',
-  radius: 'medium',
-  fontFamily: 'sans',
-  contentWidth: 'normal',
+  primary: '#8B4749', // SJJS primary red color
+  variant: 'professional',
+  appearance: 'light',
+  radius: 0.5,
+  contentWidth: 'default',
   logoPosition: 'left',
-  navStyle: 'standard',
-  footerStyle: 'standard'
+  menuStyle: 'horizontal',
+  font: 'default'
 };
 
 // Create context
-const ThemeContext = createContext<ThemeContextType>({
-  theme: defaultTheme,
-  updateTheme: () => {},
-  isDarkMode: false
-});
+interface ThemeContextType {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+}
 
-// Create provider
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Try to load theme from localStorage
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = typeof window !== 'undefined' ? localStorage.getItem('sjjs-theme') : null;
-    return savedTheme ? JSON.parse(savedTheme) : defaultTheme;
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+// Theme provider component
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  // Initialize theme from localStorage or default
+  const [theme, setThemeState] = useState<Theme>(() => {
+    try {
+      const stored = localStorage.getItem('sjjs-theme');
+      return stored ? JSON.parse(stored) : defaultTheme;
+    } catch (error) {
+      console.error('Error loading theme from localStorage:', error);
+      return defaultTheme;
+    }
   });
-  
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  
-  // Effect to apply color mode
+
+  // Determine if dark mode is active
+  const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
+    theme.appearance === 'dark' || (theme.appearance === 'system' && systemPrefersDark)
+  );
+
+  // Save theme to localStorage whenever it changes
   useEffect(() => {
-    const applyColorMode = () => {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const shouldUseDark = 
-        theme.colorScheme === 'dark' || 
-        (theme.colorScheme === 'system' && prefersDark);
-      
-      setIsDarkMode(shouldUseDark);
-      
-      document.documentElement.classList.toggle('dark', shouldUseDark);
-      document.documentElement.style.setProperty('--primary-color', getPrimaryColorValue(theme.primaryColor));
-      document.documentElement.style.setProperty('--border-radius', getRadiusValue(theme.radius));
-      document.documentElement.style.setProperty('--font-family', getFontValue(theme.fontFamily));
+    try {
+      localStorage.setItem('sjjs-theme', JSON.stringify(theme));
+    } catch (error) {
+      console.error('Error saving theme to localStorage:', error);
+    }
+  }, [theme]);
+
+  // Listen for system preference changes
+  useEffect(() => {
+    if (theme.appearance !== 'system') return;
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
     };
     
-    applyColorMode();
-    
-    // Listen for system preference changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => applyColorMode();
     mediaQuery.addEventListener('change', handleChange);
-    
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
-  
-  // Save theme to localStorage when it changes
+  }, [theme.appearance]);
+
+  // Update document with theme settings
   useEffect(() => {
-    localStorage.setItem('sjjs-theme', JSON.stringify(theme));
-  }, [theme]);
-  
-  // Update theme function
-  const updateTheme = (updates: Partial<Theme>) => {
-    setTheme(prevTheme => ({ ...prevTheme, ...updates }));
+    // Set dark mode class
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Set CSS variables
+    document.documentElement.style.setProperty('--primary-color', theme.primary);
+    document.documentElement.style.setProperty('--radius', `${theme.radius}rem`);
+    
+    // Set the font family
+    if (theme.font === 'serif') {
+      document.documentElement.classList.add('font-serif');
+      document.documentElement.classList.remove('font-sans');
+    } else if (theme.font === 'sans') {
+      document.documentElement.classList.add('font-sans');
+      document.documentElement.classList.remove('font-serif');
+    } else {
+      document.documentElement.classList.remove('font-serif', 'font-sans');
+    }
+  }, [theme, isDarkMode]);
+
+  // Function to toggle dark mode
+  const toggleDarkMode = () => {
+    if (theme.appearance === 'light') {
+      setThemeState({ ...theme, appearance: 'dark' });
+      setIsDarkMode(true);
+    } else if (theme.appearance === 'dark') {
+      setThemeState({ ...theme, appearance: 'light' });
+      setIsDarkMode(false);
+    } else {
+      // For 'system', just toggle the current state
+      setIsDarkMode(!isDarkMode);
+    }
   };
-  
+
+  // Wrapper for setTheme that also handles dark mode logic
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    
+    // Update dark mode state based on new theme settings
+    if (newTheme.appearance === 'dark') {
+      setIsDarkMode(true);
+    } else if (newTheme.appearance === 'light') {
+      setIsDarkMode(false);
+    } else {
+      // For 'system', check system preference
+      setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, updateTheme, isDarkMode }}>
-      {children}
+    <ThemeContext.Provider value={{ theme, setTheme, isDarkMode, toggleDarkMode }}>
+      <div className={`theme-${theme.variant}`}>
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 }
 
-// Helper functions for CSS variables
-function getPrimaryColorValue(color: ThemeColor): string {
-  const colors = {
-    red: '#8B4749',
-    blue: '#1E40AF',
-    green: '#166534',
-    purple: '#6D28D9',
-    orange: '#C2410C'
-  };
-  return colors[color];
-}
-
-function getRadiusValue(radius: ThemeRadius): string {
-  const radii = {
-    none: '0px',
-    small: '0.25rem',
-    medium: '0.5rem',
-    large: '1rem'
-  };
-  return radii[radius];
-}
-
-function getFontValue(font: ThemeFont): string {
-  const fonts = {
-    sans: 'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-    serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-    mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-  };
-  return fonts[font];
-}
-
-// Custom hook to use theme
+// Hook to use theme
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {

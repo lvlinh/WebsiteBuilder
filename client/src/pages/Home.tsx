@@ -1,6 +1,7 @@
 import HeroBanner from "@/components/Home/HeroBanner";
 import NewsFeed from "@/components/Home/NewsFeed";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme-provider";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -104,18 +105,44 @@ export default function Home() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
+  // Load theme settings to determine layout preferences
+  const { theme } = useTheme();
+  
   return (
     <main className="bg-white">
       {/* Hero Banner Section */}
       <HeroBanner />
       
-      {/* Quick Links Section - Harvard-style top navigation features */}
-      <section className="bg-[#8B4749]/10 py-8 border-y border-gray-200">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Harvard-style Audience Navigation */}
+      <section className="bg-[#8B4749] py-2 text-white">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center flex-wrap gap-8 text-center text-sm">
+            <Link href="/admissions" className="py-2 hover:underline">
+              {language === 'vi' ? 'Tuyển sinh' : 'Admissions'}
+            </Link>
+            <Link href="/education" className="py-2 hover:underline">
+              {language === 'vi' ? 'Đào tạo' : 'Education'}
+            </Link>
+            <Link href="/faculty" className="py-2 hover:underline">
+              {language === 'vi' ? 'Ban giảng huấn' : 'Faculty'}
+            </Link>
+            <Link href="/student/login" className="py-2 hover:underline">
+              {language === 'vi' ? 'Sinh viên' : 'Students'}
+            </Link>
+            <Link href="/family" className="py-2 hover:underline">
+              {language === 'vi' ? 'Gia đình SJJS' : 'SJJS Family'}
+            </Link>
+          </div>
+        </div>
+      </section>
+      
+      {/* Harvard-style Quick Links Features */}
+      <section className="bg-white py-8 border-b border-gray-200">
+        <div className="container mx-auto px-4">
           {isLoadingQuickLinks ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border border-gray-200 shadow-sm h-full animate-pulse">
+                <div key={i} className="flex flex-col items-center justify-center p-4 bg-white rounded-lg h-full animate-pulse">
                   <div className="h-8 w-8 bg-gray-200 rounded-full mb-2"></div>
                   <div className="h-4 bg-gray-200 rounded w-16"></div>
                 </div>
@@ -154,6 +181,9 @@ export default function Home() {
                   case 'Library':
                     iconComponent = <Library className="h-8 w-8" />;
                     break;
+                  case 'Pencil':
+                    iconComponent = <Pencil className="h-8 w-8" />;
+                    break;
                   // Also support lowercase versions for backwards compatibility
                   case 'calendar':
                     iconComponent = <Calendar className="h-8 w-8" />;
@@ -183,6 +213,7 @@ export default function Home() {
                     id={link.id}
                     icon={iconComponent}
                     title={language === 'vi' ? link.title_vi : link.title_en}
+                    description={language === 'vi' ? link.description_vi : link.description_en}
                     href={link.url}
                     isAdmin={isAdmin}
                     editMode={editMode}
@@ -201,79 +232,124 @@ export default function Home() {
         </div>
       </section>
       
-      {/* Featured Content Section */}
-      <section className="py-16">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Main Content Area with Featured Content */}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          {/* Information Blocks - Feature Section (Harvard Style) */}
+          <div className="mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
+              {contentBlocks.map((block) => (
+                <div key={block.id} className="relative group">
+                  {isAdmin && editMode && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onClick={() => {
+                        setSelectedBlock(block);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      {language === 'vi' ? 'Sửa' : 'Edit'}
+                    </Button>
+                  )}
+                  <InfoBlock 
+                    title={language === 'vi' ? block.title_vi : block.title_en}
+                    content={language === 'vi' ? block.content_vi : block.content_en}
+                    type={block.type}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left column - Latest news */}
+            {/* News Section - Harvard Style */}
             <div className="lg:col-span-2">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold tracking-tight text-[#8B4749]">
                   {language === 'vi' ? 'Tin tức mới nhất' : 'Latest News'}
                 </h2>
                 <Link href="/articles">
-                  <Button variant="outline">
+                  <Button variant="link" className="text-[#8B4749]">
                     {language === 'vi' ? 'Xem tất cả' : 'View all'}
                   </Button>
                 </Link>
               </div>
-              <NewsFeed />
+              <div className="border-t border-gray-200 pt-6">
+                <NewsFeed />
+              </div>
             </div>
             
-            {/* Right column - Upcoming events, announcements, etc. */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 shadow-sm">
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                {language === 'vi' ? 'Sự kiện sắp tới' : 'Upcoming Events'}
-              </h3>
-              <EventsList />
+            {/* Right Sidebar - Harvard Style */}
+            <div className="space-y-8">
+              {/* Events Section */}
+              <div className="bg-gray-50 p-6 border border-gray-200">
+                <h3 className="text-xl font-bold mb-4 text-[#8B4749]">
+                  {language === 'vi' ? 'Sự kiện sắp tới' : 'Upcoming Events'}
+                </h3>
+                <EventsList />
+                <div className="mt-4">
+                  <Link href="/events">
+                    <Button variant="outline" size="sm" className="w-full">
+                      {language === 'vi' ? 'Xem tất cả sự kiện' : 'View all events'}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
               
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <h3 className="text-xl font-semibold mb-4 text-gray-900">
+              {/* Student Portal Access */}
+              <div className="bg-[#8B4749]/10 p-6 border border-gray-200">
+                <h3 className="text-xl font-bold mb-4 text-[#8B4749]">
                   {language === 'vi' ? 'Portal Sinh viên' : 'Student Portal'}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-700 mb-4 text-sm">
                   {language === 'vi' 
                     ? 'Truy cập cổng thông tin sinh viên để xem lịch học, kết quả và nhiều hơn nữa.' 
                     : 'Access the student portal to view your schedule, results, and more.'}
                 </p>
-                <Link href="/student/login">
-                  <Button className="w-full bg-[#8B4749] hover:bg-[#8B4749]/90">
-                    {language === 'vi' ? 'Đăng nhập ngay' : 'Login now'}
-                  </Button>
-                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link href="/student/login">
+                    <Button variant="default" className="w-full bg-[#8B4749] hover:bg-[#8B4749]/90">
+                      {language === 'vi' ? 'Đăng nhập' : 'Log in'}
+                    </Button>
+                  </Link>
+                  <Link href="/student/register">
+                    <Button variant="outline" className="w-full">
+                      {language === 'vi' ? 'Đăng ký' : 'Register'}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              
+              {/* Quick Resources */}
+              <div className="bg-white p-6 border border-gray-200">
+                <h3 className="text-xl font-bold mb-4 text-[#8B4749]">
+                  {language === 'vi' ? 'Liên kết quan trọng' : 'Important Links'}
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <Link href="/resources" className="text-[#8B4749] hover:underline flex items-center">
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      {language === 'vi' ? 'Thư viện số' : 'Digital Library'}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/admissions" className="text-[#8B4749] hover:underline flex items-center">
+                      <GraduationCap className="h-4 w-4 mr-2" />
+                      {language === 'vi' ? 'Thông tin tuyển sinh' : 'Admission Information'}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/resources/schedule" className="text-[#8B4749] hover:underline flex items-center">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {language === 'vi' ? 'Lịch học tập' : 'Academic Calendar'}
+                    </Link>
+                  </li>
+                </ul>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Information Blocks - Admin Editable Content */}
-      <section className="py-16 bg-gray-50">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {contentBlocks.map((block) => (
-              <div key={block.id} className="relative group">
-                {isAdmin && editMode && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                    onClick={() => {
-                      setSelectedBlock(block);
-                      setDialogOpen(true);
-                    }}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    {language === 'vi' ? 'Sửa' : 'Edit'}
-                  </Button>
-                )}
-                <InfoBlock 
-                  title={language === 'vi' ? block.title_vi : block.title_en}
-                  content={language === 'vi' ? block.content_vi : block.content_en}
-                  type={block.type}
-                />
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -345,7 +421,8 @@ export default function Home() {
 // Helper Components
 function QuickLinkCard({ 
   icon, 
-  title, 
+  title,
+  description, 
   href, 
   id,
   isAdmin,
@@ -353,7 +430,8 @@ function QuickLinkCard({
   onEdit
 }: { 
   icon: React.ReactNode, 
-  title: string, 
+  title: string,
+  description?: string | null,
   href: string,
   id?: number,
   isAdmin?: boolean,
@@ -375,9 +453,14 @@ function QuickLinkCard({
         >
           <Edit className="h-4 w-4" />
         </Button>
-        <div className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border border-gray-200 hover:border-[#8B4749] shadow-sm hover:shadow transition-all cursor-pointer h-full">
-          {icon}
+        <div className="flex flex-col items-center justify-center p-4 bg-white rounded-md border-0 hover:shadow-md hover:bg-gray-50 transition-all cursor-pointer h-full">
+          <div className="h-12 w-12 flex items-center justify-center text-[#8B4749]">
+            {icon}
+          </div>
           <h3 className="mt-2 text-sm font-medium text-gray-900 text-center">{title}</h3>
+          {description && (
+            <p className="mt-1 text-xs text-gray-500 text-center line-clamp-2">{description}</p>
+          )}
         </div>
       </div>
     );
@@ -385,9 +468,14 @@ function QuickLinkCard({
   
   return (
     <Link href={href}>
-      <div className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border border-gray-200 hover:border-[#8B4749] shadow-sm hover:shadow transition-all cursor-pointer h-full">
-        {icon}
+      <div className="flex flex-col items-center justify-center p-4 bg-white rounded-md border-0 hover:shadow-md hover:bg-gray-50 transition-all cursor-pointer h-full">
+        <div className="h-12 w-12 flex items-center justify-center text-[#8B4749]">
+          {icon}
+        </div>
         <h3 className="mt-2 text-sm font-medium text-gray-900 text-center">{title}</h3>
+        {description && (
+          <p className="mt-1 text-xs text-gray-500 text-center line-clamp-2">{description}</p>
+        )}
       </div>
     </Link>
   );
@@ -395,13 +483,17 @@ function QuickLinkCard({
 
 function InfoBlock({ title, content, type = 'text' }: { title: string, content: string, type?: string }) {
   return (
-    <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm h-full">
-      <h3 className="text-xl font-bold mb-4 text-[#8B4749]">{title}</h3>
-      {type === 'rich_text' || type === 'html' ? (
-        <div className="text-gray-700 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
-      ) : (
-        <p className="text-gray-700">{content}</p>
-      )}
+    <div className="bg-white h-full transition-all hover:shadow-md group">
+      <div className="p-5 border-b-4 border-[#8B4749]">
+        <h3 className="text-xl font-bold mb-1 text-[#8B4749] group-hover:underline">{title}</h3>
+      </div>
+      <div className="p-5">
+        {type === 'rich_text' || type === 'html' ? (
+          <div className="text-gray-700 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+        ) : (
+          <p className="text-gray-700">{content}</p>
+        )}
+      </div>
     </div>
   );
 }

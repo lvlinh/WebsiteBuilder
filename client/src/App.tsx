@@ -28,13 +28,13 @@ import BannerSlides from "@/pages/Admin/BannerSlides"
 import ThemeSettings from "@/pages/Admin/ThemeSettings"
 
 function Router() {
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, theme, getContentWidthClass } = useTheme();
   
-  // Use a fixed content width for now
-  const contentWidthClass = 'max-w-6xl'; // Default 'regular' width
+  // Get the appropriate content width class from the theme
+  const containerClass = getContentWidthClass();
 
   return (
-    <div className={`min-h-screen flex flex-col ${resolvedTheme === 'dark' ? 'dark' : ''}`}>
+    <div className={`min-h-screen flex flex-col ${resolvedTheme === 'dark' ? 'dark' : ''} ${theme.variant ? `variant-${theme.variant}` : 'variant-professional'}`}>
       {/* Always visible header */}
       <Header />
       
@@ -42,32 +42,31 @@ function Router() {
       <BreadcrumbNav />
       
       {/* Main content area with dynamic width based on theme */}
-      <div className="flex-grow">
-        <div className={`mx-auto px-4 ${contentWidthClass}`}>
-          <Switch>
-            <Route path="/" component={Home} />
-            {/* Special routes that need specific handling */}
-            <Route path="/articles" component={Articles} />
-            <Route path="/articles/:slug" component={ArticleDetail} />
-            <Route path="/events" component={Events} />
-            <Route path="/student/login" component={StudentLogin} />
-            <Route path="/student/register" component={StudentRegister} />
-            <Route path="/student/dashboard" component={StudentDashboard} />
-            <Route path="/admin/login" component={AdminLogin} />
-            <Route path="/admin/dashboard" component={AdminDashboard} />
-            <Route path="/admin/pages" component={PageManager} />
-            <Route path="/admin/articles" component={ArticleManager} />
-            <Route path="/admin/categories" component={ArticleCategories} />
-            <Route path="/admin/banners" component={BannerSlides} />
-            <Route path="/admin/theme" component={ThemeSettings} />
-            <Route path="/search" component={Search} />
-            {/* Dynamic page routes */}
-            <Route path="/:section/:subsection" component={DynamicPage} />
-            <Route path="/:section" component={DynamicPage} />
-            {/* 404 route */}
-            <Route component={NotFound} />
-          </Switch>
-        </div>
+      <div className="flex-grow w-full">
+        {/* Each page component now handles its own content width */}
+        <Switch>
+          <Route path="/" component={Home} />
+          {/* Special routes that need specific handling */}
+          <Route path="/articles" component={Articles} />
+          <Route path="/articles/:slug" component={ArticleDetail} />
+          <Route path="/events" component={Events} />
+          <Route path="/student/login" component={StudentLogin} />
+          <Route path="/student/register" component={StudentRegister} />
+          <Route path="/student/dashboard" component={StudentDashboard} />
+          <Route path="/admin/login" component={AdminLogin} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
+          <Route path="/admin/pages" component={PageManager} />
+          <Route path="/admin/articles" component={ArticleManager} />
+          <Route path="/admin/categories" component={ArticleCategories} />
+          <Route path="/admin/banners" component={BannerSlides} />
+          <Route path="/admin/theme" component={ThemeSettings} />
+          <Route path="/search" component={Search} />
+          {/* Dynamic page routes */}
+          <Route path="/:section/:subsection" component={DynamicPage} />
+          <Route path="/:section" component={DynamicPage} />
+          {/* 404 route */}
+          <Route component={NotFound} />
+        </Switch>
       </div>
       
       {/* Always visible footer */}

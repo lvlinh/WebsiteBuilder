@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    /* Default colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -13,7 +14,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 351 32% 42%;
+    /* Primary color that will be dynamically set by the theme provider */
+    --primary: hsl(351, 32%, 42%);
+    --primary-rgb: 139, 71, 73; /* SJJS red RGB values */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -32,7 +35,9 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
+    /* Border radius that will be dynamically set by theme provider */
     --radius: 0.5rem;
+    --theme-radius: 0.5rem;
   }
 
   .dark {
@@ -45,7 +50,9 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 351 32% 42%;
+    /* Primary color is the same in dark mode */
+    --primary: hsl(351, 32%, 42%);
+    --primary-rgb: 139, 71, 73; /* SJJS red RGB values */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -105,4 +112,35 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Theme variant-specific styles */
+.variant-professional {
+  /* Professional variant has default styling */
+}
+
+.variant-vibrant {
+  /* Vibrant theme has more color in header/hero areas */
+  --header-bg: var(--primary);
+  --header-text: white;
+  --hero-overlay-opacity: 0.4;
+}
+
+.variant-tint {
+  /* Tint variant has subtle primary color backgrounds */
+  --tint-bg: rgba(var(--primary-rgb), 0.05);
+  --tint-border: rgba(var(--primary-rgb), 0.2);
+}
+
+/* Content width utility classes */
+.content-normal {
+  @apply container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.content-wide {
+  @apply container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; 
+}
+
+.content-full {
+  @apply w-full max-w-none px-4 sm:px-6 lg:px-8;
 }

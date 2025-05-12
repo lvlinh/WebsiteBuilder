@@ -7,16 +7,16 @@ import ThemeConfigurator from '@/components/Admin/ThemeConfigurator';
 import { PageHeader, PageHeaderDescription } from '@/components/ui/page-header';
 
 export default function ThemeSettings() {
-  const { admin, isLoading, isAuthenticated } = useAdmin();
+  const { admin, isLoading, isAdmin } = useAdmin();
   const [, navigate] = useLocation();
   const { language } = useI18n();
   
   // Check if user is authenticated, if not redirect to login
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !admin) {
       navigate('/admin/login');
     }
-  }, [isLoading, isAuthenticated, navigate]);
+  }, [isLoading, admin, navigate]);
   
   // Loading state
   if (isLoading) {

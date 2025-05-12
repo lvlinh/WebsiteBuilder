@@ -47,11 +47,17 @@ function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string
   const { data: currentPage, isLoading, error } = useQuery<Page>({
     queryKey: ['/api/pages', subSlug || mainSlug],
     queryFn: async () => {
-      const response = await fetch(`/api/pages/${subSlug || mainSlug}`)
-      if (!response.ok) {
-        throw new Error('Page not found')
+      try {
+        const response = await fetch(`/api/pages/${subSlug || mainSlug}`)
+        if (!response.ok) {
+          console.error(`Page not found: ${subSlug || mainSlug}`)
+          return null
+        }
+        return response.json()
+      } catch (err) {
+        console.error(`Error fetching page: ${err}`)
+        return null
       }
-      return response.json()
     }
   })
 

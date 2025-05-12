@@ -32,7 +32,7 @@ export default function ThemeConfigurator() {
     setTheme({ variant });
   };
   
-  const handleContentWidthChange = (contentWidth: 'regular' | 'wide' | 'narrow') => {
+  const handleContentWidthChange = (contentWidth: 'normal' | 'wide' | 'full') => {
     setTheme({ contentWidth });
   };
   
@@ -216,16 +216,16 @@ export default function ThemeConfigurator() {
                 <div
                   className={cn(
                     'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
-                    theme.contentWidth === 'narrow' ? 'border-primary' : 'border-border'
+                    theme.contentWidth === 'normal' ? 'border-primary' : 'border-border'
                   )}
-                  onClick={() => handleContentWidthChange('narrow')}
+                  onClick={() => handleContentWidthChange('normal')}
                 >
                   <div className="h-full flex items-center justify-center">
                     <div className="w-1/2 h-3/4 bg-primary/20 rounded"></div>
                   </div>
                 </div>
                 <p className="text-center text-sm">
-                  {language === 'vi' ? 'Hẹp' : 'Narrow'}
+                  {language === 'vi' ? 'Bình thường' : 'Normal'}
                 </p>
               </div>
               
@@ -233,9 +233,9 @@ export default function ThemeConfigurator() {
                 <div
                   className={cn(
                     'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
-                    theme.contentWidth === 'regular' ? 'border-primary' : 'border-border'
+                    theme.contentWidth === 'wide' ? 'border-primary' : 'border-border'
                   )}
-                  onClick={() => handleContentWidthChange('regular')}
+                  onClick={() => handleContentWidthChange('wide')}
                 >
                   <div className="h-full flex items-center justify-center">
                     <div className="w-2/3 h-3/4 bg-primary/20 rounded"></div>
@@ -260,6 +260,23 @@ export default function ThemeConfigurator() {
                 </div>
                 <p className="text-center text-sm">
                   {language === 'vi' ? 'Rộng' : 'Wide'}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
+                    theme.contentWidth === 'full' ? 'border-primary' : 'border-border'
+                  )}
+                  onClick={() => handleContentWidthChange('full')}
+                >
+                  <div className="h-full flex items-center justify-center">
+                    <div className="w-full h-3/4 bg-primary/20 rounded"></div>
+                  </div>
+                </div>
+                <p className="text-center text-sm">
+                  {language === 'vi' ? 'Toàn màn hình' : 'Full'}
                 </p>
               </div>
             </div>

@@ -1,20 +1,30 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Simplified theme types
+// Theme types
 type ThemeMode = 'light' | 'dark' | 'system';
+type ThemeVariant = 'professional' | 'tint' | 'vibrant';
+type ContentWidth = 'normal' | 'wide' | 'full';
+
+export interface Theme {
+  primary: string;
+  mode: ThemeMode;
+  variant?: ThemeVariant;
+  radius?: number;
+  contentWidth?: ContentWidth;
+}
 
 export interface ThemeContextType {
-  theme: {
-    primary: string;
-    mode: ThemeMode;
-  };
-  setTheme: (newTheme: Partial<{primary: string; mode: ThemeMode}>) => void;
+  theme: Theme;
+  setTheme: (newTheme: Partial<Theme>) => void;
   resolvedTheme: ThemeMode;
 }
 
-const defaultTheme = {
+const defaultTheme: Theme = {
   primary: 'hsl(351, 32%, 42%)', // SJJS primary color
-  mode: 'light' as ThemeMode
+  mode: 'light' as ThemeMode,
+  variant: 'professional',
+  radius: 0.5,
+  contentWidth: 'normal'
 };
 
 // Create context with default values
@@ -76,7 +86,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme.mode]);
 
-  const setTheme = (newTheme: Partial<{primary: string; mode: ThemeMode}>) => {
+  const setTheme = (newTheme: Partial<Theme>) => {
     setThemeState({
       ...theme,
       ...newTheme

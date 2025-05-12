@@ -21,8 +21,8 @@ import Search from "@/pages/Search"
 import AdminLogin from "@/pages/Admin/Login"
 import AdminDashboard from "@/pages/Admin/Dashboard"
 import NotFound from "@/pages/not-found"
-import PageEditor from "@/pages/Admin/PageEditor"
-import ArticleEditor from "@/pages/Admin/ArticleEditor"
+import PageManager from "@/pages/Admin/PageManager"
+import ArticleManager from "@/pages/Admin/ArticleManager"
 import ArticleCategories from "@/pages/Admin/ArticleCategories"
 import BannerSlides from "@/pages/Admin/BannerSlides"
 import ThemeSettings from "@/pages/Admin/ThemeSettings"
@@ -59,8 +59,8 @@ function Router() {
             <Route path="/student/dashboard" component={StudentDashboard} />
             <Route path="/admin/login" component={AdminLogin} />
             <Route path="/admin/dashboard" component={AdminDashboard} />
-            <Route path="/admin/pages" component={PageEditor} />
-            <Route path="/admin/articles" component={ArticleEditor} />
+            <Route path="/admin/pages" component={PageManager} />
+            <Route path="/admin/articles" component={ArticleManager} />
             <Route path="/admin/categories" component={ArticleCategories} />
             <Route path="/admin/banners" component={BannerSlides} />
             <Route path="/admin/theme" component={ThemeSettings} />

@@ -16,8 +16,8 @@ export default function ArticleManager() {
     data: article,
     isLoading,
   } = useQuery({
-    queryKey: articleId ? ['/api/articles', articleId] : null,
-    enabled: !!articleId,
+    queryKey: ['/api/articles', articleId || 'new'],
+    enabled: true,
   });
 
   // Handle navigation back to dashboard

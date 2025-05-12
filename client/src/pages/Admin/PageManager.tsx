@@ -16,8 +16,8 @@ export default function PageManager() {
     data: page,
     isLoading,
   } = useQuery({
-    queryKey: pageId ? ['/api/pages', pageId] : null,
-    enabled: !!pageId,
+    queryKey: ['/api/pages', pageId || 'new'],
+    enabled: true,
   });
 
   // Handle navigation back to dashboard

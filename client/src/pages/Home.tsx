@@ -4,20 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
+import HeroBanner from '@/components/Home/HeroBanner';
 
 export default function Home() {
   const { language } = useI18n();
-  
-  // Fetch banner slides for the hero section
-  const { data: bannerSlides = [] } = useQuery({
-    queryKey: ['/api/banner-slides'],
-    queryFn: async () => {
-      const response = await fetch('/api/banner-slides');
-      const data = await response.json();
-      console.log('Banner slides data:', data);
-      return data;
-    }
-  });
   
   // Fetch quick links
   const { data: quickLinks = [] } = useQuery({
@@ -58,75 +48,13 @@ export default function Home() {
   // Find welcome content block
   const welcomeBlock = contentBlocks.find((block: any) => block.identifier === 'home_welcome');
   
-  // State to track current slide index
-  const [currentSlide, setCurrentSlide] = React.useState(0);
-  
-  // Auto rotate slides every 5 seconds
-  React.useEffect(() => {
-    if (bannerSlides.length <= 1) return; // Don't rotate if only one slide
-    
-    const interval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % bannerSlides.length);
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, [bannerSlides.length]);
-  
   return (
-    <div className="py-12 max-w-full">
-      {/* Hero Banner Section */}
-      <section className="relative h-[60vh] bg-gray-200 overflow-hidden mb-16">
-        {bannerSlides.length > 0 && (
-          <>
-            <div 
-              className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-              style={{ 
-                backgroundImage: `url(${bannerSlides[currentSlide].imageUrl})`,
-                backgroundColor: 'rgba(0,0,0,0.4)',
-                backgroundBlendMode: 'multiply'
-              }}
-            >
-              <div className="container mx-auto h-full flex items-center px-8">
-                <div className="max-w-2xl text-white">
-                  <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                    {language === 'vi' ? bannerSlides[currentSlide].title_vi : bannerSlides[currentSlide].title_en}
-                  </h1>
-                  <p className="text-xl opacity-90 mb-8">
-                    {language === 'vi' ? bannerSlides[currentSlide].description_vi : bannerSlides[currentSlide].description_en}
-                  </p>
-                  
-                  {bannerSlides[currentSlide].buttonLink && (
-                    <Link href={bannerSlides[currentSlide].buttonLink}>
-                      <Button size="lg">
-                        {language === 'vi' ? bannerSlides[currentSlide].buttonText_vi : bannerSlides[currentSlide].buttonText_en}
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            {/* Slide indicators */}
-            {bannerSlides.length > 1 && (
-              <div className="absolute bottom-5 left-0 right-0 flex justify-center space-x-2">
-                {bannerSlides.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`w-3 h-3 rounded-full ${
-                      index === currentSlide ? 'bg-white' : 'bg-white/50'
-                    }`}
-                    onClick={() => setCurrentSlide(index)}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </section>
+    <div className="max-w-full">
+      {/* Hero Banner Section using Embla Carousel Component */}
+      <HeroBanner />
       
       {/* Audience Navigation (Harvard-style) */}
-      <section className="container mx-auto px-8 mb-16">
+      <section className="container mx-auto px-8 mt-16 mb-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="bg-primary text-white">

@@ -775,6 +775,7 @@ async function initializeSampleContent() {
 // Add the initialization function
 async function initializeArticleCategories() {
   try {
+    // Get existing categories
     let categories = [];
     try {
       categories = await storage.getArticleCategories();
@@ -782,84 +783,85 @@ async function initializeArticleCategories() {
       console.error("Error getting article categories:", err);
     }
     
+    // Only create default categories if none exist
     if (categories.length === 0) {
       const defaultCategories = [
-      {
-        slug: "news",
-        title_vi: "Tin tức",
-        title_en: "News",
-        order: 1
-      },
-      {
-        slug: "announcement",
-        title_vi: "Thông báo",
-        title_en: "Announcements",
-        order: 2
-      },
-      {
-        slug: "internal",
-        title_vi: "Tin nội bộ",
-        title_en: "Internal News",
-        order: 3
-      },
-      {
-        slug: "catholic",
-        title_vi: "Tin công giáo",
-        title_en: "Catholic News",
-        order: 4
-      },
-      {
-        slug: "admission",
-        title_vi: "Tin tuyển sinh",
-        title_en: "Admission News",
-        order: 5
-      },
-      {
-        slug: "academic",
-        title_vi: "Tin học viện",
-        title_en: "Academic News",
-        order: 6
-      },
-      // Additional categories for testing
-      {
-        slug: "events",
-        title_vi: "Sự kiện",
-        title_en: "Events",
-        order: 7
-      },
-      {
-        slug: "research",
-        title_vi: "Nghiên cứu học thuật",
-        title_en: "Academic Research",
-        order: 8
-      },
-      {
-        slug: "student-life",
-        title_vi: "Đời sống sinh viên",
-        title_en: "Student Life",
-        order: 9
-      },
-      {
-        slug: "publications",
-        title_vi: "Ấn phẩm",
-        title_en: "Publications",
-        order: 10
-      },
-      {
-        slug: "faculty",
-        title_vi: "Giảng viên",
-        title_en: "Faculty",
-        order: 11
-      },
-      {
-        slug: "community-outreach",
-        title_vi: "Cộng đồng",
-        title_en: "Community Outreach",
-        order: 12
-      }
-    ];
+        {
+          slug: "news",
+          title_vi: "Tin tức",
+          title_en: "News",
+          order: 1
+        },
+        {
+          slug: "announcement",
+          title_vi: "Thông báo",
+          title_en: "Announcements",
+          order: 2
+        },
+        {
+          slug: "internal",
+          title_vi: "Tin nội bộ",
+          title_en: "Internal News",
+          order: 3
+        },
+        {
+          slug: "catholic",
+          title_vi: "Tin công giáo",
+          title_en: "Catholic News",
+          order: 4
+        },
+        {
+          slug: "admission",
+          title_vi: "Tin tuyển sinh",
+          title_en: "Admission News",
+          order: 5
+        },
+        {
+          slug: "academic",
+          title_vi: "Tin học viện",
+          title_en: "Academic News",
+          order: 6
+        },
+        // Additional categories for testing
+        {
+          slug: "events",
+          title_vi: "Sự kiện",
+          title_en: "Events",
+          order: 7
+        },
+        {
+          slug: "research",
+          title_vi: "Nghiên cứu học thuật",
+          title_en: "Academic Research",
+          order: 8
+        },
+        {
+          slug: "student-life",
+          title_vi: "Đời sống sinh viên",
+          title_en: "Student Life",
+          order: 9
+        },
+        {
+          slug: "publications",
+          title_vi: "Ấn phẩm",
+          title_en: "Publications",
+          order: 10
+        },
+        {
+          slug: "faculty",
+          title_vi: "Giảng viên",
+          title_en: "Faculty",
+          order: 11
+        },
+        {
+          slug: "community-outreach",
+          title_vi: "Cộng đồng",
+          title_en: "Community Outreach",
+          order: 12
+        }
+      ];
 
-    try {
+      // Create each category
       for (const category of defaultCategories) {
         try {
           await storage.createArticleCategory(category);
@@ -867,8 +869,6 @@ async function initializeArticleCategories() {
           console.error(`Error creating category ${category.slug}:`, err);
         }
       }
-    } catch (err) {
-      console.error("Error creating article categories:", err);
     }
   } catch (error) {
     console.error("Error initializing article categories:", error);

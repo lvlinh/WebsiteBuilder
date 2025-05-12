@@ -13,9 +13,10 @@ import Events from "./Events"
 
 // Separate components for special pages to maintain proper React hooks
 function ArticlesPage() {
+  const { getContentWidthClass } = useTheme();
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className={getContentWidthClass("py-12")}>
         <Articles />
       </div>
     </div>
@@ -23,9 +24,10 @@ function ArticlesPage() {
 }
 
 function EventsPage() {
+  const { getContentWidthClass } = useTheme();
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className={getContentWidthClass("py-12")}>
         <Events />
       </div>
     </div>

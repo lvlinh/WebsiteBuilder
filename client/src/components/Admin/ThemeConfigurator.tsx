@@ -178,7 +178,7 @@ export default function ThemeConfigurator() {
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Slider
-                  value={[theme.radius]}
+                  value={[theme.radius ?? 0.5]}
                   max={2}
                   step={0.1}
                   onValueChange={handleRadiusChange}
@@ -192,7 +192,7 @@ export default function ThemeConfigurator() {
               <div className="flex items-center justify-center space-x-4">
                 <div
                   className="w-16 h-16 bg-primary"
-                  style={{ borderRadius: `${theme.radius * 0.5}rem` }}
+                  style={{ borderRadius: `${(theme.radius ?? 0.5) * 0.5}rem` }}
                 ></div>
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function ThemeConfigurator() {
                   </div>
                 </div>
                 <p className="text-center text-sm">
-                  {language === 'vi' ? 'Tiêu chuẩn' : 'Regular'}
+                  {language === 'vi' ? 'Rộng' : 'Wide'}
                 </p>
               </div>
               
@@ -287,17 +287,21 @@ export default function ThemeConfigurator() {
                   ? 'Độ rộng nội dung hiện tại:'
                   : 'Current content width:'}{' '}
                 <span className="font-medium text-foreground">
-                  {theme.contentWidth === 'narrow'
+                  {theme.contentWidth === 'normal'
                     ? language === 'vi'
-                      ? 'Hẹp'
-                      : 'Narrow'
-                    : theme.contentWidth === 'regular'
+                      ? 'Bình thường'
+                      : 'Normal'
+                    : theme.contentWidth === 'wide'
                     ? language === 'vi'
-                      ? 'Tiêu chuẩn'
-                      : 'Regular'
+                      ? 'Rộng'
+                      : 'Wide'
+                    : theme.contentWidth === 'full'
+                    ? language === 'vi'
+                      ? 'Toàn màn hình'
+                      : 'Full'
                     : language === 'vi'
-                    ? 'Rộng'
-                    : 'Wide'}
+                    ? 'Bình thường'
+                    : 'Normal'}
                 </span>
               </div>
             </div>

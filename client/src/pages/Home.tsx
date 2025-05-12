@@ -7,6 +7,7 @@ import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import HeroBanner from '@/components/Home/HeroBanner';
+import ThemeResetButton from '@/components/ThemeResetButton';
 
 export default function Home() {
   const { language } = useI18n();
@@ -53,6 +54,11 @@ export default function Home() {
   
   return (
     <div className="max-w-full">
+      {/* Theme reset button in top-right corner */}
+      <div className="absolute top-20 right-4 z-10">
+        <ThemeResetButton />
+      </div>
+      
       {/* Hero Banner Section using Embla Carousel Component */}
       <HeroBanner />
       

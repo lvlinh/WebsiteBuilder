@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/hooks/use-i18n';
-import { useTheme } from '@/lib/theme-provider';
+import { useTheme, Theme } from '@/lib/theme-provider';
 
 // Hard-coded default theme for direct reset
-const DEFAULT_THEME = {
+const DEFAULT_THEME: Theme = {
   primary: 'hsl(351, 32%, 42%)',  // SJJS primary color #8B4749
   mode: 'light',
   variant: 'professional',
@@ -41,9 +41,9 @@ export default function ThemeResetButton() {
     setTheme({
       primary: DEFAULT_THEME.primary,
       mode: DEFAULT_THEME.mode,
-      variant: DEFAULT_THEME.variant as 'professional' | 'tint' | 'vibrant',
+      variant: DEFAULT_THEME.variant,
       radius: DEFAULT_THEME.radius,
-      contentWidth: DEFAULT_THEME.contentWidth as 'normal' | 'wide' | 'full'
+      contentWidth: DEFAULT_THEME.contentWidth
     });
     
     // Show success message

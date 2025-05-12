@@ -1513,6 +1513,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin protected routes
+  app.get("/api/admin/pages", isAdmin, async (_req, res) => {
+    const pages = await storage.getPages();
+    res.json(pages);
+  });
+
+  app.get("/api/admin/pages/:id", isAdmin, async (req, res) => {
+    const pageId = Number(req.params.id);
+    const page = await storage.getPage(pageId);
+    if (!page) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+    res.json(page);
+  });
+
   app.post("/api/admin/pages", isAdmin, async (req, res) => {
     const parseResult = insertPageSchema.safeParse(req.body);
     if (!parseResult.success) {

@@ -16,10 +16,11 @@ export default function PageManager() {
     data: page,
     isLoading,
   } = useQuery({
-    queryKey: ['/api/pages', pageId || 'new'],
+    queryKey: ['/api/admin/pages', pageId || 'new'],
     queryFn: async () => {
       if (!pageId) return undefined; // For new page
-      const res = await fetch(`/api/pages/${pageId}`);
+      // For admin pages, we should use the admin API endpoint
+      const res = await fetch(`/api/admin/pages/${pageId}`);
       if (!res.ok) throw new Error('Failed to fetch page');
       return await res.json();
     },

@@ -1,301 +1,345 @@
 import React from 'react';
-import { useTheme, Theme, ThemeColor, ColorScheme, ThemeRadius, ThemeFont } from '@/lib/theme-provider';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Input } from "@/components/ui/input";
+import { useTheme } from '@/lib/theme-provider';
 import { useI18n } from '@/hooks/use-i18n';
-import { Check, RefreshCw, Save } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Slider } from '@/components/ui/slider';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { HexColorPicker } from 'react-colorful';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Moon, Sun, Monitor, Smartphone, Tablet, Laptop } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function ThemeConfigurator() {
-  const { theme, updateTheme } = useTheme();
-  const { language } = useI18n();
-  const { toast } = useToast();
-  const [currentTheme, setCurrentTheme] = React.useState<Theme>(theme);
-  const [isSaving, setIsSaving] = React.useState(false);
-
-  // Handle color selection
-  const handleColorChange = (color: ThemeColor) => {
-    setCurrentTheme(prev => ({ ...prev, primaryColor: color }));
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { language, t } = useI18n();
+  
+  const handlePrimaryColorChange = (color: string) => {
+    setTheme({ primary: color });
   };
-
-  // Handle other theme settings
-  const handleChange = <K extends keyof Theme>(key: K, value: Theme[K]) => {
-    setCurrentTheme(prev => ({ ...prev, [key]: value }));
+  
+  const handleRadiusChange = (value: number[]) => {
+    setTheme({ radius: value[0] });
   };
-
-  // Reset to defaults
-  const handleReset = () => {
-    setCurrentTheme({
-      colorScheme: 'light',
-      primaryColor: 'red',
-      radius: 'medium',
-      fontFamily: 'sans',
-      contentWidth: 'normal',
-      logoPosition: 'left',
-      navStyle: 'standard',
-      footerStyle: 'standard'
-    });
-    
-    toast({
-      title: language === 'vi' ? 'Đã đặt lại' : 'Reset complete',
-      description: language === 'vi' 
-        ? 'Các cài đặt giao diện đã được đặt lại về mặc định.' 
-        : 'Theme settings have been reset to defaults.',
-    });
+  
+  const handleModeChange = (mode: 'light' | 'dark' | 'system') => {
+    setTheme({ mode });
   };
-
-  // Save changes
-  const handleSave = () => {
-    setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      updateTheme(currentTheme);
-      setIsSaving(false);
-      
-      toast({
-        title: language === 'vi' ? 'Đã lưu thành công' : 'Changes saved',
-        description: language === 'vi' 
-          ? 'Các thay đổi giao diện đã được áp dụng.' 
-          : 'Theme changes have been applied.',
-      });
-    }, 500);
+  
+  const handleVariantChange = (variant: 'professional' | 'vibrant' | 'tint') => {
+    setTheme({ variant });
   };
-
+  
+  const handleContentWidthChange = (contentWidth: 'regular' | 'wide' | 'narrow') => {
+    setTheme({ contentWidth });
+  };
+  
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>{language === 'vi' ? 'Cài đặt giao diện' : 'Theme Settings'}</CardTitle>
-        <CardDescription>
-          {language === 'vi' 
-            ? 'Tùy chỉnh giao diện và màu sắc của trang web.' 
-            : 'Customize the appearance and colors of your website.'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="colors" className="w-full">
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="colors">{language === 'vi' ? 'Màu sắc' : 'Colors'}</TabsTrigger>
-            <TabsTrigger value="typography">{language === 'vi' ? 'Chữ' : 'Typography'}</TabsTrigger>
-            <TabsTrigger value="layout">{language === 'vi' ? 'Bố cục' : 'Layout'}</TabsTrigger>
-            <TabsTrigger value="elements">{language === 'vi' ? 'Thành phần' : 'Elements'}</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="colors" className="space-y-4">
-            <div className="space-y-4">
-              <div>
-                <Label>{language === 'vi' ? 'Chế độ màu' : 'Color Scheme'}</Label>
-                <Select 
-                  value={currentTheme.colorScheme}
-                  onValueChange={(value) => handleChange('colorScheme', value as ColorScheme)}
+    <Tabs defaultValue="appearance" className="w-full">
+      <TabsList>
+        <TabsTrigger value="appearance">
+          {language === 'vi' ? 'Giao diện' : 'Appearance'}
+        </TabsTrigger>
+        <TabsTrigger value="layout">
+          {language === 'vi' ? 'Bố cục' : 'Layout'}
+        </TabsTrigger>
+        <TabsTrigger value="colors">
+          {language === 'vi' ? 'Màu sắc' : 'Colors'}
+        </TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="appearance" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>{language === 'vi' ? 'Chế độ hiển thị' : 'Display Mode'}</CardTitle>
+            <CardDescription>
+              {language === 'vi'
+                ? 'Chọn chế độ hiển thị sáng, tối hoặc theo hệ thống'
+                : 'Choose between light, dark, or system display mode'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center space-x-2">
+            <Button
+              variant={theme.mode === 'light' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleModeChange('light')}
+              className={cn(
+                'h-10 w-10 rounded-full',
+                resolvedTheme === 'dark' ? 'bg-muted' : 'bg-white'
+              )}
+            >
+              <Sun className="h-5 w-5" />
+              <span className="sr-only">Light Mode</span>
+            </Button>
+            <Button
+              variant={theme.mode === 'dark' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleModeChange('dark')}
+              className={cn(
+                'h-10 w-10 rounded-full',
+                resolvedTheme === 'dark' ? 'bg-slate-900' : 'bg-slate-700'
+              )}
+            >
+              <Moon className="h-5 w-5" />
+              <span className="sr-only">Dark Mode</span>
+            </Button>
+            <Button
+              variant={theme.mode === 'system' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => handleModeChange('system')}
+              className="h-10 w-10 rounded-full"
+            >
+              <Monitor className="h-5 w-5" />
+              <span className="sr-only">System Mode</span>
+            </Button>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>{language === 'vi' ? 'Biến thể' : 'Variant'}</CardTitle>
+            <CardDescription>
+              {language === 'vi'
+                ? 'Chọn biến thể cho website'
+                : 'Choose a variant for the website'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
+                    theme.variant === 'professional' ? 'border-primary' : 'border-border'
+                  )}
+                  onClick={() => handleVariantChange('professional')}
                 >
-                  <SelectTrigger className="w-full mt-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">{language === 'vi' ? 'Sáng' : 'Light'}</SelectItem>
-                    <SelectItem value="dark">{language === 'vi' ? 'Tối' : 'Dark'}</SelectItem>
-                    <SelectItem value="system">{language === 'vi' ? 'Hệ thống' : 'System'}</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <div className="bg-background h-1/3 border-b"></div>
+                  <div className="p-2">
+                    <div className="h-2 w-2/3 rounded-full bg-primary mb-2"></div>
+                    <div className="h-2 w-full rounded-full bg-muted"></div>
+                    <div className="h-2 w-full rounded-full bg-muted mt-2"></div>
+                  </div>
+                </div>
+                <p className="text-center text-sm">{t('theme.professional')}</p>
               </div>
               
-              <div>
-                <Label>{language === 'vi' ? 'Màu chủ đạo' : 'Primary Color'}</Label>
-                <div className="grid grid-cols-5 gap-2 mt-2">
-                  {(['red', 'blue', 'green', 'purple', 'orange'] as ThemeColor[]).map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => handleColorChange(color)}
-                      className={`h-12 rounded-md flex items-center justify-center border-2 ${
-                        currentTheme.primaryColor === color ? 'border-black dark:border-white' : 'border-transparent'
-                      }`}
-                      style={{ backgroundColor: getColorValue(color) }}
-                    >
-                      {currentTheme.primaryColor === color && (
-                        <Check className="h-6 w-6 text-white drop-shadow-md" />
-                      )}
-                    </button>
-                  ))}
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
+                    theme.variant === 'vibrant' ? 'border-primary' : 'border-border'
+                  )}
+                  onClick={() => handleVariantChange('vibrant')}
+                >
+                  <div className="bg-primary h-1/3"></div>
+                  <div className="p-2">
+                    <div className="h-2 w-2/3 rounded-full bg-primary mb-2"></div>
+                    <div className="h-2 w-full rounded-full bg-muted"></div>
+                    <div className="h-2 w-full rounded-full bg-muted mt-2"></div>
+                  </div>
                 </div>
+                <p className="text-center text-sm">{t('theme.vibrant')}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
+                    theme.variant === 'tint' ? 'border-primary' : 'border-border'
+                  )}
+                  onClick={() => handleVariantChange('tint')}
+                >
+                  <div className="bg-background h-1/3 border-b"></div>
+                  <div className="bg-primary/10 p-2">
+                    <div className="h-2 w-2/3 rounded-full bg-primary mb-2"></div>
+                    <div className="h-2 w-full rounded-full bg-muted"></div>
+                    <div className="h-2 w-full rounded-full bg-muted mt-2"></div>
+                  </div>
+                </div>
+                <p className="text-center text-sm">{t('theme.tint')}</p>
               </div>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="typography" className="space-y-4">
-            <div>
-              <Label>{language === 'vi' ? 'Phông chữ' : 'Font Family'}</Label>
-              <Select 
-                value={currentTheme.fontFamily}
-                onValueChange={(value) => handleChange('fontFamily', value as ThemeFont)}
-              >
-                <SelectTrigger className="w-full mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sans">Sans-serif</SelectItem>
-                  <SelectItem value="serif">Serif</SelectItem>
-                  <SelectItem value="mono">Monospace</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="mt-4">
-              <Label>{language === 'vi' ? 'Bo tròn góc' : 'Border Radius'}</Label>
-              <RadioGroup 
-                className="flex flex-row space-x-4 mt-2"
-                value={currentTheme.radius}
-                onValueChange={(value) => handleChange('radius', value as ThemeRadius)}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="none" id="radius-none" />
-                  <Label htmlFor="radius-none">{language === 'vi' ? 'Không' : 'None'}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="small" id="radius-small" />
-                  <Label htmlFor="radius-small">{language === 'vi' ? 'Nhỏ' : 'Small'}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="medium" id="radius-medium" />
-                  <Label htmlFor="radius-medium">{language === 'vi' ? 'Vừa' : 'Medium'}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="large" id="radius-large" />
-                  <Label htmlFor="radius-large">{language === 'vi' ? 'Lớn' : 'Large'}</Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="layout" className="space-y-4">
-            <div>
-              <Label>{language === 'vi' ? 'Vị trí logo' : 'Logo Position'}</Label>
-              <RadioGroup 
-                className="flex flex-row space-x-4 mt-2"
-                value={currentTheme.logoPosition}
-                onValueChange={(value) => handleChange('logoPosition', value as 'left' | 'center')}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="left" id="logo-left" />
-                  <Label htmlFor="logo-left">{language === 'vi' ? 'Trái' : 'Left'}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="center" id="logo-center" />
-                  <Label htmlFor="logo-center">{language === 'vi' ? 'Giữa' : 'Center'}</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            
-            <div className="mt-4">
-              <Label>{language === 'vi' ? 'Độ rộng nội dung' : 'Content Width'}</Label>
-              <Select 
-                value={currentTheme.contentWidth}
-                onValueChange={(value) => handleChange('contentWidth', value)}
-              >
-                <SelectTrigger className="w-full mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="narrow">{language === 'vi' ? 'Hẹp' : 'Narrow'}</SelectItem>
-                  <SelectItem value="normal">{language === 'vi' ? 'Thường' : 'Normal'}</SelectItem>
-                  <SelectItem value="wide">{language === 'vi' ? 'Rộng' : 'Wide'}</SelectItem>
-                  <SelectItem value="full">{language === 'vi' ? 'Đầy đủ' : 'Full'}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="elements" className="space-y-4">
-            <div>
-              <Label>{language === 'vi' ? 'Kiểu menu chính' : 'Navigation Style'}</Label>
-              <Select 
-                value={currentTheme.navStyle}
-                onValueChange={(value) => handleChange('navStyle', value as 'standard' | 'mega' | 'minimal')}
-              >
-                <SelectTrigger className="w-full mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standard">{language === 'vi' ? 'Tiêu chuẩn' : 'Standard'}</SelectItem>
-                  <SelectItem value="mega">{language === 'vi' ? 'Mega menu' : 'Mega Menu'}</SelectItem>
-                  <SelectItem value="minimal">{language === 'vi' ? 'Tối giản' : 'Minimal'}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="mt-4">
-              <Label>{language === 'vi' ? 'Kiểu chân trang' : 'Footer Style'}</Label>
-              <Select 
-                value={currentTheme.footerStyle}
-                onValueChange={(value) => handleChange('footerStyle', value as 'standard' | 'minimal' | 'detailed')}
-              >
-                <SelectTrigger className="w-full mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standard">{language === 'vi' ? 'Tiêu chuẩn' : 'Standard'}</SelectItem>
-                  <SelectItem value="minimal">{language === 'vi' ? 'Tối giản' : 'Minimal'}</SelectItem>
-                  <SelectItem value="detailed">{language === 'vi' ? 'Chi tiết' : 'Detailed'}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </TabsContent>
-        </Tabs>
+          </CardContent>
+        </Card>
         
-        <div className="flex justify-end space-x-2 mt-6">
-          <Button 
-            variant="outline"
-            onClick={handleReset}
-            className="flex items-center gap-1"
-          >
-            <RefreshCw className="h-4 w-4" />
-            {language === 'vi' ? 'Đặt lại' : 'Reset'}
-          </Button>
-          <Button 
-            onClick={handleSave}
-            className="bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/90 flex items-center gap-1"
-            disabled={isSaving}
-          >
-            <Save className="h-4 w-4" />
-            {isSaving 
-              ? (language === 'vi' ? 'Đang lưu...' : 'Saving...') 
-              : (language === 'vi' ? 'Lưu thay đổi' : 'Save Changes')}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{language === 'vi' ? 'Bo tròn góc' : 'Corner Radius'}</CardTitle>
+            <CardDescription>
+              {language === 'vi'
+                ? 'Điều chỉnh độ bo tròn cho các thành phần'
+                : 'Adjust the corner radius for components'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="py-4">
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Slider
+                  value={[theme.radius]}
+                  max={2}
+                  step={0.1}
+                  onValueChange={handleRadiusChange}
+                />
+                <div className="flex justify-between text-xs">
+                  <span>{language === 'vi' ? 'Vuông' : 'Square'}</span>
+                  <span>{language === 'vi' ? 'Bo tròn' : 'Rounded'}</span>
+                  <span>{language === 'vi' ? 'Tròn' : 'Circular'}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-center space-x-4">
+                <div
+                  className="w-16 h-16 bg-primary"
+                  style={{ borderRadius: `${theme.radius * 0.5}rem` }}
+                ></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="layout" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>{language === 'vi' ? 'Độ rộng nội dung' : 'Content Width'}</CardTitle>
+            <CardDescription>
+              {language === 'vi'
+                ? 'Chọn độ rộng nội dung trang'
+                : 'Choose the content width for pages'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
+                    theme.contentWidth === 'narrow' ? 'border-primary' : 'border-border'
+                  )}
+                  onClick={() => handleContentWidthChange('narrow')}
+                >
+                  <div className="h-full flex items-center justify-center">
+                    <div className="w-1/2 h-3/4 bg-primary/20 rounded"></div>
+                  </div>
+                </div>
+                <p className="text-center text-sm">
+                  {language === 'vi' ? 'Hẹp' : 'Narrow'}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
+                    theme.contentWidth === 'regular' ? 'border-primary' : 'border-border'
+                  )}
+                  onClick={() => handleContentWidthChange('regular')}
+                >
+                  <div className="h-full flex items-center justify-center">
+                    <div className="w-2/3 h-3/4 bg-primary/20 rounded"></div>
+                  </div>
+                </div>
+                <p className="text-center text-sm">
+                  {language === 'vi' ? 'Tiêu chuẩn' : 'Regular'}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
+                    theme.contentWidth === 'wide' ? 'border-primary' : 'border-border'
+                  )}
+                  onClick={() => handleContentWidthChange('wide')}
+                >
+                  <div className="h-full flex items-center justify-center">
+                    <div className="w-5/6 h-3/4 bg-primary/20 rounded"></div>
+                  </div>
+                </div>
+                <p className="text-center text-sm">
+                  {language === 'vi' ? 'Rộng' : 'Wide'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="p-4 border rounded-md">
+              <div className="text-center text-sm text-muted-foreground">
+                {language === 'vi'
+                  ? 'Độ rộng nội dung hiện tại:'
+                  : 'Current content width:'}{' '}
+                <span className="font-medium text-foreground">
+                  {theme.contentWidth === 'narrow'
+                    ? language === 'vi'
+                      ? 'Hẹp'
+                      : 'Narrow'
+                    : theme.contentWidth === 'regular'
+                    ? language === 'vi'
+                      ? 'Tiêu chuẩn'
+                      : 'Regular'
+                    : language === 'vi'
+                    ? 'Rộng'
+                    : 'Wide'}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="colors" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>{language === 'vi' ? 'Màu chủ đạo' : 'Primary Color'}</CardTitle>
+            <CardDescription>
+              {language === 'vi'
+                ? 'Chọn màu chủ đạo cho website'
+                : 'Choose the primary color for the website'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-center">
+              <HexColorPicker color={theme.primary} onChange={handlePrimaryColorChange} />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="text"
+                value={theme.primary}
+                onChange={(e) => handlePrimaryColorChange(e.target.value)}
+                className="font-mono"
+              />
+              <div
+                className="w-10 h-10 rounded-md border"
+                style={{ backgroundColor: theme.primary }}
+              ></div>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {['#8B4749', '#1E40AF', '#047857', '#B91C1C', '#6D28D9'].map((color) => (
+                <Button
+                  key={color}
+                  variant="outline"
+                  className="w-full h-8 p-0"
+                  style={{ backgroundColor: color }}
+                  onClick={() => handlePrimaryColorChange(color)}
+                >
+                  <span className="sr-only">{color}</span>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              onClick={() => handlePrimaryColorChange('#8B4749')}
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+            >
+              {language === 'vi' ? 'Đặt lại màu mặc định' : 'Reset to default color'}
+            </Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
-}
-
-// Helper function to get CSS color value
-function getColorValue(color: ThemeColor): string {
-  const colors = {
-    red: '#8B4749',
-    blue: '#1E40AF',
-    green: '#166534',
-    purple: '#6D28D9',
-    orange: '#C2410C'
-  };
-  return colors[color];
 }

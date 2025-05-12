@@ -1,50 +1,53 @@
-import React from 'react';
-import ThemeConfigurator from '@/components/Admin/ThemeConfigurator';
-import {
-  PageHeader,
-  PageHeaderDescription,
-  PageHeaderHeading,
-} from "@/components/ui/page-header";
+import React, { useEffect } from 'react';
+import { useLocation } from 'wouter';
+import { useTheme } from '@/lib/theme-provider';
 import { useI18n } from '@/hooks/use-i18n';
 import { useAdmin } from '@/hooks/use-admin';
-import { Loader2 } from 'lucide-react';
-import { useLocation } from 'wouter';
+import ThemeConfigurator from '@/components/Admin/ThemeConfigurator';
+import { PageHeader, PageHeaderDescription } from '@/components/ui/page-header';
 
 export default function ThemeSettings() {
-  const { t } = useI18n();
-  const { admin, isLoading } = useAdmin();
+  const { admin, isLoading, isAuthenticated } = useAdmin();
   const [, navigate] = useLocation();
-
-  // If not logged in, redirect to admin login
-  React.useEffect(() => {
-    if (!isLoading && !admin) {
+  const { language } = useI18n();
+  
+  // Check if user is authenticated, if not redirect to login
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
       navigate('/admin/login');
     }
-  }, [admin, isLoading, navigate]);
-
+  }, [isLoading, isAuthenticated, navigate]);
+  
+  // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
-
-  if (!admin) return null;
-
+  
+  // Only render if authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+  
   return (
-    <div className="container py-8">
-      <PageHeader className="mb-8">
-        <PageHeaderHeading>{t('Cài đặt giao diện', 'Theme Settings')}</PageHeaderHeading>
-        <PageHeaderDescription>
-          {t(
-            'Tùy chỉnh giao diện và trải nghiệm người dùng của trang web SJJS.',
-            'Customize the appearance and user experience of the SJJS website.'
-          )}
-        </PageHeaderDescription>
-      </PageHeader>
-
-      <div className="grid grid-cols-1 gap-6">
+    <div className="py-10">
+      <PageHeader
+        title={language === 'vi' ? 'Cài đặt giao diện' : 'Theme Settings'}
+        description={
+          language === 'vi'
+            ? 'Tùy chỉnh giao diện và hiển thị của website'
+            : 'Customize the appearance and display of the website'
+        }
+        breadcrumbs={[
+          { href: '/admin/dashboard', label: language === 'vi' ? 'Trang quản trị' : 'Dashboard' },
+          { href: '/admin/theme', label: language === 'vi' ? 'Cài đặt giao diện' : 'Theme Settings' },
+        ]}
+      />
+      
+      <div className="mt-8">
         <ThemeConfigurator />
       </div>
     </div>

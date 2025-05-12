@@ -133,14 +133,30 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (!Object.keys(newTheme).length || (newTheme as any).reset) {
       console.log('Resetting to default theme:', defaultTheme);
       
-      // Reset to default theme - clone to avoid reference issues
-      const resetTheme = JSON.parse(JSON.stringify(defaultTheme));
+      // Create a hard-coded default theme to avoid any reference issues
+      const hardcodedDefaultTheme: Theme = {
+        primary: 'hsl(351, 32%, 42%)',  // SJJS primary color #8B4749
+        mode: 'light',
+        variant: 'professional',
+        radius: 0.5,
+        contentWidth: 'normal'
+      };
+      
+      console.log('Using hardcoded default theme:', hardcodedDefaultTheme);
       
       // Set state
-      setThemeState(resetTheme);
+      setThemeState(hardcodedDefaultTheme);
       
       // Apply changes immediately without waiting for re-render
-      applyThemeToDOM(resetTheme);
+      applyThemeToDOM(hardcodedDefaultTheme);
+      
+      // Save to localStorage to persist the reset
+      try {
+        localStorage.setItem('theme', JSON.stringify(hardcodedDefaultTheme));
+        console.log('Default theme saved to localStorage');
+      } catch (e) {
+        console.error('Failed to save theme to localStorage:', e);
+      }
       
       // Log the change for debugging
       console.log('Theme has been reset to default');

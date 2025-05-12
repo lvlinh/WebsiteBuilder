@@ -7,9 +7,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { HexColorPicker } from 'react-colorful';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Monitor, Save, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Moon, Sun, Monitor, Save, CheckCircle2, RotateCcw, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+
+// Hard-coded default theme for direct reset
+const DEFAULT_SJJS_THEME: Theme = {
+  primary: 'hsl(351, 32%, 42%)',  // SJJS primary color #8B4749
+  mode: 'light',
+  variant: 'professional',
+  radius: 0.5,
+  contentWidth: 'normal'
+};
 
 export default function ThemeConfigurator() {
   const { theme: currentTheme, setTheme, resolvedTheme } = useTheme();
@@ -30,20 +39,28 @@ export default function ThemeConfigurator() {
     // Set the reset flag to trigger default theme restoration
     console.log('Resetting theme to default...');
     
-    // Create default theme with proper typing
-    const defaultTheme: Theme = {
-      primary: 'hsl(351, 32%, 42%)', // SJJS primary color
-      mode: 'light',
-      variant: 'professional',
-      radius: 0.5,
-      contentWidth: 'normal'
-    };
+    // First directly apply the default theme by saving to localStorage
+    try {
+      console.log('Manually resetting localStorage theme...');
+      localStorage.setItem('theme', JSON.stringify(DEFAULT_SJJS_THEME));
+    } catch (e) {
+      console.error('Failed to reset theme in localStorage:', e);
+    }
     
     // Update the local draft state first
-    setDraftTheme(defaultTheme);
+    setDraftTheme(DEFAULT_SJJS_THEME);
     
     // Then update the global theme state with reset flag
     setTheme({ reset: true });
+    
+    // For extra measure, set each property individually
+    setTheme({
+      primary: DEFAULT_SJJS_THEME.primary,
+      mode: DEFAULT_SJJS_THEME.mode,
+      variant: DEFAULT_SJJS_THEME.variant,
+      radius: DEFAULT_SJJS_THEME.radius,
+      contentWidth: DEFAULT_SJJS_THEME.contentWidth
+    });
     
     // Update saved status and show a toast
     setIsSaved(true);

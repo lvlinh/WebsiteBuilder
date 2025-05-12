@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Link, useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme-provider";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,6 +27,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const { language } = useI18n();
+  const { getContentWidthClass } = useTheme();
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -59,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <div className="container py-12">
+    <div className={getContentWidthClass("py-12")}>
       <Card className="mx-auto max-w-md">
         <CardHeader>
           <CardTitle>

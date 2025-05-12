@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, GraduationCap, BookOpen, Bell } from "lucide-react";
@@ -9,6 +10,7 @@ import { format } from "date-fns";
 
 export default function Dashboard() {
   const { language } = useI18n();
+  const { getContentWidthClass } = useTheme();
 
   const { data: student } = useQuery<Omit<Student, "password">>({
     queryKey: ['/api/students/me']
@@ -41,7 +43,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="container py-12">
+    <div className={getContentWidthClass("py-12")}>
       <h1 className="text-4xl font-bold mb-8">
         {language === 'vi' ? 'Cổng thông tin sinh viên' : 'Student Portal'}
       </h1>

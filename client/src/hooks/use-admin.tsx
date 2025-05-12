@@ -1,9 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useI18n } from '@/hooks/use-i18n';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { getQueryFn, queryClient, apiRequest } from '@/lib/queryClient';
 
-// Admin interface
 interface Admin {
   id: number;
   email: string;
@@ -11,157 +9,79 @@ interface Admin {
   role: string;
 }
 
-// Admin context type
-interface AdminContextType {
+interface AdminContextValue {
   admin: Admin | null;
   isLoading: boolean;
-  isError: boolean;
+  error: Error | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
-// Create context
-const AdminContext = createContext<AdminContextType | undefined>(undefined);
+const AdminContext = createContext<AdminContextValue>({
+  admin: null,
+  isLoading: false,
+  error: null,
+  login: async () => {},
+  logout: async () => {},
+  isAdmin: false,
+});
 
-// Provider component
-export function AdminProvider({ children }: { children: ReactNode }) {
-  const { toast } = useToast();
-  const { language } = useI18n();
-  const queryClient = useQueryClient();
-  
-  // Admin data query
-  const { 
+export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
+  const [error, setError] = useState<Error | null>(null);
+
+  const {
     data: admin,
     isLoading,
-    isError
+    error: fetchError,
   } = useQuery({
     queryKey: ['/api/admin/me'],
-    queryFn: async () => {
-      try {
-        const res = await fetch('/api/admin/me');
-        if (!res.ok) {
-          if (res.status === 401) {
-            return null;
-          }
-          throw new Error('Failed to fetch admin data');
-        }
-        return await res.json();
-      } catch (error) {
-        console.error('Error fetching admin data:', error);
-        return null;
-      }
-    },
-    retry: false,
-    refetchOnWindowFocus: false,
+    queryFn: getQueryFn({ on401: 'returnNull' }),
   });
-  
-  // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: async ({ email, password }: { email: string, password: string }) => {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Login failed');
-      }
-      
-      return await res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/me'] });
-      toast({
-        title: language === 'vi' ? 'Đăng nhập thành công' : 'Login successful',
-        description: language === 'vi' 
-          ? 'Bạn đã đăng nhập vào hệ thống quản trị.' 
-          : 'You have successfully logged in to the admin panel.',
-        variant: 'default',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: language === 'vi' ? 'Đăng nhập thất bại' : 'Login failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-  
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch('/api/admin/logout', {
-        method: 'POST',
-      });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Logout failed');
-      }
-      
-      return res;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/me'] });
-      queryClient.clear();
-      toast({
-        title: language === 'vi' ? 'Đăng xuất thành công' : 'Logout successful',
-        description: language === 'vi' 
-          ? 'Bạn đã đăng xuất khỏi hệ thống quản trị.' 
-          : 'You have been logged out of the admin panel.',
-        variant: 'default',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: language === 'vi' ? 'Đăng xuất thất bại' : 'Logout failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-  
-  // Login function
+
+  useEffect(() => {
+    if (fetchError) {
+      setError(fetchError as Error);
+    }
+  }, [fetchError]);
+
   const login = async (email: string, password: string) => {
-    await loginMutation.mutateAsync({ email, password });
+    try {
+      setError(null);
+      const response = await apiRequest('POST', '/api/admin/login', { email, password });
+      const userData = await response.json();
+      queryClient.setQueryData(['/api/admin/me'], userData);
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    }
   };
-  
-  // Logout function
+
   const logout = async () => {
-    await logoutMutation.mutateAsync();
+    try {
+      setError(null);
+      await apiRequest('POST', '/api/admin/logout');
+      queryClient.setQueryData(['/api/admin/me'], null);
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    }
   };
-  
-  // Determine authentication status
-  const isAuthenticated = !!admin;
-  
-  // Context value
-  const value = {
-    admin,
-    isLoading,
-    isError,
-    login,
-    logout,
-    isAuthenticated,
-  };
-  
+
   return (
-    <AdminContext.Provider value={value}>
+    <AdminContext.Provider
+      value={{
+        admin: admin || null,
+        isLoading,
+        error,
+        login,
+        logout,
+        isAdmin: !!admin,
+      }}
+    >
       {children}
     </AdminContext.Provider>
   );
-}
+};
 
-// Hook to use admin context
-export function useAdmin() {
-  const context = useContext(AdminContext);
-  if (context === undefined) {
-    throw new Error('useAdmin must be used within an AdminProvider');
-  }
-  return context;
-}
+export const useAdmin = () => useContext(AdminContext);

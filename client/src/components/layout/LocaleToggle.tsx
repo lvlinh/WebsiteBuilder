@@ -2,10 +2,10 @@ import React from 'react';
 import { useI18n } from '@/hooks/use-i18n';
 
 export default function LocaleToggle() {
-  const { language, changeLanguage } = useI18n();
+  const { language, setLanguage } = useI18n();
 
   const toggleLanguage = () => {
-    changeLanguage(language === 'vi' ? 'en' : 'vi');
+    setLanguage(language === 'vi' ? 'en' : 'vi');
   };
 
   return (

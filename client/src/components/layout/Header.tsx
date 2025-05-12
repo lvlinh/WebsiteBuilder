@@ -14,56 +14,56 @@ export default function Header() {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Link href="/">
-              <a className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 cursor-pointer">
                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
                   <span className="text-primary font-bold text-lg">SJJS</span>
                 </div>
                 <span className="font-bold text-xl">
                   {language === 'vi' ? 'Học viện SJJS' : 'SJJS Seminary'}
                 </span>
-              </a>
+              </div>
             </Link>
           </div>
           
           <nav className="hidden md:flex space-x-6">
             <Link href="/">
-              <a className="font-medium hover:text-white/80 transition-colors">
+              <span className="font-medium hover:text-white/80 transition-colors cursor-pointer">
                 {language === 'vi' ? 'Trang chủ' : 'Home'}
-              </a>
+              </span>
             </Link>
             <Link href="/about">
-              <a className="font-medium hover:text-white/80 transition-colors">
+              <span className="font-medium hover:text-white/80 transition-colors cursor-pointer">
                 {language === 'vi' ? 'Giới thiệu' : 'About'}
-              </a>
+              </span>
             </Link>
             <Link href="/education">
-              <a className="font-medium hover:text-white/80 transition-colors">
+              <span className="font-medium hover:text-white/80 transition-colors cursor-pointer">
                 {language === 'vi' ? 'Đào tạo' : 'Education'}
-              </a>
+              </span>
             </Link>
             <Link href="/admissions">
-              <a className="font-medium hover:text-white/80 transition-colors">
+              <span className="font-medium hover:text-white/80 transition-colors cursor-pointer">
                 {language === 'vi' ? 'Tuyển sinh' : 'Admissions'}
-              </a>
+              </span>
             </Link>
             <Link href="/faculty">
-              <a className="font-medium hover:text-white/80 transition-colors">
+              <span className="font-medium hover:text-white/80 transition-colors cursor-pointer">
                 {language === 'vi' ? 'Giảng viên' : 'Faculty'}
-              </a>
+              </span>
             </Link>
             <Link href="/articles">
-              <a className="font-medium hover:text-white/80 transition-colors">
+              <span className="font-medium hover:text-white/80 transition-colors cursor-pointer">
                 {language === 'vi' ? 'Bài viết' : 'Articles'}
-              </a>
+              </span>
             </Link>
           </nav>
           
           <div className="flex items-center space-x-4">
             <LocaleToggle />
             <Link href="/student/login">
-              <a className="bg-white text-primary px-3 py-1 rounded-md font-medium hover:bg-white/90 transition-colors">
+              <span className="bg-white text-primary px-3 py-1 rounded-md font-medium hover:bg-white/90 transition-colors cursor-pointer">
                 {language === 'vi' ? 'Cổng sinh viên' : 'Student Portal'}
-              </a>
+              </span>
             </Link>
           </div>
         </div>

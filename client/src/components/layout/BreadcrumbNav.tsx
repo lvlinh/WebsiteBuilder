@@ -1,118 +1,101 @@
-import { useLocation } from "wouter"
-import { useI18n } from "@/lib/i18n"
-import { useQuery } from "@tanstack/react-query"
-import { type Page } from "@shared/schema"
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Link } from "wouter"
-import { Home } from "lucide-react"
-
-interface BreadcrumbItem {
-  slug: string
-  title_vi: string
-  title_en: string
-  path: string
-}
+import React from 'react';
+import { Link, useLocation } from 'wouter';
+import { useI18n } from '@/hooks/use-i18n';
 
 export default function BreadcrumbNav() {
-  const [location] = useLocation()
-  const { language } = useI18n()
+  const [location] = useLocation();
+  const { language } = useI18n();
+
+  // Skip rendering breadcrumbs on the home page
+  if (location === '/') {
+    return null;
+  }
+
+  const pathSegments = location.split('/').filter(Boolean);
   
-  // Fetch all pages for navigation
-  const { data: pages } = useQuery<Page[]>({
-    queryKey: ['/api/pages']
-  })
-
-  if (location === '/') return null
-
-  // Parse the path segments
-  const pathSegments = location.substring(1).split('/')
-  const breadcrumbItems: BreadcrumbItem[] = []
-
-  // Build breadcrumb items
-  let currentPath = ''
-  pathSegments.forEach((segment, index) => {
-    currentPath += `/${segment}`
+  // Create translated titles for each path segment
+  const getTranslatedSegment = (segment: string): string => {
+    // Map path segments to translated titles
+    const translations: Record<string, Record<string, string>> = {
+      en: {
+        about: 'About',
+        education: 'Education',
+        admissions: 'Admissions',
+        faculty: 'Faculty',
+        articles: 'Articles',
+        events: 'Events',
+        student: 'Student Portal',
+        login: 'Login',
+        register: 'Register',
+        dashboard: 'Dashboard',
+        admin: 'Admin',
+        pages: 'Pages',
+        categories: 'Categories',
+        banners: 'Banner Slides',
+        theme: 'Theme Settings',
+      },
+      vi: {
+        about: 'Giới thiệu',
+        education: 'Đào tạo',
+        admissions: 'Tuyển sinh',
+        faculty: 'Giảng viên',
+        articles: 'Bài viết',
+        events: 'Sự kiện',
+        student: 'Cổng sinh viên',
+        login: 'Đăng nhập',
+        register: 'Đăng ký',
+        dashboard: 'Bảng điều khiển',
+        admin: 'Quản trị',
+        pages: 'Trang',
+        categories: 'Danh mục',
+        banners: 'Banner',
+        theme: 'Giao diện',
+      }
+    };
     
-    // Handle special routes
-    if (segment === 'bai-viet' && pathSegments[index - 1] === 'nghien-cuu-xuat-ban') {
-      breadcrumbItems.push({
-        slug: 'bai-viet',
-        title_vi: 'Bài viết',
-        title_en: 'Articles',
-        path: currentPath
-      })
-      return
-    }
-
-    if (segment === 'su-kien' && pathSegments[index - 1] === 'gia-dinh-sjjs') {
-      breadcrumbItems.push({
-        slug: 'su-kien',
-        title_vi: 'Sự kiện',
-        title_en: 'Events',
-        path: currentPath
-      })
-      return
-    }
-
-    // Find matching page
-    const page = pages?.find(p => p.slug === segment)
-    if (page) {
-      breadcrumbItems.push({
-        slug: page.slug,
-        title_vi: page.title_vi,
-        title_en: page.title_en,
-        path: currentPath
-      })
-    }
-  })
-
-  if (breadcrumbItems.length === 0) return null
+    return translations[language][segment] || segment;
+  };
 
   return (
-    <div className="bg-gray-50 border-b shadow-sm">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-        <Breadcrumb>
-          <BreadcrumbList className="text-sm md:text-base">
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href="/" className="flex items-center hover:text-[#8B4749] transition-colors duration-200">
-                  <Home className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1" />
-                  <span className="sr-only md:not-sr-only">
-                    {language === 'vi' ? 'Trang chủ' : 'Home'}
+    <nav className="bg-gray-100 border-b border-gray-200">
+      <div className="container mx-auto px-4 py-2">
+        <ol className="flex items-center text-sm">
+          {/* Home link */}
+          <li className="flex items-center">
+            <Link href="/">
+              <span className="text-primary hover:text-primary/90 transition-colors cursor-pointer">
+                {language === 'vi' ? 'Trang chủ' : 'Home'}
+              </span>
+            </Link>
+            <span className="mx-2 text-gray-400">/</span>
+          </li>
+          
+          {/* Nested paths */}
+          {pathSegments.map((segment, index) => {
+            const isLast = index === pathSegments.length - 1;
+            const path = `/${pathSegments.slice(0, index + 1).join('/')}`;
+            
+            return (
+              <li key={segment} className="flex items-center">
+                {isLast ? (
+                  <span className="text-gray-600 font-medium">
+                    {getTranslatedSegment(segment)}
                   </span>
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-
-            {breadcrumbItems.map((item, index) => (
-              <BreadcrumbItem key={item.path}>
-                {index === breadcrumbItems.length - 1 ? (
-                  <BreadcrumbPage className="font-medium">
-                    {language === 'vi' ? item.title_vi : item.title_en}
-                  </BreadcrumbPage>
                 ) : (
                   <>
-                    <BreadcrumbLink asChild>
-                      <Link href={item.path} className="hover:text-[#8B4749] transition-colors duration-200">
-                        {language === 'vi' ? item.title_vi : item.title_en}
-                      </Link>
-                    </BreadcrumbLink>
-                    <BreadcrumbSeparator />
+                    <Link href={path}>
+                      <span className="text-primary hover:text-primary/90 transition-colors cursor-pointer">
+                        {getTranslatedSegment(segment)}
+                      </span>
+                    </Link>
+                    <span className="mx-2 text-gray-400">/</span>
                   </>
                 )}
-              </BreadcrumbItem>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
+              </li>
+            );
+          })}
+        </ol>
       </div>
-    </div>
-  )
+    </nav>
+  );
 }

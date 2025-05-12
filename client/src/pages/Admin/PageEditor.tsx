@@ -55,14 +55,28 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
   }
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, ...data }: Partial<Page> & { id: number }) => {
-      const res = await fetch(`/api/admin/pages/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      if (!res.ok) throw new Error('Failed to update page')
-      return res.json()
+    mutationFn: async (data: Partial<Page>) => {
+      // If we have an id, update the existing page
+      if (data.id) {
+        const { id, ...pageData } = data;
+        const res = await fetch(`/api/admin/pages/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pageData),
+        });
+        if (!res.ok) throw new Error('Failed to update page');
+        return res.json();
+      } 
+      // Otherwise create a new page
+      else {
+        const res = await fetch('/api/admin/pages', {
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('Failed to create page');
+        return res.json();
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/pages'] })
@@ -118,7 +132,10 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold">
-          {language === 'vi' ? 'Chỉnh sửa trang' : 'Edit Page'}
+          {page
+            ? language === 'vi' ? 'Chỉnh sửa trang' : 'Edit Page'
+            : language === 'vi' ? 'Tạo trang mới' : 'Create New Page'
+          }
         </h1>
       </div>
 
@@ -131,7 +148,7 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
             <Input 
               id="title_vi" 
               name="title_vi" 
-              defaultValue={page.title_vi}
+              defaultValue={page?.title_vi || ''}
               required 
             />
           </div>
@@ -142,7 +159,7 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
             <Input 
               id="title_en" 
               name="title_en" 
-              defaultValue={page.title_en}
+              defaultValue={page?.title_en || ''}
               required 
             />
           </div>
@@ -155,7 +172,7 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
               {language === 'vi' ? 'Loại trang' : 'Page Type'}
             </Label>
             <RadioGroup 
-              defaultValue={page.pageType || 'regular'} 
+              defaultValue={pageType} 
               name="pageType" 
               className="flex flex-col space-y-1"
               onValueChange={handlePageTypeChange}
@@ -226,10 +243,10 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
                 type="hidden" 
                 name="content_vi" 
                 id="content_vi" 
-                value={page.content_vi} 
+                value={page?.content_vi || ''} 
               />
               <RichTextEditor
-                content={page.content_vi}
+                content={page?.content_vi || ''}
                 onChange={(html) => {
                   const input = document.getElementById('content_vi') as HTMLInputElement
                   if (input) input.value = html
@@ -245,10 +262,10 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
                 type="hidden" 
                 name="content_en" 
                 id="content_en" 
-                value={page.content_en} 
+                value={page?.content_en || ''} 
               />
               <RichTextEditor
-                content={page.content_en}
+                content={page?.content_en || ''}
                 onChange={(html) => {
                   const input = document.getElementById('content_en') as HTMLInputElement
                   if (input) input.value = html
@@ -262,7 +279,7 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
               <Switch 
                 id="published" 
                 name="published"
-                defaultChecked={page.published ?? true}
+                defaultChecked={page?.published ?? true}
               />
               <Label htmlFor="published">
                 {language === 'vi' ? 'Xuất bản' : 'Published'}
@@ -285,7 +302,10 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
             type="submit"
             disabled={updateMutation.isPending}
           >
-            {language === 'vi' ? 'Lưu thay đổi' : 'Save Changes'}
+            {page
+              ? language === 'vi' ? 'Lưu thay đổi' : 'Save Changes'
+              : language === 'vi' ? 'Tạo trang' : 'Create Page'
+            }
           </Button>
         </div>
       </form>

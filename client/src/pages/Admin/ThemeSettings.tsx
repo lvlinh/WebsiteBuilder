@@ -5,6 +5,7 @@ import { useI18n } from '@/hooks/use-i18n';
 import { useAdmin } from '@/hooks/use-admin';
 import ThemeConfigurator from '@/components/Admin/ThemeConfigurator';
 import { PageHeader, PageHeaderDescription } from '@/components/ui/page-header';
+import DirectThemeReset from '@/components/DirectThemeReset';
 
 export default function ThemeSettings() {
   const { admin, isLoading, isAdmin } = useAdmin();
@@ -49,6 +50,21 @@ export default function ThemeSettings() {
       
       <div className="mt-8">
         <ThemeConfigurator />
+        
+        {/* Theme Reset Tool for Admins */}
+        <div className="mt-10 border border-border rounded-md p-6 bg-card">
+          <h3 className="text-lg font-semibold mb-4">
+            {language === 'vi' ? 'Công cụ đặt lại giao diện' : 'Theme Reset Tools'}
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            {language === 'vi' 
+              ? 'Nếu giao diện gặp sự cố, sử dụng công cụ này để đặt lại về màu SJJS mặc định (#8B4749).' 
+              : 'If the theme is not displaying correctly, use this tool to reset to the default SJJS color (#8B4749).'}
+          </p>
+          <div className="mt-2">
+            <DirectThemeReset />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -87,10 +87,6 @@ function App() {
             <Toaster />
             {/* ThemeColorFix injects CSS to enforce exact brand color */}
             <ThemeColorFix />
-            {/* Fixed position theme reset tool - always accessible */}
-            <div className="fixed bottom-4 right-4 z-50">
-              <DirectThemeReset />
-            </div>
           </AdminProvider>
         </ThemeProvider>
       </I18nProvider>

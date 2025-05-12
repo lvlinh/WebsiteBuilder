@@ -14,13 +14,6 @@ export interface Theme {
   contentWidth?: ContentWidth;
 }
 
-// Internal utility function to get the content width class based on theme settings
-const getWidthClasses = (contentWidth?: ContentWidth) => {
-  return contentWidth === 'normal' ? 'container max-w-6xl' : 
-         contentWidth === 'wide' ? 'container max-w-7xl' : 
-         'container-fluid max-w-none';
-};
-
 export interface ThemeContextType {
   theme: Theme;
   setTheme: (newTheme: Partial<Theme>) => void;
@@ -30,7 +23,7 @@ export interface ThemeContextType {
 
 const defaultTheme: Theme = {
   primary: 'hsl(351, 32%, 42%)', // SJJS primary color
-  mode: 'light' as ThemeMode,
+  mode: 'light',
   variant: 'professional',
   radius: 0.5,
   contentWidth: 'normal'
@@ -41,15 +34,11 @@ const ThemeContext = createContext<ThemeContextType>({
   theme: defaultTheme,
   setTheme: () => {},
   resolvedTheme: 'light',
-  getContentWidthClass: (baseClasses?: string) => 
-    cn(
-      baseClasses || "mx-auto px-4 sm:px-6 lg:px-8",
-      getWidthClasses(defaultTheme.contentWidth)
-    )
+  getContentWidthClass: () => "container mx-auto px-4 sm:px-6 lg:px-8"
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setThemeState] = useState(defaultTheme);
+  const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<ThemeMode>('light');
 
   // Load theme from localStorage on initial load
@@ -81,6 +70,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       document.documentElement.classList.toggle('dark', theme.mode === 'dark');
     }
     
+    // Apply CSS variable for primary color
+    document.documentElement.style.setProperty('--primary', theme.primary);
+    document.documentElement.style.setProperty('--theme-radius', `${theme.radius || 0.5}rem`);
+    
     // Save to localStorage
     localStorage.setItem('theme', JSON.stringify(theme));
   }, [theme]);
@@ -101,18 +94,22 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }, [theme.mode]);
 
   const setTheme = (newTheme: Partial<Theme>) => {
-    setThemeState({
-      ...theme,
+    setThemeState(prevTheme => ({
+      ...prevTheme,
       ...newTheme
-    });
+    }));
   };
 
-  // Helper function to get content width 
-  const getContentWidthClassFn = (baseClasses?: string) => {
-    return cn(
-      baseClasses || "mx-auto px-4 sm:px-6 lg:px-8",
-      getWidthClasses(theme.contentWidth)
-    );
+  const getContentWidthClass = (baseClasses?: string) => {
+    const base = baseClasses || "mx-auto px-4 sm:px-6 lg:px-8";
+    
+    if (theme.contentWidth === 'normal') {
+      return cn(base, "container max-w-6xl");
+    } else if (theme.contentWidth === 'wide') {
+      return cn(base, "container max-w-7xl");
+    } else {
+      return cn(base, "container-fluid max-w-none");
+    }
   };
 
   return (
@@ -120,11 +117,17 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       theme, 
       setTheme, 
       resolvedTheme,
-      getContentWidthClass: getContentWidthClassFn 
+      getContentWidthClass
     }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = () => useContext(ThemeContext);
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
+  return context;
+};

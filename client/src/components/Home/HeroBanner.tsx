@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react"
 import useEmblaCarousel from "embla-carousel-react"
 import { useQuery } from "@tanstack/react-query"
-import { useI18n } from "@/lib/i18n"
+import { useI18n } from "@/hooks/use-i18n" // Updated import path
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { BannerSlide } from "@shared/schema"
@@ -12,6 +12,12 @@ export default function HeroBanner() {
 
   const { data: slides = [], isLoading } = useQuery<BannerSlide[]>({
     queryKey: ['/api/banner-slides'],
+    queryFn: async () => {
+      const response = await fetch('/api/banner-slides');
+      const data = await response.json();
+      console.log('Banner slides data:', data);
+      return data;
+    },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   })
 

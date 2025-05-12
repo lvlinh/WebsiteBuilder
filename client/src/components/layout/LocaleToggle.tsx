@@ -1,16 +1,20 @@
-import { Button } from "@/components/ui/button"
-import { useI18n } from "@/lib/i18n"
+import React from 'react';
+import { useI18n } from '@/hooks/use-i18n';
 
 export default function LocaleToggle() {
-  const { language, setLanguage } = useI18n()
-  
+  const { language, changeLanguage } = useI18n();
+
+  const toggleLanguage = () => {
+    changeLanguage(language === 'vi' ? 'en' : 'vi');
+  };
+
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
+    <button
+      onClick={toggleLanguage}
+      className="flex items-center justify-center px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors"
+      aria-label={language === 'vi' ? 'Switch to English' : 'Chuyển sang tiếng Việt'}
     >
-      {language === 'vi' ? 'EN' : 'VI'}
-    </Button>
-  )
+      <span className="font-medium">{language === 'vi' ? 'EN' : 'VI'}</span>
+    </button>
+  );
 }

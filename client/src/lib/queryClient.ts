@@ -1,57 +1,71 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
+// This is a temporary implementation until we fully implement the query client
 
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
-  }
-}
-
-export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
-
-  await throwIfResNotOk(res);
-  return res;
-}
-
-type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
-  on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
-
-    await throwIfResNotOk(res);
-    return await res.json();
-  };
+import { QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
-    },
-    mutations: {
-      retry: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
     },
   },
 });
+
+// A basic API request function with proper error handling
+export async function apiRequest(
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  endpoint: string,
+  data?: unknown
+) {
+  const options: RequestInit = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  };
+
+  if (data) {
+    options.body = JSON.stringify(data);
+  }
+
+  const response = await fetch(endpoint, options);
+
+  if (!response.ok) {
+    let errorMessage = 'An error occurred';
+    
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch (e) {
+      // If parsing JSON fails, use the status text
+      errorMessage = response.statusText || errorMessage;
+    }
+    
+    const error = new Error(errorMessage);
+    throw error;
+  }
+
+  return response;
+}
+
+// Helper function to create query functions
+export function getQueryFn({ on401 = 'throw' }: { on401?: 'throw' | 'returnNull' } = {}) {
+  return async ({ queryKey }: { queryKey: string[] }) => {
+    try {
+      const endpoint = queryKey[0];
+      const response = await apiRequest('GET', endpoint);
+      
+      if (response.status === 204) {
+        return null;
+      }
+      
+      return await response.json();
+    } catch (error) {
+      if (on401 === 'returnNull' && error instanceof Response && error.status === 401) {
+        return null;
+      }
+      throw error;
+    }
+  };
+}

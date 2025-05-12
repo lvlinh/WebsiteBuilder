@@ -28,17 +28,16 @@ import BannerSlides from "@/pages/Admin/BannerSlides"
 import ThemeSettings from "@/pages/Admin/ThemeSettings"
 
 function Router() {
-  const { theme, isDarkMode } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
   
   // Determine content width CSS class based on theme settings
   const contentWidthClass = 
     theme.contentWidth === 'narrow' ? 'max-w-4xl' : 
     theme.contentWidth === 'wide' ? 'max-w-7xl' : 
-    theme.contentWidth === 'full' ? 'max-w-none px-4' : 
-    'max-w-6xl'; // Default 'normal' width
+    'max-w-6xl'; // Default 'regular' width
 
   return (
-    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`min-h-screen flex flex-col ${resolvedTheme === 'dark' ? 'dark' : ''}`}>
       {/* Always visible header */}
       <Header />
       

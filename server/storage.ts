@@ -8,12 +8,14 @@ import { admins, pages, articles, news, students, courses, enrollments, events, 
   type Enrollment, type InsertEnrollment,
   type Event, type InsertEvent,
   type EventRegistration, type InsertEventRegistration,
-  type BannerSlide, type InsertBannerSlide,
+  bannerSlides, type BannerSlide, type InsertBannerSlide,
   articleCategories, contentBlocks, quickLinks,
   type ArticleCategory, type InsertArticleCategory,
   type ContentBlock, type InsertContentBlock,
   type QuickLink, type InsertQuickLink
 } from "@shared/schema";
+import { db } from './db';
+import { eq, and, gte } from 'drizzle-orm';
 
 export interface IStorage {
   // Admin methods
@@ -641,4 +643,433 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database Storage implementation
+export class DatabaseStorage implements IStorage {
+  async getAdmins(): Promise<Admin[]> {
+    return await db.select().from(admins);
+  }
+
+  async getAdmin(id: number): Promise<Admin | undefined> {
+    const [admin] = await db.select().from(admins).where(eq(admins.id, id));
+    return admin;
+  }
+
+  async getAdminByEmail(email: string): Promise<Admin | undefined> {
+    const [admin] = await db.select().from(admins).where(eq(admins.email, email));
+    return admin;
+  }
+
+  async createAdmin(admin: InsertAdmin): Promise<Admin> {
+    const [created] = await db.insert(admins).values(admin).returning();
+    return created;
+  }
+
+  async updateAdmin(id: number, adminData: Partial<InsertAdmin>): Promise<Admin | undefined> {
+    const [updated] = await db.update(admins).set(adminData).where(eq(admins.id, id)).returning();
+    return updated;
+  }
+
+  // Pages methods
+  async getPages(): Promise<Page[]> {
+    return await db.select().from(pages);
+  }
+
+  async getPage(id: number): Promise<Page | undefined> {
+    const [page] = await db.select().from(pages).where(eq(pages.id, id));
+    return page;
+  }
+
+  async getPageBySlug(slug: string): Promise<Page | undefined> {
+    const [page] = await db.select().from(pages).where(eq(pages.slug, slug));
+    return page;
+  }
+
+  async createPage(page: InsertPage): Promise<Page> {
+    const [created] = await db.insert(pages).values(page).returning();
+    return created;
+  }
+
+  async updatePage(id: number, pageData: Partial<InsertPage>): Promise<Page | undefined> {
+    const [updated] = await db.update(pages).set(pageData).where(eq(pages.id, id)).returning();
+    return updated;
+  }
+
+  async deletePage(id: number): Promise<boolean> {
+    const result = await db.delete(pages).where(eq(pages.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Banner Slides methods
+  async getBannerSlides(): Promise<BannerSlide[]> {
+    return await db.select().from(bannerSlides).orderBy(bannerSlides.order);
+  }
+
+  async createBannerSlide(slide: InsertBannerSlide): Promise<BannerSlide> {
+    const [created] = await db.insert(bannerSlides).values(slide).returning();
+    return created;
+  }
+
+  async updateBannerSlide(id: number, slideData: Partial<InsertBannerSlide>): Promise<BannerSlide | undefined> {
+    const [updated] = await db.update(bannerSlides).set(slideData).where(eq(bannerSlides.id, id)).returning();
+    return updated;
+  }
+
+  async deleteBannerSlide(id: number): Promise<boolean> {
+    const result = await db.delete(bannerSlides).where(eq(bannerSlides.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Articles methods
+  async getArticles(): Promise<Article[]> {
+    return await db.select().from(articles);
+  }
+
+  async getArticle(id: number): Promise<Article | undefined> {
+    const [article] = await db.select().from(articles).where(eq(articles.id, id));
+    return article;
+  }
+
+  async createArticle(article: InsertArticle): Promise<Article> {
+    const [created] = await db.insert(articles).values(article).returning();
+    return created;
+  }
+
+  async updateArticle(id: number, articleData: Partial<InsertArticle>): Promise<Article | undefined> {
+    const [updated] = await db.update(articles).set(articleData).where(eq(articles.id, id)).returning();
+    return updated;
+  }
+
+  async deleteArticle(id: number): Promise<boolean> {
+    const result = await db.delete(articles).where(eq(articles.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getArticleBySlug(slug: string): Promise<Article | undefined> {
+    const [article] = await db.select().from(articles).where(eq(articles.slug, slug));
+    return article;
+  }
+
+  // News methods
+  async getNews(): Promise<News[]> {
+    return await db.select().from(news);
+  }
+
+  async getNewsItem(id: number): Promise<News | undefined> {
+    const [item] = await db.select().from(news).where(eq(news.id, id));
+    return item;
+  }
+
+  async createNewsItem(newsItem: InsertNews): Promise<News> {
+    const [created] = await db.insert(news).values(newsItem).returning();
+    return created;
+  }
+
+  async updateNewsItem(id: number, newsData: Partial<InsertNews>): Promise<News | undefined> {
+    const [updated] = await db.update(news).set(newsData).where(eq(news.id, id)).returning();
+    return updated;
+  }
+
+  async deleteNewsItem(id: number): Promise<boolean> {
+    const result = await db.delete(news).where(eq(news.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Students methods
+  async getStudents(): Promise<Student[]> {
+    return await db.select().from(students);
+  }
+
+  async getStudent(id: number): Promise<Student | undefined> {
+    const [student] = await db.select().from(students).where(eq(students.id, id));
+    return student;
+  }
+
+  async getStudentByEmail(email: string): Promise<Student | undefined> {
+    const [student] = await db.select().from(students).where(eq(students.email, email));
+    return student;
+  }
+
+  async createStudent(student: InsertStudent): Promise<Student> {
+    const [created] = await db.insert(students).values(student).returning();
+    return created;
+  }
+
+  async updateStudent(id: number, studentData: Partial<InsertStudent>): Promise<Student | undefined> {
+    const [updated] = await db.update(students).set(studentData).where(eq(students.id, id)).returning();
+    return updated;
+  }
+
+  // Courses methods
+  async getCourses(): Promise<Course[]> {
+    return await db.select().from(courses);
+  }
+
+  async getCourse(id: number): Promise<Course | undefined> {
+    const [course] = await db.select().from(courses).where(eq(courses.id, id));
+    return course;
+  }
+
+  async createCourse(course: InsertCourse): Promise<Course> {
+    const [created] = await db.insert(courses).values(course).returning();
+    return created;
+  }
+
+  async updateCourse(id: number, courseData: Partial<InsertCourse>): Promise<Course | undefined> {
+    const [updated] = await db.update(courses).set(courseData).where(eq(courses.id, id)).returning();
+    return updated;
+  }
+
+  // Enrollments methods
+  async getEnrollments(studentId: number): Promise<Enrollment[]> {
+    return await db.select()
+      .from(enrollments)
+      .where(eq(enrollments.studentId, studentId));
+  }
+
+  async createEnrollment(enrollment: InsertEnrollment): Promise<Enrollment> {
+    const [created] = await db.insert(enrollments).values(enrollment).returning();
+    return created;
+  }
+
+  async updateEnrollment(id: number, enrollmentData: Partial<InsertEnrollment>): Promise<Enrollment | undefined> {
+    const [updated] = await db.update(enrollments).set(enrollmentData).where(eq(enrollments.id, id)).returning();
+    return updated;
+  }
+
+  // Events methods
+  async getEvents(): Promise<Event[]> {
+    return await db.select().from(events);
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    const [event] = await db.select().from(events).where(eq(events.id, id));
+    return event;
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const [created] = await db.insert(events).values(event).returning();
+    return created;
+  }
+
+  async updateEvent(id: number, eventData: Partial<InsertEvent>): Promise<Event | undefined> {
+    const [updated] = await db.update(events).set(eventData).where(eq(events.id, id)).returning();
+    return updated;
+  }
+
+  async getUpcomingEvents(): Promise<Event[]> {
+    const now = new Date();
+    return await db.select()
+      .from(events)
+      .where(gte(events.date, now))
+      .orderBy(events.date);
+  }
+
+  // Event Registrations methods
+  async getEventRegistrations(eventId: number): Promise<EventRegistration[]> {
+    return await db.select()
+      .from(eventRegistrations)
+      .where(eq(eventRegistrations.eventId, eventId));
+  }
+
+  async getStudentEventRegistrations(studentId: number): Promise<EventRegistration[]> {
+    return await db.select()
+      .from(eventRegistrations)
+      .where(eq(eventRegistrations.studentId, studentId));
+  }
+
+  async createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration> {
+    const [created] = await db.insert(eventRegistrations).values(registration).returning();
+    return created;
+  }
+
+  async updateEventRegistration(id: number, regData: Partial<InsertEventRegistration>): Promise<EventRegistration | undefined> {
+    const [updated] = await db.update(eventRegistrations).set(regData).where(eq(eventRegistrations.id, id)).returning();
+    return updated;
+  }
+
+  async getEventRegistrationStatus(eventId: number, studentId: number): Promise<EventRegistration | undefined> {
+    const [registration] = await db.select()
+      .from(eventRegistrations)
+      .where(and(
+        eq(eventRegistrations.eventId, eventId),
+        eq(eventRegistrations.studentId, studentId)
+      ));
+    return registration;
+  }
+
+  // Article Categories methods
+  async getArticleCategories(): Promise<ArticleCategory[]> {
+    return await db.select().from(articleCategories);
+  }
+
+  async getArticleCategory(id: number): Promise<ArticleCategory | undefined> {
+    const [category] = await db.select().from(articleCategories).where(eq(articleCategories.id, id));
+    return category;
+  }
+
+  async getArticleCategoryBySlug(slug: string): Promise<ArticleCategory | undefined> {
+    const [category] = await db.select().from(articleCategories).where(eq(articleCategories.slug, slug));
+    return category;
+  }
+
+  async createArticleCategory(category: InsertArticleCategory): Promise<ArticleCategory> {
+    const [created] = await db.insert(articleCategories).values(category).returning();
+    return created;
+  }
+
+  async updateArticleCategory(id: number, categoryData: Partial<InsertArticleCategory>): Promise<ArticleCategory | undefined> {
+    const [updated] = await db.update(articleCategories).set(categoryData).where(eq(articleCategories.id, id)).returning();
+    return updated;
+  }
+
+  async deleteArticleCategory(id: number): Promise<boolean> {
+    const result = await db.delete(articleCategories).where(eq(articleCategories.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Content Blocks methods - using memory storage as fallback
+  private contentBlocksMap: Map<number, ContentBlock> = new Map();
+  private contentBlockId: number = 1;
+
+  async getContentBlocks(): Promise<ContentBlock[]> {
+    try {
+      // Try to get content blocks from database, but may fail due to schema mismatch
+      const dbBlocks = await db.select().from(contentBlocks);
+      return dbBlocks;
+    } catch (error) {
+      console.warn("Using in-memory content blocks due to schema mismatch:", error);
+      return Array.from(this.contentBlocksMap.values());
+    }
+  }
+
+  async getContentBlock(id: number): Promise<ContentBlock | undefined> {
+    try {
+      const [block] = await db.select().from(contentBlocks).where(eq(contentBlocks.id, id));
+      return block;
+    } catch (error) {
+      console.warn("Using in-memory content block lookup due to schema mismatch:", error);
+      return this.contentBlocksMap.get(id);
+    }
+  }
+
+  async createContentBlock(block: InsertContentBlock): Promise<ContentBlock> {
+    try {
+      const [created] = await db.insert(contentBlocks).values(block).returning();
+      return created;
+    } catch (error) {
+      console.warn("Using in-memory content block creation due to schema mismatch:", error);
+      const id = this.contentBlockId++;
+      const newBlock = {
+        ...block,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as ContentBlock;
+      this.contentBlocksMap.set(id, newBlock);
+      return newBlock;
+    }
+  }
+
+  async updateContentBlock(id: number, blockData: Partial<InsertContentBlock>): Promise<ContentBlock | undefined> {
+    try {
+      const [updated] = await db.update(contentBlocks).set(blockData).where(eq(contentBlocks.id, id)).returning();
+      return updated;
+    } catch (error) {
+      console.warn("Using in-memory content block update due to schema mismatch:", error);
+      const existing = this.contentBlocksMap.get(id);
+      if (!existing) return undefined;
+      
+      const updated = {
+        ...existing,
+        ...blockData,
+        updatedAt: new Date()
+      };
+      this.contentBlocksMap.set(id, updated);
+      return updated;
+    }
+  }
+
+  async deleteContentBlock(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(contentBlocks).where(eq(contentBlocks.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.warn("Using in-memory content block deletion due to schema mismatch:", error);
+      return this.contentBlocksMap.delete(id);
+    }
+  }
+
+  // Quick Links methods - with fallback
+  private quickLinksMap: Map<number, QuickLink> = new Map();
+  private quickLinkId: number = 1;
+
+  async getQuickLinks(): Promise<QuickLink[]> {
+    try {
+      return await db.select().from(quickLinks).orderBy(quickLinks.order);
+    } catch (error) {
+      console.warn("Using in-memory quick links due to schema mismatch:", error);
+      return Array.from(this.quickLinksMap.values()).sort((a, b) => a.order - b.order);
+    }
+  }
+
+  async getQuickLink(id: number): Promise<QuickLink | undefined> {
+    try {
+      const [link] = await db.select().from(quickLinks).where(eq(quickLinks.id, id));
+      return link;
+    } catch (error) {
+      console.warn("Using in-memory quick link lookup due to schema mismatch:", error);
+      return this.quickLinksMap.get(id);
+    }
+  }
+
+  async createQuickLink(link: InsertQuickLink): Promise<QuickLink> {
+    try {
+      const [created] = await db.insert(quickLinks).values(link).returning();
+      return created;
+    } catch (error) {
+      console.warn("Using in-memory quick link creation due to schema mismatch:", error);
+      const id = this.quickLinkId++;
+      const newLink = {
+        ...link,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        order: link.order ?? id
+      } as QuickLink;
+      this.quickLinksMap.set(id, newLink);
+      return newLink;
+    }
+  }
+
+  async updateQuickLink(id: number, linkData: Partial<InsertQuickLink>): Promise<QuickLink | undefined> {
+    try {
+      const [updated] = await db.update(quickLinks).set(linkData).where(eq(quickLinks.id, id)).returning();
+      return updated;
+    } catch (error) {
+      console.warn("Using in-memory quick link update due to schema mismatch:", error);
+      const existing = this.quickLinksMap.get(id);
+      if (!existing) return undefined;
+      
+      const updated = {
+        ...existing,
+        ...linkData,
+        updatedAt: new Date()
+      };
+      this.quickLinksMap.set(id, updated);
+      return updated;
+    }
+  }
+
+  async deleteQuickLink(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(quickLinks).where(eq(quickLinks.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.warn("Using in-memory quick link deletion due to schema mismatch:", error);
+      return this.quickLinksMap.delete(id);
+    }
+  }
+}
+
+// Use database storage
+export const storage = new DatabaseStorage();

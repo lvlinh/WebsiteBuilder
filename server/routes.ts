@@ -76,10 +76,24 @@ async function initializeAdminUser() {
 
 // Add this function after initializeAdminUser
 async function initializeDefaultPages() {
-  const pages = await storage.getPages();
-  if (pages.length === 0) {
-    // Create main sections first
-    const mainSections = [
+  try {
+    // Check if we have pages with the needed slugs already
+    const existingSlugs = new Set();
+    let pages = [];
+    
+    try {
+      pages = await storage.getPages();
+      for (const page of pages) {
+        existingSlugs.add(page.slug);
+      }
+    } catch (err) {
+      console.error("Error getting existing pages:", err);
+    }
+    
+    // Only initialize pages if we're missing the essential ones
+    if (pages.length === 0 || (!existingSlugs.has("gioi-thieu") && !existingSlugs.has("tuyen-sinh"))) {
+      // Create main sections first
+      const mainSections = [
       {
         slug: "gioi-thieu",
         title_vi: "Giới Thiệu",
@@ -154,9 +168,27 @@ async function initializeDefaultPages() {
 
     // Create main sections and store their IDs
     const sectionIds = {};
+    
+    // First, find existing sections
     for (const section of mainSections) {
-      const createdSection = await storage.createPage(section);
-      sectionIds[section.slug] = createdSection.id;
+      if (existingSlugs.has(section.slug)) {
+        try {
+          const existingPage = await storage.getPageBySlug(section.slug);
+          if (existingPage) {
+            sectionIds[section.slug] = existingPage.id;
+            continue;
+          }
+        } catch (err) {
+          console.error(`Error finding page with slug ${section.slug}:`, err);
+        }
+      }
+      
+      try {
+        const createdSection = await storage.createPage(section);
+        sectionIds[section.slug] = createdSection.id;
+      } catch (err) {
+        console.error(`Error creating section ${section.slug}:`, err);
+      }
     }
 
     // Create subsections with parent IDs
@@ -438,16 +470,30 @@ async function initializeDefaultPages() {
     ];
 
     for (const subsection of subsections) {
-      await storage.createPage(subsection);
+      // Skip if this page already exists
+      if (existingSlugs.has(subsection.slug)) {
+        continue;
+      }
+      
+      try {
+        await storage.createPage(subsection);
+      } catch (err) {
+        console.error(`Error creating subsection ${subsection.slug}:`, err);
+      }
     }
+    } // Close the if block
+  } catch (error) {
+    console.error("Error initializing default pages:", error);
   }
 }
 
 // Add after the other initialization functions
 async function initializeSampleBannerSlides() {
-  const slides = await storage.getBannerSlides();
-  if (slides.length === 0) {
-    await storage.createBannerSlide({
+  try {
+    const slides = await storage.getBannerSlides();
+    if (slides.length === 0) {
+      try {
+        await storage.createBannerSlide({
       imageUrl: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f",
       title_vi: "Chào mừng đến với SJJS",
       title_en: "Welcome to SJJS",
@@ -488,202 +534,256 @@ async function initializeSampleBannerSlides() {
       order: 3,
       active: true
     });
+      } catch (err) {
+        console.error("Error creating banner slide:", err);
+      }
+    }
+  } catch (error) {
+    console.error("Error initializing sample banner slides:", error);
   }
 }
 
 // Add this function after other initialization functions
 async function initializeSampleArticles() {
-  const articles = await storage.getArticles();
-  if (articles.length === 0) {
-    // Get all categories to use in article creation
-    const categories = await storage.getArticleCategories();
+  try {
+    const articles = await storage.getArticles();
+    if (articles.length === 0) {
+      try {
+        // Get all categories to use in article creation
+        const categories = await storage.getArticleCategories();
+        
+        // Function to create an article with proper schema fields
+        const createSampleArticle = async (index, categorySlug) => {
+          try {
+            // Find category by slug
+            const category = categories.find(c => c.slug === categorySlug);
+            if (!category) return;
+            
+            const categoryId = category.id;
+            const isFeatured = index % 7 === 0; // Make some articles featured
+            
+            const randomDate = new Date();
+            randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 60)); // Random date within last 60 days
+            
+            // Create unique slugs by combining category and index
+            const slug = `${categorySlug}-article-${index}`;
+            
+            await storage.createArticle({
+              slug,
+              title_vi: `Bài viết ${index} của danh mục ${category.title_vi}`,
+              title_en: `Article ${index} of category ${category.title_en}`,
+              summary_vi: `Tóm tắt bài viết ${index} thuộc danh mục ${category.title_vi}`,
+              summary_en: `Summary of article ${index} in the ${category.title_en} category`,
+              content_vi: `<p>Đây là nội dung bài viết ${index} thuộc danh mục ${category.title_vi}. Bài viết này được tạo để kiểm tra phân trang và tính năng liên kết danh mục.</p><p>Nội dung chi tiết của bài viết sẽ hiển thị ở đây, bao gồm nhiều đoạn văn để làm cho bài viết trông đầy đủ và thực tế hơn.</p><p>Đối với bài viết này, chúng tôi đang kiểm tra khả năng hiển thị nội dung dài, định dạng HTML, và cách các liên kết giữa bài viết và danh mục hoạt động.</p>`,
+              content_en: `<p>This is the content of article ${index} in the ${category.title_en} category. This article was created to test pagination and category linking functionality.</p><p>The detailed content of the article will be displayed here, including multiple paragraphs to make the article look more complete and realistic.</p><p>For this article, we are testing the ability to display long content, HTML formatting, and how links between articles and categories work.</p>`,
+              categoryId,
+              featured: isFeatured,
+              published: true,
+              author: "Admin SJJS"
+            });
+          } catch (err) {
+            console.error(`Error creating article for ${categorySlug}:`, err);
+          }
+        };
     
-    // Function to create an article with proper schema fields
-    const createSampleArticle = async (index, categorySlug) => {
-      // Find category by slug
-      const category = categories.find(c => c.slug === categorySlug);
-      if (!category) return;
-      
-      const categoryId = category.id;
-      const isFeatured = index % 7 === 0; // Make some articles featured
-      
-      const randomDate = new Date();
-      randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 60)); // Random date within last 60 days
-      
-      // Create unique slugs by combining category and index
-      const slug = `${categorySlug}-article-${index}`;
-      
-      await storage.createArticle({
-        slug,
-        title_vi: `Bài viết ${index} của danh mục ${category.title_vi}`,
-        title_en: `Article ${index} of category ${category.title_en}`,
-        summary_vi: `Tóm tắt bài viết ${index} thuộc danh mục ${category.title_vi}`,
-        summary_en: `Summary of article ${index} in the ${category.title_en} category`,
-        content_vi: `<p>Đây là nội dung bài viết ${index} thuộc danh mục ${category.title_vi}. Bài viết này được tạo để kiểm tra phân trang và tính năng liên kết danh mục.</p><p>Nội dung chi tiết của bài viết sẽ hiển thị ở đây, bao gồm nhiều đoạn văn để làm cho bài viết trông đầy đủ và thực tế hơn.</p><p>Đối với bài viết này, chúng tôi đang kiểm tra khả năng hiển thị nội dung dài, định dạng HTML, và cách các liên kết giữa bài viết và danh mục hoạt động.</p>`,
-        content_en: `<p>This is the content of article ${index} in the ${category.title_en} category. This article was created to test pagination and category linking functionality.</p><p>The detailed content of the article will be displayed here, including multiple paragraphs to make the article look more complete and realistic.</p><p>For this article, we are testing the ability to display long content, HTML formatting, and how links between articles and categories work.</p>`,
-        thumbnail: `https://source.unsplash.com/random/800x600?${categorySlug}`,
-        categoryId,
-        featured: isFeatured,
-        published: true,
-        author: "Admin SJJS"
-      });
-    };
+        // Create 5 articles for each category (60 total articles for 12 categories)
+        for (const category of categories) {
+          for (let i = 1; i <= 5; i++) {
+            await createSampleArticle((categories.indexOf(category) * 5) + i, category.slug);
+          }
+        }
     
-    // Create 5 articles for each category (60 total articles for 12 categories)
-    for (const category of categories) {
-      for (let i = 1; i <= 5; i++) {
-        await createSampleArticle((categories.indexOf(category) * 5) + i, category.slug);
+        // Add a few special featured articles
+        try {
+          await storage.createArticle({
+            slug: "welcome-to-sjjs-2025",
+            title_vi: "Chào mừng đến với SJJS năm học 2025",
+            title_en: "Welcome to SJJS Academic Year 2025",
+            summary_vi: "Thông điệp chào mừng từ Ban Giám đốc Học viện",
+            summary_en: "Welcome message from the Institute's Board of Directors",
+            content_vi: "<p>Kính gửi quý thầy cô, các sinh viên và cộng đồng SJJS,</p><p>Nhân dịp khởi đầu năm học mới 2025-2026, thay mặt Ban Giám đốc Học viện, tôi xin gửi lời chào mừng nồng nhiệt và lời chúc tốt đẹp nhất đến tất cả các thành viên của cộng đồng SJJS. Một năm học với nhiều cơ hội và thách thức mới đang chờ đón chúng ta.</p>",
+            content_en: "<p>Dear faculty members, students, and SJJS community,</p><p>On the occasion of the beginning of the new academic year 2025-2026, on behalf of the Institute's Board of Directors, I would like to extend my warmest welcome and best wishes to all members of the SJJS community. A year with many new opportunities and challenges awaits us.</p>",
+            categoryId: categories.find(c => c.slug === "announcement")?.id,
+            featured: true,
+            published: true,
+            author: "Ban Giám đốc / Board of Directors"
+          });
+
+          await storage.createArticle({
+            slug: "theology-symposium-2025",
+            title_vi: "Hội thảo Thần học: Đối thoại Liên tôn trong Thế giới Hiện đại",
+            title_en: "Theology Symposium: Interfaith Dialogue in the Modern World",
+            summary_vi: "Hội thảo chuyên đề về vai trò của đối thoại liên tôn",
+            summary_en: "Symposium on the role of interfaith dialogue",
+            content_vi: "<p>Học viện SJJS tổ chức hội thảo chuyên đề về đối thoại liên tôn trong thế giới hiện đại. Hội thảo sẽ diễn ra từ ngày 15-17 tháng 8 năm 2025 tại Học viện SJJS.</p>",
+            content_en: "<p>SJJS Institute is organizing a symposium on interfaith dialogue in the modern world. The symposium will take place from August 15-17, 2025, at the SJJS Institute.</p>",
+            categoryId: categories.find(c => c.slug === "academic")?.id,
+            featured: true,
+            published: true,
+            author: "Ban Học thuật / Academic Board"
+          });
+        } catch (error) {
+          console.error("Error creating special featured articles:", error);
+        }
+      } catch (error) {
+        console.error("Error initializing article categories:", error);
       }
     }
-    
-    // Add a few special featured articles
-    await storage.createArticle({
-      slug: "welcome-to-sjjs-2025",
-      title_vi: "Chào mừng đến với SJJS năm học 2025",
-      title_en: "Welcome to SJJS Academic Year 2025",
-      summary_vi: "Thông điệp chào mừng từ Ban Giám đốc Học viện",
-      summary_en: "Welcome message from the Institute's Board of Directors",
-      content_vi: "<p>Kính gửi quý thầy cô, các sinh viên và cộng đồng SJJS,</p><p>Nhân dịp khởi đầu năm học mới 2025-2026, thay mặt Ban Giám đốc Học viện, tôi xin gửi lời chào mừng nồng nhiệt và lời chúc tốt đẹp nhất đến tất cả các thành viên của cộng đồng SJJS. Một năm học với nhiều cơ hội và thách thức mới đang chờ đón chúng ta.</p>",
-      content_en: "<p>Dear faculty members, students, and SJJS community,</p><p>On the occasion of the beginning of the new academic year 2025-2026, on behalf of the Institute's Board of Directors, I would like to extend my warmest welcome and best wishes to all members of the SJJS community. A year with many new opportunities and challenges awaits us.</p>",
-      thumbnail: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f",
-      categoryId: categories.find(c => c.slug === "announcement")?.id,
-      featured: true,
-      published: true,
-      author: "Ban Giám đốc / Board of Directors"
-    });
-
-    await storage.createArticle({
-      slug: "theology-symposium-2025",
-      title_vi: "Hội thảo Thần học: Đối thoại Liên tôn trong Thế giới Hiện đại",
-      title_en: "Theology Symposium: Interfaith Dialogue in the Modern World",
-      summary_vi: "Hội thảo chuyên đề về vai trò của đối thoại liên tôn",
-      summary_en: "Symposium on the role of interfaith dialogue",
-      content_vi: "<p>Học viện SJJS tổ chức hội thảo chuyên đề về đối thoại liên tôn trong thế giới hiện đại. Hội thảo sẽ diễn ra từ ngày 15-17 tháng 8 năm 2025 tại Học viện SJJS.</p>",
-      content_en: "<p>SJJS Institute is organizing a symposium on interfaith dialogue in the modern world. The symposium will take place from August 15-17, 2025, at the SJJS Institute.</p>",
-      thumbnail: "https://images.unsplash.com/photo-1507692049790-de58290a4334",
-      categoryId: categories.find(c => c.slug === "academic")?.id,
-      featured: true,
-      published: true,
-      author: "Ban Học thuật / Academic Board"
-    });
+  } catch (error) {
+    console.error("Error initializing sample articles:", error);
   }
 }
 
 // Initialize sample content blocks and quick links
 async function initializeSampleContent() {
-  // Initialize content blocks
-  const contentBlocks = await storage.getContentBlocks();
-  if (contentBlocks.length === 0) {
-    // Create sample welcome message
-    await storage.createContentBlock({
-      identifier: "home_welcome",
-      title_vi: "Chào mừng đến với SJJS",
-      title_en: "Welcome to SJJS",
-      content_vi: "<p>Chào mừng đến với Học viện Thần học Dòng Tên Saint Joseph, nơi nuôi dưỡng những người lãnh đạo tâm linh và học thuật trong tinh thần Ignatius!</p><p>Chúng tôi cung cấp nền giáo dục toàn diện và xuất sắc mà các sinh viên của chúng tôi cần để phục vụ trong thế giới phức tạp và luôn thay đổi.</p>",
-      content_en: "<p>Welcome to the Saint Joseph Jesuit Seminary, where spiritual and academic leaders are nurtured in the Ignatian tradition!</p><p>We provide the comprehensive and excellent education our students need to serve in a complex and ever-changing world.</p>",
-      type: "rich_text",
-      section: "home",
-      order: 1
-    });
+  try {
+    // Initialize content blocks
+    let contentBlocks = [];
+    try {
+      contentBlocks = await storage.getContentBlocks();
+    } catch (err) {
+      console.error("Error getting content blocks:", err);
+    }
     
-    // Create sample mission statement
-    await storage.createContentBlock({
-      identifier: "home_mission",
-      title_vi: "Sứ mệnh của chúng tôi",
-      title_en: "Our Mission",
-      content_vi: "<p>Học viện Thần học Dòng Tên Saint Joseph cam kết đào tạo các nhà lãnh đạo tâm linh và trí tuệ thông qua giáo dục xuất sắc, nghiên cứu học thuật nghiêm túc và đối thoại liên văn hóa.</p>",
-      content_en: "<p>The Saint Joseph Jesuit Seminary is committed to forming spiritual and intellectual leaders through excellent education, rigorous academic research, and intercultural dialogue.</p>",
-      type: "rich_text",
-      section: "home",
-      order: 2
-    });
-    
-    // Create sample upcoming events section
-    await storage.createContentBlock({
-      identifier: "home_events_intro",
-      title_vi: "Sự kiện sắp tới",
-      title_en: "Upcoming Events",
-      content_vi: "<p>Khám phá các sự kiện và hoạt động sắp tới tại SJJS. Tham gia vào cộng đồng học thuật và tâm linh của chúng tôi!</p>",
-      content_en: "<p>Discover upcoming events and activities at SJJS. Join our academic and spiritual community!</p>",
-      type: "rich_text",
-      section: "home",
-      order: 3
-    });
-    
-    // Create sample news section introduction
-    await storage.createContentBlock({
-      identifier: "home_news_intro",
-      title_vi: "Tin tức mới nhất",
-      title_en: "Latest News",
-      content_vi: "<p>Cập nhật thông tin mới nhất về các hoạt động, thành tựu và sự kiện tại Học viện Thần học Dòng Tên Saint Joseph.</p>",
-      content_en: "<p>Get updated with the latest information about activities, achievements, and events at the Saint Joseph Jesuit Seminary.</p>",
-      type: "rich_text",
-      section: "home",
-      order: 4
-    });
-  }
+    if (contentBlocks.length === 0) {
+      try {
+        // Create sample welcome message
+        await storage.createContentBlock({
+          identifier: "home_welcome",
+          title_vi: "Chào mừng đến với SJJS",
+          title_en: "Welcome to SJJS",
+          content_vi: "<p>Chào mừng đến với Học viện Thần học Dòng Tên Saint Joseph, nơi nuôi dưỡng những người lãnh đạo tâm linh và học thuật trong tinh thần Ignatius!</p><p>Chúng tôi cung cấp nền giáo dục toàn diện và xuất sắc mà các sinh viên của chúng tôi cần để phục vụ trong thế giới phức tạp và luôn thay đổi.</p>",
+          content_en: "<p>Welcome to the Saint Joseph Jesuit Seminary, where spiritual and academic leaders are nurtured in the Ignatian tradition!</p><p>We provide the comprehensive and excellent education our students need to serve in a complex and ever-changing world.</p>",
+          type: "rich_text",
+          section: "home",
+          order: 1
+        });
+        
+        // Create sample mission statement
+        await storage.createContentBlock({
+          identifier: "home_mission",
+          title_vi: "Sứ mệnh của chúng tôi",
+          title_en: "Our Mission",
+          content_vi: "<p>Học viện Thần học Dòng Tên Saint Joseph cam kết đào tạo các nhà lãnh đạo tâm linh và trí tuệ thông qua giáo dục xuất sắc, nghiên cứu học thuật nghiêm túc và đối thoại liên văn hóa.</p>",
+          content_en: "<p>The Saint Joseph Jesuit Seminary is committed to forming spiritual and intellectual leaders through excellent education, rigorous academic research, and intercultural dialogue.</p>",
+          type: "rich_text",
+          section: "home",
+          order: 2
+        });
+        
+        // Create sample upcoming events section
+        await storage.createContentBlock({
+          identifier: "home_events_intro",
+          title_vi: "Sự kiện sắp tới",
+          title_en: "Upcoming Events",
+          content_vi: "<p>Khám phá các sự kiện và hoạt động sắp tới tại SJJS. Tham gia vào cộng đồng học thuật và tâm linh của chúng tôi!</p>",
+          content_en: "<p>Discover upcoming events and activities at SJJS. Join our academic and spiritual community!</p>",
+          type: "rich_text",
+          section: "home",
+          order: 3
+        });
+        
+        // Create sample news section introduction
+        await storage.createContentBlock({
+          identifier: "home_news_intro",
+          title_vi: "Tin tức mới nhất",
+          title_en: "Latest News",
+          content_vi: "<p>Cập nhật thông tin mới nhất về các hoạt động, thành tựu và sự kiện tại Học viện Thần học Dòng Tên Saint Joseph.</p>",
+          content_en: "<p>Get updated with the latest information about activities, achievements, and events at the Saint Joseph Jesuit Seminary.</p>",
+          type: "rich_text",
+          section: "home",
+          order: 4
+        });
+      } catch (err) {
+        console.error("Error creating content blocks:", err);
+      }
+    }
   
-  // Initialize quick links
-  const quickLinks = await storage.getQuickLinks();
-  if (quickLinks.length === 0) {
-    // Create sample quick links
-    await storage.createQuickLink({
-      title_vi: "Tuyển sinh",
-      title_en: "Admissions",
-      url: "/tuyen-sinh",
-      description_vi: "Thông tin tuyển sinh",
-      description_en: "Admissions information",
-      icon: "GraduationCap",
-      order: 1
-    });
-    
-    await storage.createQuickLink({
-      title_vi: "Chương trình học",
-      title_en: "Programs",
-      url: "/dao-tao",
-      description_vi: "Khám phá các chương trình học",
-      description_en: "Explore our educational programs",
-      icon: "BookOpen",
-      order: 2
-    });
-    
-    await storage.createQuickLink({
-      title_vi: "Lịch học",
-      title_en: "Schedule",
-      url: "/dao-tao/lich-hoc",
-      description_vi: "Lịch học và sự kiện",
-      description_en: "Class schedule and events",
-      icon: "Calendar",
-      order: 3
-    });
-    
-    await storage.createQuickLink({
-      title_vi: "Thư viện",
-      title_en: "Library",
-      url: "/tien-ich",
-      description_vi: "Nguồn tài liệu học tập",
-      description_en: "Learning resources",
-      icon: "Library",
-      order: 4
-    });
-    
-    await storage.createQuickLink({
-      title_vi: "Liên hệ",
-      title_en: "Contact",
-      url: "/contact",
-      description_vi: "Thông tin liên hệ",
-      description_en: "Contact information",
-      icon: "Mail",
-      order: 5
-    });
+    // Initialize quick links
+    try {
+      let quickLinks = [];
+      try {
+        quickLinks = await storage.getQuickLinks();
+      } catch (err) {
+        console.error("Error getting quick links:", err);
+      }
+      
+      if (quickLinks.length === 0) {
+        try {
+          // Create sample quick links
+          await storage.createQuickLink({
+            title_vi: "Tuyển sinh",
+            title_en: "Admissions",
+            url: "/tuyen-sinh",
+            description_vi: "Thông tin tuyển sinh",
+            description_en: "Admissions information",
+            icon: "GraduationCap",
+            order: 1
+          });
+          
+          await storage.createQuickLink({
+            title_vi: "Chương trình học",
+            title_en: "Programs",
+            url: "/dao-tao",
+            description_vi: "Khám phá các chương trình học",
+            description_en: "Explore our educational programs",
+            icon: "BookOpen",
+            order: 2
+          });
+          
+          await storage.createQuickLink({
+            title_vi: "Lịch học",
+            title_en: "Schedule",
+            url: "/dao-tao/lich-hoc",
+            description_vi: "Lịch học và sự kiện",
+            description_en: "Class schedule and events",
+            icon: "Calendar",
+            order: 3
+          });
+          
+          await storage.createQuickLink({
+            title_vi: "Thư viện",
+            title_en: "Library",
+            url: "/tien-ich",
+            description_vi: "Nguồn tài liệu học tập",
+            description_en: "Learning resources",
+            icon: "Library",
+            order: 4
+          });
+          
+          await storage.createQuickLink({
+            title_vi: "Liên hệ",
+            title_en: "Contact",
+            url: "/contact",
+            description_vi: "Thông tin liên hệ",
+            description_en: "Contact information",
+            icon: "Mail",
+            order: 5
+          });
+        } catch (err) {
+          console.error("Error creating quick links:", err);
+        }
+      }
+    } catch (err) {
+      console.error("Error initializing quick links:", err);
+    }
+  } catch (error) {
+    console.error("Error initializing sample content:", error);
   }
 }
 
 // Add the initialization function
 async function initializeArticleCategories() {
-  const categories = await storage.getArticleCategories();
-  if (categories.length === 0) {
-    const defaultCategories = [
+  try {
+    let categories = [];
+    try {
+      categories = await storage.getArticleCategories();
+    } catch (err) {
+      console.error("Error getting article categories:", err);
+    }
+    
+    if (categories.length === 0) {
+      const defaultCategories = [
       {
         slug: "news",
         title_vi: "Tin tức",
@@ -759,9 +859,19 @@ async function initializeArticleCategories() {
       }
     ];
 
-    for (const category of defaultCategories) {
-      await storage.createArticleCategory(category);
+    try {
+      for (const category of defaultCategories) {
+        try {
+          await storage.createArticleCategory(category);
+        } catch (err) {
+          console.error(`Error creating category ${category.slug}:`, err);
+        }
+      }
+    } catch (err) {
+      console.error("Error creating article categories:", err);
     }
+  } catch (error) {
+    console.error("Error initializing article categories:", error);
   }
 }
 

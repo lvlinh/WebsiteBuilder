@@ -17,6 +17,12 @@ export default function PageManager() {
     isLoading,
   } = useQuery({
     queryKey: ['/api/pages', pageId || 'new'],
+    queryFn: async () => {
+      if (!pageId) return undefined; // For new page
+      const res = await fetch(`/api/pages/${pageId}`);
+      if (!res.ok) throw new Error('Failed to fetch page');
+      return await res.json();
+    },
     enabled: true,
   });
 

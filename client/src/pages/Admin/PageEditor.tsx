@@ -21,17 +21,23 @@ import type { Page, ArticleCategory } from "@shared/schema"
 import { useEffect, useState } from "react"
 
 interface PageEditorProps {
-  page: Page
+  page?: Page
   onBack: () => void
 }
 
 export default function PageEditor({ page, onBack }: PageEditorProps) {
   const { language } = useI18n()
   const { toast } = useToast()
-  const [pageType, setPageType] = useState<string>(page.pageType || 'regular')
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
-    page.linkedCategoryId ? page.linkedCategoryId.toString() : ''
-  )
+  const [pageType, setPageType] = useState<string>('regular')
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('')
+  
+  // Initialize state when page data is available
+  useEffect(() => {
+    if (page) {
+      setPageType(page.pageType || 'regular')
+      setSelectedCategoryId(page.linkedCategoryId ? page.linkedCategoryId.toString() : '')
+    }
+  }, [page])
   
   // Fetch article categories for the select dropdown
   const { data: categories } = useQuery<ArticleCategory[]>({
@@ -75,9 +81,12 @@ export default function PageEditor({ page, onBack }: PageEditorProps) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     
+    // Check if we're creating a new page
+    const isNewPage = !page;
+    
     // Basic fields every page needs
-    const updateData: Partial<Page> & { id: number } = {
-      id: page.id,
+    const updateData: Partial<Page> = {
+      ...(page ? { id: page.id } : {}),
       title_vi: formData.get('title_vi') as string,
       title_en: formData.get('title_en') as string,
       published: formData.get('published') === 'on',

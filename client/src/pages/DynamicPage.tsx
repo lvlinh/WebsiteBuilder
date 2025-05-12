@@ -146,7 +146,7 @@ function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string
 
   if (isLoading) {
     return (
-      <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className={getContentWidthClass("py-12")}>
         <div className="animate-pulse">
           <div className="h-8 w-1/3 bg-muted rounded mb-8" />
           <div className="space-y-4">
@@ -161,7 +161,7 @@ function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string
 
   if (error || !currentPage) {
     return (
-      <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className={getContentWidthClass("py-12")}>
         <h1 className="text-4xl font-bold mb-4">
           {language === 'vi' ? 'Không tìm thấy trang' : 'Page not found'}
         </h1>
@@ -177,7 +177,7 @@ function RegularPage({ mainSlug, subSlug }: { mainSlug: string, subSlug?: string
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className={getContentWidthClass("py-12")}>
         {/* Breadcrumb navigation */}
         {parentPage && (
           <div className="mb-6 text-sm text-muted-foreground">

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 // Theme types
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -13,10 +14,21 @@ export interface Theme {
   contentWidth?: ContentWidth;
 }
 
+// Utility function to get the content width class based on theme settings
+export const getContentWidthClass = (theme: Theme, baseClasses: string = "mx-auto px-4 sm:px-6 lg:px-8") => {
+  return cn(
+    baseClasses,
+    theme.contentWidth === 'normal' ? 'container' : 
+    theme.contentWidth === 'wide' ? 'container max-w-7xl' : 
+    'container-fluid max-w-none'
+  );
+};
+
 export interface ThemeContextType {
   theme: Theme;
   setTheme: (newTheme: Partial<Theme>) => void;
   resolvedTheme: ThemeMode;
+  getContentWidthClass: (baseClasses?: string) => string;
 }
 
 const defaultTheme: Theme = {
@@ -31,7 +43,9 @@ const defaultTheme: Theme = {
 const ThemeContext = createContext<ThemeContextType>({
   theme: defaultTheme,
   setTheme: () => {},
-  resolvedTheme: 'light'
+  resolvedTheme: 'light',
+  getContentWidthClass: (baseClasses?: string) => 
+    getContentWidthClass(defaultTheme, baseClasses)
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
@@ -93,8 +107,18 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  // Helper function to get content width using the utility
+  const getContentWidthClassFn = (baseClasses?: string) => {
+    return getContentWidthClass(theme, baseClasses);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <ThemeContext.Provider value={{ 
+      theme, 
+      setTheme, 
+      resolvedTheme,
+      getContentWidthClass: getContentWidthClassFn 
+    }}>
       {children}
     </ThemeContext.Provider>
   );

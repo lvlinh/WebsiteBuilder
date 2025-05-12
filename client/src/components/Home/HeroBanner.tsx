@@ -2,12 +2,15 @@ import { useCallback, useEffect } from "react"
 import useEmblaCarousel from "embla-carousel-react"
 import { useQuery } from "@tanstack/react-query"
 import { useI18n } from "@/hooks/use-i18n" // Updated import path
+import { useTheme } from "@/lib/theme-provider"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import type { BannerSlide } from "@shared/schema"
 
 export default function HeroBanner() {
   const { language } = useI18n()
+  const { theme, getContentWidthClass } = useTheme()
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
 
   const { data: slides = [], isLoading } = useQuery<BannerSlide[]>({
@@ -61,7 +64,7 @@ export default function HeroBanner() {
 
   return (
     <div className="relative overflow-hidden bg-background py-24 sm:py-32">
-      <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={getContentWidthClass("mx-auto px-4 sm:px-6 lg:px-8")}>
         {/* Navigation buttons with adjusted positioning */}
         <div className="absolute left-8 right-8 top-1/2 z-10 flex justify-between transform -translate-y-1/2">
           <Button

@@ -246,22 +246,7 @@ export default function ThemeConfigurator() {
                 </p>
               </div>
               
-              <div className="space-y-2">
-                <div
-                  className={cn(
-                    'aspect-video rounded-md border-2 overflow-hidden cursor-pointer',
-                    theme.contentWidth === 'wide' ? 'border-primary' : 'border-border'
-                  )}
-                  onClick={() => handleContentWidthChange('wide')}
-                >
-                  <div className="h-full flex items-center justify-center">
-                    <div className="w-5/6 h-3/4 bg-primary/20 rounded"></div>
-                  </div>
-                </div>
-                <p className="text-center text-sm">
-                  {language === 'vi' ? 'Rộng' : 'Wide'}
-                </p>
-              </div>
+
               
               <div className="space-y-2">
                 <div

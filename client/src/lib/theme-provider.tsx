@@ -14,14 +14,11 @@ export interface Theme {
   contentWidth?: ContentWidth;
 }
 
-// Utility function to get the content width class based on theme settings
-export const getContentWidthClass = (theme: Theme, baseClasses: string = "mx-auto px-4 sm:px-6 lg:px-8") => {
-  return cn(
-    baseClasses,
-    theme.contentWidth === 'normal' ? 'container' : 
-    theme.contentWidth === 'wide' ? 'container max-w-7xl' : 
-    'container-fluid max-w-none'
-  );
+// Internal utility function to get the content width class based on theme settings
+const getWidthClasses = (contentWidth?: ContentWidth) => {
+  return contentWidth === 'normal' ? 'container max-w-6xl' : 
+         contentWidth === 'wide' ? 'container max-w-7xl' : 
+         'container-fluid max-w-none';
 };
 
 export interface ThemeContextType {
@@ -45,7 +42,10 @@ const ThemeContext = createContext<ThemeContextType>({
   setTheme: () => {},
   resolvedTheme: 'light',
   getContentWidthClass: (baseClasses?: string) => 
-    getContentWidthClass(defaultTheme, baseClasses)
+    cn(
+      baseClasses || "mx-auto px-4 sm:px-6 lg:px-8",
+      getWidthClasses(defaultTheme.contentWidth)
+    )
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
@@ -107,9 +107,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  // Helper function to get content width using the utility
+  // Helper function to get content width 
   const getContentWidthClassFn = (baseClasses?: string) => {
-    return getContentWidthClass(theme, baseClasses);
+    return cn(
+      baseClasses || "mx-auto px-4 sm:px-6 lg:px-8",
+      getWidthClasses(theme.contentWidth)
+    );
   };
 
   return (

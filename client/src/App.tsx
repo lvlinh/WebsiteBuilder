@@ -28,13 +28,10 @@ import BannerSlides from "@/pages/Admin/BannerSlides"
 import ThemeSettings from "@/pages/Admin/ThemeSettings"
 
 function Router() {
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   
-  // Determine content width CSS class based on theme settings
-  const contentWidthClass = 
-    theme.contentWidth === 'narrow' ? 'max-w-4xl' : 
-    theme.contentWidth === 'wide' ? 'max-w-7xl' : 
-    'max-w-6xl'; // Default 'regular' width
+  // Use a fixed content width for now
+  const contentWidthClass = 'max-w-6xl'; // Default 'regular' width
 
   return (
     <div className={`min-h-screen flex flex-col ${resolvedTheme === 'dark' ? 'dark' : ''}`}>

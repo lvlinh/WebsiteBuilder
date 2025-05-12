@@ -25,7 +25,8 @@ export interface ThemeContextType {
 }
 
 // Constants for SJJS branding
-export const SJJS_RED = 'hsl(351, 32%, 42%)';
+export const SJJS_HEX = '#8B4749';  // Exact hex color for SJJS
+export const SJJS_RED = SJJS_HEX;  // Use hex instead of HSL to avoid conversion issues
 export const SJJS_RGB = '139, 71, 73'; // RGB equivalent of #8B4749
 
 // Default theme with SJJS branding
@@ -61,9 +62,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     // Set default light mode
     document.documentElement.classList.remove('dark');
     
-    // Set default SJJS color directly
-    document.documentElement.style.setProperty('--primary', SJJS_RED);
+    // Set default SJJS color directly using hex format for maximum consistency
+    document.documentElement.style.setProperty('--primary', SJJS_HEX);
     document.documentElement.style.setProperty('--primary-rgb', SJJS_RGB);
+    
+    // Set primary-foreground to white for better contrast
+    document.documentElement.style.setProperty('--primary-foreground', '#FFFFFF');
     
     // Set border radius
     document.documentElement.style.setProperty('--theme-radius', `0.5rem`);
@@ -168,7 +172,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     
     // Create a hard-coded default theme to avoid any reference issues
     const hardResetTheme: Theme = {
-      primary: SJJS_RED,
+      primary: SJJS_HEX, // Use hex value to avoid color conversion issues
       mode: 'light',
       variant: 'professional',
       radius: 0.5,

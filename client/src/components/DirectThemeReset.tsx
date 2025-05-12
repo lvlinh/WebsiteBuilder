@@ -22,20 +22,28 @@ export default function DirectThemeReset() {
   // Hard reset using both methods for maximum reliability
   const performHardReset = () => {
     try {
-      // 1. First try the context-based reset
-      resetTheme();
+      // First, directly force the color using exact CSS values
+      // This ensures we're using the exact RGB values of SJJS brand color
+      document.documentElement.style.setProperty('--primary', '#8B4749');  // Hex color format
+      document.documentElement.style.setProperty('--primary-rgb', '139, 71, 73');  // Exact RGB values
       
-      // 2. Then also do direct DOM manipulation as a safety net
-      document.documentElement.style.setProperty('--primary', SJJS_RED);
-      document.documentElement.style.setProperty('--primary-rgb', SJJS_RGB);
+      // Force other essential styles
       document.documentElement.classList.remove('dark');
       document.documentElement.classList.remove('variant-vibrant', 'variant-tint');
       document.documentElement.classList.add('variant-professional');
       document.documentElement.style.setProperty('--theme-radius', '0.5rem');
       
-      // 3. Write directly to localStorage
+      // Override CSS --primary-foreground for better contrast
+      document.documentElement.style.setProperty('--primary-foreground', '#FFFFFF');
+      
+      // Force a direct application of these styles on critical elements
+      document.querySelectorAll('.bg-primary').forEach(el => {
+        (el as HTMLElement).style.backgroundColor = '#8B4749';
+      });
+      
+      // 3. Write directly to localStorage with the true hex value to avoid conversion issues
       const defaultTheme = {
-        primary: SJJS_RED,
+        primary: '#8B4749',  // Use hex instead of HSL to avoid conversion issues
         mode: 'light',
         variant: 'professional',
         radius: 0.5,
@@ -44,6 +52,9 @@ export default function DirectThemeReset() {
       
       localStorage.removeItem('theme'); // First clear existing item
       localStorage.setItem('theme', JSON.stringify(defaultTheme));
+      
+      // Then use the context-based reset for state management
+      resetTheme();
       
       // Show success message
       toast({

@@ -9,7 +9,7 @@ cat > scripts/package.json << EOL
   "name": "sjjs-db-tools",
   "version": "1.0.0",
   "description": "Database tools for SJJS project",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "dotenv": "^16.0.3",
     "pg": "^8.10.0"

@@ -3,11 +3,16 @@
  * This script synchronizes database schema and content from Neon to local PostgreSQL
  */
 
-require('dotenv').config();
-const { Pool } = require('pg');
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
+import 'dotenv/config';
+import pg from 'pg';
+import fs from 'fs';
+import path from 'path';
+import readline from 'readline';
+import { fileURLToPath } from 'url';
+
+const { Pool } = pg;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Database connection configurations
 const sourceConfig = {

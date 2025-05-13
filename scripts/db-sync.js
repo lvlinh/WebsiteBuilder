@@ -19,11 +19,14 @@ const sourceConfig = {
   connectionString: process.env.DATABASE_URL, // Neon database connection string
 };
 
-// For local development, you may need to adjust these settings
+// Local database connection configuration
+// You need to change these parameters to connect to your local PostgreSQL database
 const localConfig = {
-  // We'll use the same connection string as source for simplicity
-  // This will allow the script to work in both development and production environments
-  connectionString: process.env.DATABASE_URL
+  host: 'localhost',
+  port: 5432,
+  database: 'sjjs_local', // Change this to your local database name
+  user: 'postgres',       // Change to your local PostgreSQL username
+  password: 'postgres'    // Change to your local PostgreSQL password
 };
 
 // Create connection pools
@@ -39,8 +42,27 @@ if (!fs.existsSync(exportDir)) {
   fs.mkdirSync(exportDir);
 }
 
-// Tables to synchronize - update this list based on your actual tables
-const tables = [
+// Function to get all tables from the source database
+async function getAllTables() {
+  try {
+    const result = await sourcePool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_type = 'BASE TABLE'
+      AND table_name NOT LIKE 'pg_%'
+      AND table_name NOT LIKE 'drizzle_%'
+      AND table_name NOT LIKE 'session'
+    `);
+    return result.rows.map(row => row.table_name);
+  } catch (error) {
+    console.error('❌ Error getting table list:', error.message);
+    return [];
+  }
+}
+
+// Define a fallback list of tables in case we can't get them automatically
+const fallbackTables = [
   'users',
   'pages',
   'articles',
@@ -217,15 +239,30 @@ async function syncDatabase() {
     await localPool.query('SELECT NOW()');
     console.log('✅ Connected to local database');
     
+    // Get all tables from the source database
+    console.log('🔍 Retrieving tables from source database...');
+    let tables = await getAllTables();
+    
+    if (tables.length === 0) {
+      console.log('⚠️ No tables found in source database or could not retrieve them.');
+      console.log('Using fallback table list instead.');
+      tables = fallbackTables;
+    }
+    
+    console.log(`ℹ️ Found ${tables.length} tables to synchronize: ${tables.join(', ')}`);
+    
     // Process each table
     for (const tableName of tables) {
       console.log(`\n🔄 Processing table: ${tableName}`);
       
-      // Check if table exists in source database
-      const exists = await tableExists(sourcePool, tableName);
-      if (!exists) {
-        console.log(`⚠️ Table ${tableName} does not exist in source database. Skipping.`);
-        continue;
+      // Since we already verified the table exists (if using getAllTables), 
+      // we can skip this check for those tables
+      if (tables === fallbackTables) {
+        const exists = await tableExists(sourcePool, tableName);
+        if (!exists) {
+          console.log(`⚠️ Table ${tableName} does not exist in source database. Skipping.`);
+          continue;
+        }
       }
       
       // Get table schema
@@ -267,17 +304,53 @@ async function syncDatabase() {
   }
 }
 
+// Add a function to validate the database connection before proceeding
+async function validateConnections() {
+  let sourceValid = false;
+  let localValid = false;
+  
+  try {
+    await sourcePool.query('SELECT NOW()');
+    sourceValid = true;
+    console.log('✅ Source database connection is valid.');
+  } catch (error) {
+    console.error('❌ Error connecting to source database:', error.message);
+    console.log('Make sure your DATABASE_URL environment variable is set correctly.');
+  }
+  
+  try {
+    await localPool.query('SELECT NOW()');
+    localValid = true;
+    console.log('✅ Local database connection is valid.');
+  } catch (error) {
+    console.error('❌ Error connecting to local database:', error.message);
+    console.log('Make sure your local PostgreSQL server is running and the connection details are correct.');
+    console.log('You may need to create the database first with: createdb sjjs_local');
+  }
+  
+  return sourceValid && localValid;
+}
+
 // Ask for confirmation before proceeding
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-rl.question('⚠️ This will overwrite data in your local database. Continue? (y/n) ', async (answer) => {
-  if (answer.toLowerCase() === 'y') {
-    await syncDatabase();
-  } else {
-    console.log('Operation cancelled.');
+// First validate connections, then ask for confirmation
+validateConnections().then(connectionsValid => {
+  if (!connectionsValid) {
+    console.log('⚠️ Fix the database connection issues before proceeding.');
+    rl.close();
+    return;
   }
-  rl.close();
+  
+  rl.question('⚠️ This will overwrite data in your local database. Continue? (y/n) ', async (answer) => {
+    if (answer.toLowerCase() === 'y') {
+      await syncDatabase();
+    } else {
+      console.log('Operation cancelled.');
+    }
+    rl.close();
+  });
 });
